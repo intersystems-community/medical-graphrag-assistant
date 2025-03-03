@@ -91,7 +91,7 @@ Open your browser and go to:
 👉 **[http://localhost:8080/csp/sys/UtilHome.csp](http://localhost:8080/csp/sys/UtilHome.csp)**  
 **Login Credentials:**
 - **Username:** `_SYSTEM`
-- **Password:** `SYS`
+- **Password:** `ISCDEMO`
 
 ### **2. Access the FHIR API**
 Test the **FHIR endpoint** by opening:
