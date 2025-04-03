@@ -43,7 +43,7 @@ cd Dockerfhir
 ### **Step 2: Pull the IRIS for Health Community Image**
 Before building, ensure you have the latest **InterSystems IRIS for Health Community Edition** image:
 ```sh
-docker pull intersystems/irishealth-community:latest-cd
+docker pull containers.intersystems.com/intersystems/irishealth-community:latest-em
 ```
 
 ---
