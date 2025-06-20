@@ -1,9 +1,9 @@
 
 
 services:
-  iris-fhir-validator:
+  iris-fhir:
     build: .
-    container_name: iris-fhir-validator
+    container_name: iris-fhir
     restart: unless-stopped
     ports:
       - "8080:52773"  # Map local port 8080 to IRIS web port 52773
