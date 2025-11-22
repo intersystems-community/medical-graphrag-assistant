@@ -75,6 +75,9 @@ from src.db.connection import get_connection
 from src.search.scoring import get_score_color, get_confidence_level
 from src.search.cache import get_cached_embedding, cache_info
 
+# Import memory system
+from src.memory import VectorMemory
+
 
 # Initialize MCP server
 server = Server("fhir-graphrag-server")
@@ -91,6 +94,16 @@ def get_embedder():
         except Exception as e:
             print(f"Warning: Failed to initialize NV-CLIP: {e}", file=sys.stderr)
     return embedder
+
+# Initialize vector memory system
+vector_memory = None
+
+def get_memory():
+    """Get or initialize vector memory system."""
+    global vector_memory
+    if vector_memory is None:
+        vector_memory = VectorMemory(embedding_model=get_embedder())
+    return vector_memory
 
 
 @server.list_tools()
@@ -312,6 +325,65 @@ async def list_tools() -> List[Tool]:
                     }
                 },
                 "required": ["query"]
+            }
+        ),
+        Tool(
+            name="remember_information",
+            description="Store information in agent memory with semantic embedding. "
+                       "Use this to remember user corrections, preferences, domain knowledge, or feedback.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "memory_type": {
+                        "type": "string",
+                        "description": "Type of memory: 'correction', 'knowledge', 'preference', 'feedback'",
+                        "enum": ["correction", "knowledge", "preference", "feedback"]
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "Information to remember (e.g., 'User prefers semantic search')"
+                    },
+                    "context": {
+                        "type": "object",
+                        "description": "Optional context metadata (JSON)",
+                        "default": {}
+                    }
+                },
+                "required": ["memory_type", "text"]
+            }
+        ),
+        Tool(
+            name="recall_information",
+            description="Recall memories semantically similar to a query. "
+                       "Returns relevant past corrections, knowledge, preferences with similarity scores.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search query (e.g., 'pneumonia appearance', 'user preferences')"
+                    },
+                    "memory_type": {
+                        "type": "string",
+                        "description": "Optional filter by type: 'correction', 'knowledge', 'preference', 'feedback'",
+                        "enum": ["correction", "knowledge", "preference", "feedback", "all"],
+                        "default": "all"
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "Number of memories to return",
+                        "default": 5
+                    }
+                },
+                "required": ["query"]
+            }
+        ),
+        Tool(
+            name="get_memory_stats",
+            description="Get agent memory statistics including counts by type and most used memories.",
+            inputSchema={
+                "type": "object",
+                "properties": {}
             }
         )
     ]
@@ -1169,6 +1241,56 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return [TextContent(
                 type="text",
                 text=json.dumps(response, indent=2)
+            )]
+
+        elif name == "remember_information":
+            memory_type = arguments["memory_type"]
+            text = arguments["text"]
+            context = arguments.get("context", {})
+
+            # Store in vector memory
+            memory = get_memory()
+            memory_id = memory.remember(memory_type, text, context)
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "success": True,
+                    "memory_id": memory_id,
+                    "memory_type": memory_type,
+                    "text": text,
+                    "message": f"Stored {memory_type} memory with semantic embedding"
+                }, indent=2)
+            )]
+
+        elif name == "recall_information":
+            query = arguments["query"]
+            memory_type = arguments.get("memory_type", "all")
+            top_k = arguments.get("top_k", 5)
+
+            # Search vector memory
+            memory = get_memory()
+            if memory_type == "all":
+                memory_type = None
+
+            memories = memory.recall(query, memory_type, top_k)
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "query": query,
+                    "memories_found": len(memories),
+                    "memories": memories
+                }, indent=2)
+            )]
+
+        elif name == "get_memory_stats":
+            memory = get_memory()
+            stats = memory.get_stats()
+
+            return [TextContent(
+                type="text",
+                text=json.dumps(stats, indent=2)
             )]
 
         else:

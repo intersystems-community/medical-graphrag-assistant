@@ -12,12 +12,29 @@ import os
 import sys
 import plotly.graph_objects as go
 
+# DICOM support
+try:
+    import pydicom
+    from PIL import Image
+    import numpy as np
+    DICOM_AVAILABLE = True
+except ImportError:
+    DICOM_AVAILABLE = False
+
 # Add parent directory to sys.path for src module imports  
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 from fhir_graphrag_mcp_server import call_tool
+
+# Import memory system for UI
+try:
+    from src.memory import VectorMemory
+    MEMORY_AVAILABLE = True
+except ImportError:
+    MEMORY_AVAILABLE = False
+    print("Warning: Memory system not available", file=sys.stderr)
 
 st.set_page_config(page_title="Agentic Medical Chat", page_icon="🤖", layout="wide")
 
@@ -167,6 +184,32 @@ def execute_mcp_tool(tool_name: str, tool_input: dict):
         return json.loads(result[0].text)
     except Exception as e:
         return {"error": str(e)}
+
+def load_dicom_image(dicom_path):
+    """Load DICOM file and convert to PIL Image for display."""
+    if not DICOM_AVAILABLE:
+        return None
+
+    try:
+        dcm = pydicom.dcmread(dicom_path)
+        pixel_array = dcm.pixel_array
+
+        # Normalize to 0-255
+        if pixel_array.max() > 0:
+            pixel_array = ((pixel_array - pixel_array.min()) /
+                          (pixel_array.max() - pixel_array.min()) * 255).astype(np.uint8)
+
+        # Convert to PIL Image
+        img = Image.fromarray(pixel_array)
+
+        # Convert to RGB if grayscale
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        return img
+    except Exception as e:
+        print(f"Error loading DICOM {dicom_path}: {e}", file=sys.stderr)
+        return None
 
 def render_chart(tool_name: str, data, unique_id: str = None):
     """Render visualization if tool returns chart data"""
@@ -365,31 +408,43 @@ def render_chart(tool_name: str, data, unique_id: str = None):
             return True
 
         elif tool_name == "search_medical_images":
-            # T020: Check for fallback and show warning
+            # T020: Enhanced UX for embedder initialization
             search_mode = data.get("search_mode", "unknown")
             fallback_reason = data.get("fallback_reason")
-            
+
             if search_mode == "keyword" and fallback_reason:
-                st.warning(f"⚠️ Semantic search unavailable. Using keyword search.")
-                st.info(f"Reason: {fallback_reason}")
+                # Check if it's a connection issue vs embedder not initialized
+                if "not available" in fallback_reason.lower() or "not initialized" in fallback_reason.lower():
+                    # Show friendly info box instead of warning
+                    st.info(f"🔄 **First search** - Initializing semantic search engine (NV-CLIP). Using keyword search for this query.")
+                    st.caption("Subsequent searches will use AI-powered semantic search automatically.")
+                else:
+                    # Real error - show as warning
+                    st.warning(f"⚠️ Semantic search temporarily unavailable. Using keyword search.")
+                    with st.expander("Technical details"):
+                        st.code(fallback_reason)
             
             # Show search statistics
             exec_time = data.get("execution_time_ms", 0)
             cache_hit = data.get("cache_hit", False)
             avg_score = data.get("avg_score")
             
-            # Display search metadata
+            # Display search metadata with improved UX
             meta_cols = st.columns(4)
             with meta_cols[0]:
-                st.metric("Search Mode", search_mode.title())
+                # Show search mode with emoji indicator
+                if search_mode == "semantic":
+                    st.metric("Search Mode", "🤖 Semantic", help="AI-powered vector search using NV-CLIP")
+                else:
+                    st.metric("Search Mode", "🔤 Keyword", help="Text-based keyword matching")
             with meta_cols[1]:
                 st.metric("Execution Time",  f"{exec_time}ms")
             if search_mode == "semantic":
                 with meta_cols[2]:
-                    st.metric("Cache", "Hit ✓" if cache_hit else "Miss")
+                    st.metric("Cache", "⚡ Hit" if cache_hit else "🔄 Miss")
                 if avg_score is not None:
                     with meta_cols[3]:
-                        st.metric("Avg Score", f"{avg_score:.2f}")
+                        st.metric("Avg Score", f"{avg_score:.2f}", help="Average similarity score (0-1)")
             
             # Render images grid
             images = data.get("images", [])
@@ -418,13 +473,16 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     
                     # Use image path if available, or placeholder
                     img_path = img.get("image_path")
-                    view_pos = img.get('view_position', 'Unknown View')
-                    subject_id = img.get('subject_id', 'Unknown Patient')
-                    
+                    study_type = img.get('study_type', 'Unknown Study')
+                    patient_id = img.get('patient_id', 'Unknown Patient')
+                    image_id = img.get('image_id', 'Unknown ID')
+
                     # Build caption with score badge
                     caption_html = f"""
                     <div style='text-align: center; margin-bottom: 8px;'>
-                        <strong>{view_pos}</strong> - Patient {subject_id}
+                        <strong>{study_type}</strong><br/>
+                        <small>Patient: {patient_id}</small><br/>
+                        <small style='color: #666;'>ID: {image_id[:8]}...</small>
                     </div>
                     """
                     
@@ -448,12 +506,28 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     st.markdown(caption_html, unsafe_allow_html=True)
                     
                     try:
+                        # Convert relative path to absolute (relative to project root)
+                        if img_path:
+                            if not os.path.isabs(img_path):
+                                # Path is relative, resolve from parent directory
+                                img_path = os.path.abspath(os.path.join(parent_dir, img_path))
+
                         if img_path and os.path.exists(img_path):
-                            st.image(img_path, use_container_width=True)
+                            # Check if DICOM file
+                            if img_path.lower().endswith('.dcm'):
+                                dicom_img = load_dicom_image(img_path)
+                                if dicom_img:
+                                    st.image(dicom_img, use_container_width=True)
+                                else:
+                                    st.warning(f"Could not load DICOM: {os.path.basename(img_path)}")
+                                    st.info(f"{study_type} - Patient {patient_id}")
+                            else:
+                                # Regular image file (PNG, JPG, etc.)
+                                st.image(img_path, use_container_width=True)
                         else:
                             # Fallback if local path not found
                             st.warning(f"Image not found: {os.path.basename(img_path) if img_path else 'N/A'}")
-                            st.info(f"{view_pos} - Patient {subject_id}")
+                            st.info(f"{study_type} - Patient {patient_id}")
                     except Exception as e:
                         st.error(f"Error loading image: {e}")
             return True
@@ -525,9 +599,26 @@ def demo_mode_search(user_message: str):
                 for idx, img in enumerate(images):
                     with cols[idx % 3]:
                         img_path = img.get("image_path")
-                        caption = f"{img.get('view_position', 'Unknown')} - {img.get('subject_id', 'Unknown')}"
+
+                        # Convert relative path to absolute (relative to project root)
+                        if img_path and not os.path.isabs(img_path):
+                            img_path = os.path.abspath(os.path.join(parent_dir, img_path))
+
+                        study_type = img.get('study_type', 'Unknown Study')
+                        patient_id = img.get('patient_id', 'Unknown Patient')
+                        caption = f"{study_type} - Patient {patient_id}"
+
                         if img_path and os.path.exists(img_path):
-                            st.image(img_path, caption=caption, use_container_width=True)
+                            # Check if DICOM file
+                            if img_path.lower().endswith('.dcm'):
+                                dicom_img = load_dicom_image(img_path)
+                                if dicom_img:
+                                    st.image(dicom_img, caption=caption, use_container_width=True)
+                                else:
+                                    st.info(f"Image: {caption}")
+                            else:
+                                # Regular image file
+                                st.image(img_path, caption=caption, use_container_width=True)
                         else:
                             st.info(f"Image: {caption}")
                 
@@ -845,7 +936,7 @@ def chat_with_tools(user_message: str):
 # UI
 st.title("🤖 Agentic Medical Chat")
 st.caption("Claude autonomously calls MCP tools to answer your questions")
-st.caption("🔧 **Build: v2.10.2** (Fixed 'str' object has no attribute 'get' error with proper type checking)")
+st.caption("🔧 **Build: v2.12.0** - Agent Memory Editor: Browse, search, and manage agent memories with pure IRIS vector search")
 
 # Sidebar
 with st.sidebar:
@@ -857,6 +948,71 @@ with st.sidebar:
     if st.button("🗑️ Clear"):
         st.session_state.messages = []
         st.rerun()
+
+    # Memory Editor UI
+    if MEMORY_AVAILABLE:
+        st.divider()
+        st.header("🧠 Agent Memory")
+
+        try:
+            memory = VectorMemory()
+
+            # Show statistics
+            with st.expander("📊 Memory Statistics", expanded=False):
+                stats = memory.get_stats()
+                st.metric("Total Memories", stats['total_memories'])
+                if stats['type_breakdown']:
+                    st.write("**By Type:**")
+                    for mtype, count in stats['type_breakdown'].items():
+                        st.write(f"- {mtype.title()}: {count}")
+                if stats['most_used_memories']:
+                    st.write("**Most Used:**")
+                    for mem in stats['most_used_memories'][:3]:
+                        st.caption(f"• {mem['text'][:50]}... ({mem['count']}x)")
+
+            # Browse/Search memories
+            with st.expander("📚 Browse Memories", expanded=False):
+                memory_type_filter = st.selectbox(
+                    "Filter by type",
+                    ["all", "correction", "knowledge", "preference", "feedback"],
+                    key="memory_type_filter"
+                )
+
+                # Search interface
+                search_query = st.text_input("Search memories", placeholder="e.g., 'pneumonia'", key="memory_search")
+
+                if st.button("🔍 Search", key="memory_search_btn") and search_query:
+                    filter_type = None if memory_type_filter == "all" else memory_type_filter
+                    results = memory.recall(search_query, memory_type=filter_type, top_k=10)
+
+                    if results:
+                        st.write(f"Found {len(results)} memories:")
+                        for idx, mem in enumerate(results):
+                            with st.container():
+                                col1, col2 = st.columns([4, 1])
+                                with col1:
+                                    st.markdown(f"**{mem['memory_type'].title()}** (Similarity: {mem['similarity']:.2f})")
+                                    st.text(mem['text'][:200] + "..." if len(mem['text']) > 200 else mem['text'])
+                                    st.caption(f"Used {mem['use_count']}x • ID: {mem['memory_id'][:8]}")
+                                with col2:
+                                    if st.button("🗑️", key=f"del_{idx}_{mem['memory_id'][:8]}"):
+                                        memory.forget(memory_id=mem['memory_id'])
+                                        st.success("Deleted!")
+                                        st.rerun()
+                    else:
+                        st.info("No memories found matching your query.")
+
+            # Add new memory
+            with st.expander("➕ Add Memory", expanded=False):
+                new_type = st.selectbox("Type", ["correction", "knowledge", "preference", "feedback"], key="new_memory_type")
+                new_text = st.text_area("Memory text", placeholder="Enter information to remember...", key="new_memory_text")
+                if st.button("💾 Save Memory", key="save_memory_btn") and new_text:
+                    memory.remember(new_type, new_text, context={"source": "manual_ui"})
+                    st.success(f"✅ Saved {new_type} memory!")
+                    st.rerun()
+
+        except Exception as e:
+            st.error(f"Memory system error: {e}")
 
 # Display chat
 for idx, msg in enumerate(st.session_state.messages):
