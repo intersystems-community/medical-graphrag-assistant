@@ -1,0 +1,61 @@
+# InterSystems IRIS Configuration
+
+# Container Settings
+container:
+  image: intersystemsdc/iris-community:2025.1
+  name: iris-fhir
+  restart_policy: unless-stopped
+  ports:
+    sql: 1972
+    management: 52773
+    superserver: 51773
+
+# Database Configuration
+database:
+  namespace: DEMO
+  default_username: _SYSTEM
+  default_password: ISCDEMO
+  max_connections: 100
+
+# Volume Mounts
+volumes:
+  - name: iris-data
+    host_path: ./iris-data
+    container_path: /usr/irissys/mgr
+    description: IRIS database files
+  - name: iris-config
+    host_path: ./iris-config
+    container_path: /usr/irissys/config
+    description: IRIS configuration files
+
+# Environment Variables
+environment:
+  ISC_DATA_DIRECTORY: /usr/irissys/mgr
+  ISC_CPF_MERGE_FILE: /usr/irissys/config/merge.cpf
+
+# Health Check
+health_check:
+  test: iris session IRIS -U%SYS '##class(SYS.Database).Exists(\"DEMO\")'
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+
+# Vector Search Configuration
+vector_search:
+  default_vector_dimension: 1024
+  default_vector_type: DOUBLE
+  similarity_metric: COSINE  # COSINE, EUCLIDEAN, DOT
+  index_type: NONE  # Start without specialized index, can add HNSW later
+
+# Memory Settings
+memory:
+  global_buffers: 4GB  # Global buffer pool
+  routine_buffers: 256MB  # Routine buffer pool
+  lock_table: 64MB  # Lock table size
+
+# Logging
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR
+  max_file_size: 100MB
+  max_files: 5

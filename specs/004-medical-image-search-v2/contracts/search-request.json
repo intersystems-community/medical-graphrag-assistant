@@ -1,0 +1,104 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://fhir-ai-hackathon-kit/schemas/search-request.json",
+    "title": "Image Search Request",
+    "description": "MCP tool input schema for search_medical_images",
+    "type": "object",
+    "properties": {
+        "query": {
+            "type": "string",
+            "description": "Natural language search query for medical images",
+            "minLength": 1,
+            "maxLength": 500,
+            "examples": [
+                "chest X-ray showing pneumonia",
+                "bilateral lung infiltrates with pleural effusion",
+                "cardiomegaly",
+                "normal frontal chest radiograph"
+            ]
+        },
+        "limit": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 5
+        },
+        "min_score": {
+            "type": "number",
+            "description": "Minimum similarity score threshold (0.0-1.0). Results below this score are filtered out.",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "default": 0.0
+        },
+        "view_positions": {
+            "type": "array",
+            "description": "Filter by radiographic view positions (optional)",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "PA",
+                    "AP",
+                    "LATERAL",
+                    "LL",
+                    "SWIMMERS"
+                ]
+            },
+            "uniqueItems": true,
+            "examples": [
+                [
+                    "PA"
+                ],
+                [
+                    "PA",
+                    "AP"
+                ],
+                [
+                    "LATERAL"
+                ]
+            ]
+        },
+        "patient_id_pattern": {
+            "type": "string",
+            "description": "SQL LIKE pattern for SubjectID filtering (optional)",
+            "maxLength": 50,
+            "examples": [
+                "10%",
+                "%779"
+            ]
+        },
+        "page": {
+            "type": "integer",
+            "description": "Page number for pagination (1-indexed)",
+            "minimum": 1,
+            "default": 1
+        },
+        "page_size": {
+            "type": "integer",
+            "description": "Results per page",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50
+        }
+    },
+    "required": [
+        "query"
+    ],
+    "additionalProperties": false,
+    "examples": [
+        {
+            "query": "chest X-ray showing pneumonia",
+            "limit": 10,
+            "min_score": 0.5
+        },
+        {
+            "query": "bilateral infiltrates",
+            "limit": 20,
+            "view_positions": [
+                "PA",
+                "AP"
+            ],
+            "min_score": 0.6
+        }
+    ]
+}

@@ -15,3 +15,17 @@ fhir.resources
 
 # Used for creating very basic local LLMs 
 transformers
+
+# OpenAI for NVCLIP embeddings
+openai
+
+# Web App Framework
+streamlit
+
+# Visualization
+plotly
+
+# Testing (for P1 implementation)
+pytest
+pytest-cov
+pytest-asyncio

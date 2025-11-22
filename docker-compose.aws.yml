@@ -1,0 +1,131 @@
+# Docker Compose for AWS Deployment - FHIR AI Hackathon Kit
+# Multimodal medical search with IRIS + NIM on EC2
+#
+# Architecture:
+# - IRIS Community (vector database)
+# - NIM (NVIDIA embeddings - optional, requires GPU)
+# - Persistent EBS volumes for data
+#
+# Usage:
+#   docker-compose -f docker-compose.aws.yml up -d
+
+version: '3.8'
+
+services:
+  iris-fhir:
+    image: intersystemsdc/iris-community:latest
+    container_name: iris-fhir
+    ports:
+      - "1972:1972"   # SuperServer port
+      - "52773:52773" # Management Portal
+    environment:
+      - IRISNAMESPACE=DEMO
+      - ISC_DEFAULT_PASSWORD=ISCDEMO
+    volumes:
+      - iris-data:/usr/irissys/mgr
+      - ./:/home/irisowner/dev  # Mount project directory
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/irissys/bin/iris", "session", "iris", "-U%SYS", "##class(%SYSTEM.Process).CurrentDirectory()"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # NIM embeddings service (optional - requires GPU instance like g5.xlarge)
+  # Uncomment when deploying on GPU instance
+  # nim-embeddings:
+  #   image: nvcr.io/nim/nvidia/nv-embedqa-e5-v5:latest
+  #   container_name: nim-embeddings
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - NGC_API_KEY=${NGC_API_KEY}
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   restart: unless-stopped
+
+  # NV-CLIP for image embeddings (optional - requires GPU)
+  # Uncomment when deploying on GPU instance
+  # nvclip:
+  #   image: nvcr.io/nim/nvidia/nvclip:latest
+  #   container_name: nvclip
+  #   ports:
+  #     - "8001:8000"
+  #   environment:
+  #     - NGC_API_KEY=${NGC_API_KEY}
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   restart: unless-stopped
+
+volumes:
+  iris-data:
+    driver: local
+
+# =============================================================================
+# DEPLOYMENT NOTES
+# =============================================================================
+#
+# 1. IRIS ONLY (m5.xlarge or larger):
+#    docker-compose -f docker-compose.aws.yml up -d iris-fhir
+#
+# 2. IRIS + NIM (g5.xlarge with GPU):
+#    - Uncomment nim-embeddings and nvclip services
+#    - Set NGC_API_KEY in .env
+#    - docker-compose -f docker-compose.aws.yml up -d
+#
+# 3. DATA MIGRATION:
+#    Option A - Export/Import:
+#      # Local: Export
+#      docker exec iris-fhir iris export /tmp/iris-backup.gof DEMO
+#
+#      # Copy to EC2
+#      scp -i fhir-ai-key.pem /tmp/iris-backup.gof ubuntu@<EC2_IP>:/tmp/
+#
+#      # EC2: Import
+#      docker exec iris-fhir iris import /tmp/iris-backup.gof DEMO
+#
+#    Option B - Volume backup:
+#      # Local: Create tarball
+#      docker run --rm \
+#        -v fhir-server_iris-fhir-data:/data \
+#        -v $(pwd):/backup \
+#        alpine tar czf /backup/iris-data-backup.tar.gz /data
+#
+#      # Upload to S3
+#      aws s3 cp iris-data-backup.tar.gz s3://fhir-ai-backups/
+#
+#      # EC2: Download and restore
+#      aws s3 cp s3://fhir-ai-backups/iris-data-backup.tar.gz .
+#      docker run --rm \
+#        -v iris-data:/data \
+#        -v $(pwd):/backup \
+#        alpine tar xzf /backup/iris-data-backup.tar.gz -C /
+#
+#    Option C - Re-vectorize (most reliable):
+#      # Copy source data to EC2
+#      # Run vectorization scripts
+#      python3 ingest_mimic_cxr_reports.py 0
+#      python3 ingest_mimic_cxr_images.py 0
+#
+# 4. HEALTH CHECKS:
+#    - IRIS Portal: http://<EC2_IP>:52773/csp/sys/UtilHome.csp
+#    - Credentials: _SYSTEM / ISCDEMO
+#    - Namespace: DEMO
+#
+# 5. SECURITY:
+#    - Change ISC_DEFAULT_PASSWORD in production
+#    - Restrict port 52773 to your IP only
+#    - Use VPC security groups appropriately
+#
+# =============================================================================

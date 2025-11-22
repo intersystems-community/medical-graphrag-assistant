@@ -1,79 +1,244 @@
-# Using IRIS with Python for FHIR and AI applications
+# Medical GraphRAG Assistant
 
-This repository contains tutorials for how to use InterSystems IRIS with an external Python Application to combine FHIR data with generative AI methods. 
+A production-ready medical AI assistant platform built on Model Context Protocol (MCP), featuring GraphRAG multi-modal search, FHIR integration, and AWS Bedrock Claude Sonnet 4.5.
 
-## Contents 
+**Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
-This repo has 4 main sections: 
-- **Tutorial**: contains several markdown and ipython notebook files:
-    - How to set up a FHIR server with Docker
-    - How to create SQL tables from a FHIR Server with FHIR-SQL Builder
-    - Implementing a vector search
-    - Creating a chatbot
-- **Additional Demos** - Some additional tutorials with other ways to use the IRIS FHIR server with Python. This includes: 
-    - Accessing FHIR resources directly
-    - Adding data to the FHIR server
-    - Generating Synthetic data
-    - Links to a demo of Vibe-coding a UI for a FHIR server
-- **Resources** - Some brief introductions that may be useful to get started quickly. These include: 
-    - What is InterSystems IRIS
-    - What is Results augmented generation (RAG)
-    - What is FHIR
-- **Dockerfhir** - Files to create a local IRIS-health-community instance and FHIR server with Docker. The main tutorial covers how this should be used. 
+## What This Is
 
-## Requirements 
+This is an **agentic medical chat platform** that uses:
+- 🤖 **Model Context Protocol (MCP)** - Claude autonomously calls medical search tools
+- 🧠 **GraphRAG** - Knowledge graph-based retrieval with entity and relationship extraction
+- 🏥 **FHIR Integration** - Full-text search of clinical documents
+- ☁️ **AWS Bedrock** - Claude Sonnet 4.5 with multi-iteration tool use
+- 📊 **Interactive UI** - Streamlit interface with execution transparency
+- 🗄️ **InterSystems IRIS** - Vector database with GraphRAG tables
 
-- **DOCKER** - The IRIS-health instance and FHIR server in all examples are run in a docker container, for this you will need to install [Docker](https://www.docker.com/)
+## Quick Start
 
-- **Ollama** - The last step of the main tutorial is to query a local Large Language model, which I have done through Ollama. If you are interested in using a local chatbot, you're best to install Ollama which can be done from their [website](https://ollama.com/).
+### 1. Run the Streamlit Chat Interface
 
-- **IRIS-Python Driver** - You will also need the InterSystems python driver throughout, this can be installed with pip: `pip install intersystems-irispython`. 
- 
-- **Other Python Packages** - Various other python packages are used throughout, these are listed in the requirements.txt file and can be installed easily: `pip install -r requirements.txt`. I've stated whenever a new pacakage is used throughout the demos, so if you'd rather only install the packages you need you can skip this and install the remaining packages when you need them.
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
+# Set AWS credentials
+export AWS_PROFILE=your-profile
 
-# FHIR + AI Chatbot Demo
+# Run the chat app
+cd mcp-server
+streamlit run streamlit_app.py
+```
 
-## Introduction
+Visit http://localhost:8501 and start chatting!
 
-In this tutorial, I will go through how FHIR data can be combined with IRIS vector search capabilities to build a powerful tool for medical professionals wanting to quickly understand the medical history of a patient. 
+### 2. Use as MCP Server (Claude Desktop, etc.)
 
-We are going to take the data from 'DocumentReference' resources, these consist of clinical notes attached in plain text. This plain text is encoded within the resource and will need to be decoded.
+```bash
+# Configure MCP client to point to:
+python mcp-server/fhir_graphrag_mcp_server.py
+```
 
-This tutorial is based on a [demo created by Simon Sha](https://community.intersystems.com/post/demo-video-fhir-powered-ai-healthcare-assistant) for the 2025 InterSystems Demo Games. His demonstration is shown here: 
+## Architecture
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/P5JcdjLNvbc/0.jpg)](https://www.youtube.com/watch?v=P5JcdjLNvbc)
+```
+┌─────────────────────────────────────┐
+│  Streamlit Chat UI                  │
+│  - Conversation history             │
+│  - Chart visualization              │
+│  - Execution log display            │
+└──────────────┬──────────────────────┘
+               │ AWS Bedrock Converse API
+┌──────────────▼──────────────────────┐
+│  Claude Sonnet 4.5                  │
+│  - Agentic tool calling             │
+│  - Multi-iteration reasoning        │
+└──────────────┬──────────────────────┘
+               │ MCP Protocol (stdio)
+┌──────────────▼──────────────────────┐
+│  FHIR + GraphRAG MCP Server         │
+│  - 6 medical search tools           │
+│  - FHIR document search             │
+│  - GraphRAG entity/relationship     │
+│  - Hybrid search                    │
+└──────────────┬──────────────────────┘
+               │ IRIS Native API (TCP)
+┌──────────────▼──────────────────────┐
+│  AWS IRIS Database                  │
+│  - FHIR documents (migrated)        │
+│  - GraphRAG entities (83)           │
+│  - Relationships (540)              │
+└──────────────────────────────────────┘
+```
 
+## Features
 
-## Tutorial
+### MCP Tools (6 total)
 
-This is a start-to-finish tutorial which goes through:
+1. **search_fhir_documents** - Full-text search of clinical notes
+2. **get_entity** - Retrieve specific medical entities by ID
+3. **search_entities_by_type** - Find entities by type (Condition, Medication, etc.)
+4. **get_entity_relationships** - Get all relationships for an entity
+5. **search_relationships_by_type** - Find relationships by type (treats, causes, etc.)
+6. **hybrid_search** - Combined vector + graph search with relevance ranking
 
-#### [0 - FHIR server set-up](./Tutorial/0-FHIR-server-setup.md)
-1. Create instance of IRIS-health and FHIR server
-2. Load Data into FHIR Server
+### Chat Interface Features
 
-#### [1 - Create SQL projection](./Tutorial/1-Using-FHIR-SQL-Builder.ipynb)
-1. Use the IRIS FHIR-SQL builder to create a SQL table from the FHIR data
-2. Query this SQL table from Python
+- ✅ **Execution Transparency** - See which tools Claude calls and its reasoning
+- ✅ **Interactive Charts** - Generate visualizations from data
+- ✅ **Conversation History** - Multi-turn conversations with context
+- ✅ **Error Handling** - Graceful handling of API issues with detailed logs
+- ✅ **Max Iterations Control** - Prevents infinite loops (10 iteration limit)
+- ✅ **Type-Safe Content Processing** - Robust handling of mixed content formats
 
-#### [2 - Create Vector Database](./Tutorial/2-Creating-Vector-DB.ipynb)
-1. Fetch data using SQL queries.
-2. Decode Clinical Notes to plain text
-3. Use a text-embedding model to encode the Clinical Notes to Vectors
-4. Create a new table in IRIS with these Vectors
+### Current Version: v2.10.2
 
-#### [3 - Vector Search](/Tutorial/3-Vector-Search-LLM-Prompting.ipynb)
-1. Convert a user query into Vectors
-2. Perform a rapid Vector search to find related notes
+**Recent Improvements:**
+- Fixed "'str' object has no attribute 'get'" error with proper type checking
+- Increased max iterations from 5 → 10 for complex queries
+- Added execution details with expandable UI
+- Improved error messages with context
 
-#### [3 pt2 - Prompt LLM](/Tutorial/3-Vector-Search-LLM-Prompting.ipynb)
-1. Create a prompt that includes system instructions,  relevant notes, and a user query
-2. Pass prompt to a Large Language Model
-3. Return output to user
+## Configuration
 
-## Video Demo
+### Required Environment Variables
 
-https://github.com/user-attachments/assets/e6d24c52-a4f8-4d73-be62-fa39352515b8
+```bash
+# AWS Credentials
+export AWS_PROFILE=your-profile  # or set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 
+# IRIS Database (AWS)
+export IRIS_HOST=your-iris-host
+export IRIS_PORT=1972
+export IRIS_NAMESPACE=USER
+export IRIS_USERNAME=SQLAdmin
+export IRIS_PASSWORD=your-password
+```
 
+### Config Files
+
+- `config/fhir_graphrag_config.yaml` - Local development config
+- `config/fhir_graphrag_config.aws.yaml` - AWS deployment config
+- `config/aws-config.yaml` - AWS infrastructure settings
+
+## Project Structure
+
+```
+medical-graphrag-assistant/
+├── mcp-server/                      # MCP server and Streamlit app
+│   ├── fhir_graphrag_mcp_server.py  # MCP server implementation (45KB)
+│   ├── streamlit_app.py             # Chat UI (39KB)
+│   └── test_*.py                    # Integration tests
+├── src/
+│   ├── db/                          # IRIS database clients
+│   ├── embeddings/                  # NVIDIA NIM embedding integration
+│   ├── search/                      # Search implementations
+│   ├── vectorization/               # Document vectorization
+│   └── validation/                  # Data validation
+├── config/                          # Configuration files
+├── docs/                            # Documentation
+│   ├── architecture.md              # System architecture
+│   ├── deployment-guide.md          # AWS deployment
+│   └── development/                 # Development history
+├── scripts/                         # Deployment scripts
+└── tests/                           # Test suite
+```
+
+## Technology Stack
+
+**AI/ML:**
+- AWS Bedrock (Claude Sonnet 4.5)
+- NVIDIA NIM Embeddings (1024-dim vectors)
+- Model Context Protocol (MCP)
+
+**Database:**
+- InterSystems IRIS (Vector DB + GraphRAG tables)
+- Native VECTOR(DOUBLE, 1024) support
+- COSINE similarity search
+
+**Infrastructure:**
+- AWS EC2 (for IRIS database)
+- Python 3.10+
+- Streamlit for UI
+
+**Key Libraries:**
+- `intersystems-irispython` - IRIS native client
+- `boto3` - AWS SDK
+- `streamlit` - Chat UI
+- `mcp` - Model Context Protocol SDK
+
+## Example Queries
+
+Try these in the chat interface:
+
+**FHIR Search:**
+- "Find patients with chest pain"
+- "Search for diabetes cases"
+- "Show recent emergency visits"
+
+**GraphRAG:**
+- "What medications treat hypertension?"
+- "Show me the relationship between conditions and procedures"
+- "What are the side effects of metformin?"
+
+**Hybrid Search:**
+- "Find treatment options for chronic pain" (combines vector + graph search)
+
+**Visualization:**
+- "Show a chart of conditions by frequency"
+- "Graph the most common medications"
+
+## Development
+
+### Running Tests
+
+```bash
+# Unit tests
+pytest tests/unit/
+
+# Integration tests
+pytest tests/integration/
+
+# E2E tests
+pytest tests/e2e/
+```
+
+### Debug Mode
+
+Enable debug logging:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+## Troubleshooting
+
+See [docs/troubleshooting.md](docs/troubleshooting.md) for common issues.
+
+**Common Issues:**
+- AWS credentials not configured → Set AWS_PROFILE or AWS env vars
+- IRIS connection failed → Check IRIS_HOST and credentials
+- Max iterations reached → Query may be too complex, try simplifying
+
+## Documentation
+
+- [Architecture Overview](docs/architecture.md) - System design and data flow
+- [Deployment Guide](docs/deployment-guide.md) - AWS deployment instructions
+- [MCP Server Complete](docs/development/MCP_SERVER_COMPLETE.md) - MCP implementation details
+- [Development History](docs/development/) - Session notes and findings
+
+## Contributing
+
+This project is based on the FHIR-AI-Hackathon-Kit. The original tutorial content remains in the `tutorial/` directory.
+
+## License
+
+Inherits license from upstream FHIR-AI-Hackathon-Kit repository.
+
+## Acknowledgments
+
+- **Original Project**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit) by gabriel-ing
+- **InterSystems IRIS** for the vector database platform
+- **AWS Bedrock** for Claude Sonnet 4.5 access
+- **Model Context Protocol** by Anthropic

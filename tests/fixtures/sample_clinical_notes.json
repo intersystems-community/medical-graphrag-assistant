@@ -1,0 +1,702 @@
+[
+  {
+    "resource_id": "f1a10b20-dbaa-2a6b-d46f-11223d8ac3f0",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2000-06-21\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 18 year-old nonhispanic asian male.\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with only received primary school education (finding), full-time employment (finding), stress (finding). \n\n## Plan\n\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "4dd202bc-f6f2-0170-58e1-07891e0871a0",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2007-07-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 25 year-old nonhispanic asian male. Patient has a history of full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with essential hypertension (disorder), stress (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n- amlodipine 2.5 mg oral tablet\nThe patient was placed on a careplan:\n- lifestyle education regarding hypertension\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "2bf2cbe8-adce-5408-f18e-d7eb718f8711",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2008-07-09\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 26 year-old nonhispanic asian male. Patient has a history of full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding), social isolation (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "f8d8d934-a791-962c-07dd-a55bbe01c638",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2009-07-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 27 year-old nonhispanic asian male. Patient has a history of full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with limited social contact (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "ebab41dc-f501-fa24-f132-c443088d323c",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2010-07-21\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 28 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with stress (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "2d644af2-1611-f81b-ee24-772e29429474",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2011-07-27\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 29 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "34b735b4-2374-7e65-acdd-96ecd6f5febd",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2012-08-01\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 30 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with stress (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "3697ec09-b2ef-6c09-97d0-9f8b3347e42f",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2012-12-26\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 30 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "20f1c92d-fc8c-11b8-23b5-8a600651adc4",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2013-01-02\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 30 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "559e1f85-d6e2-9532-6bbc-291e250f7592",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2013-08-07\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 31 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "36c23f70-7de4-c559-97fa-f2f1fe3d3d7f",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2014-01-31\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 31 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\namlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with chronic pain (finding), chronic low back pain (finding), chronic neck pain (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "b3cf9311-c976-4640-e00b-a64265d00700",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2014-03-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 31 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- acetaminophen 300 mg / hydrocodone bitartrate 5 mg oral tablet\nThe patient was placed on a careplan:\n- therapy (regime/therapy)\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "491af50a-7594-e274-0cdc-28143b30ee77",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2014-08-13\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 32 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "43efc9e3-4773-552f-f771-4a3bbf99b667",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2015-08-19\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 33 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with stress (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "b67c0429-3239-9faf-77af-0deece45a273",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-08-24\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 34 year-old nonhispanic asian male. Patient has a history of limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "c2705c4d-e50f-2a68-ce73-200f1818f004",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-08-30\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 35 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "7933e046-0b3b-7986-fe16-ae4c0c9d5a1f",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-09-05\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 36 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with body mass index 30+ - obesity (finding), stress (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- depression screening using patient health questionnaire nine item score (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "49fb4927-71ef-2167-4ffc-ab080b740435",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2019-09-11\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 37 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "f947719b-e2ec-ef8c-030d-0da7e5b0b0bf",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-09-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 38 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "fa7b096f-252b-0561-7ce1-1cfa5d430ae9",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-01-27\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 38 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: sars-cov-2 (covid-19) vaccine, mrna, spike protein, lnp, preservative free, 30 mcg/0.3ml dose. \n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "44124de5-3264-a340-5742-ea3ef324cf7c",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-02-17\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 38 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: sars-cov-2 (covid-19) vaccine, mrna, spike protein, lnp, preservative free, 30 mcg/0.3ml dose. \n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "393fa4b3-673b-02d2-7157-aa3ae9a1165d",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-09-22\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 39 year-old nonhispanic asian male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with part-time employment (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "7916f50a-55a0-c270-3cd8-28141b3cce73",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-11-20\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 39 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), medication review due (situation), limited social contact (finding), full-time employment (finding), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with viral sinusitis (disorder). \n\n## Plan\n\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "730b82dc-9c28-7c6b-af1e-b378f5e93c97",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2022-09-28\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 40 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free, hep a, adult. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "aa209a7e-007d-02f4-1a50-a58d05492a0b",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2023-07-22\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 41 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with sprain (morphologic abnormality), sprain of ankle. \n\n## Plan\n\nThe patient was prescribed the following medications:\n- naproxen sodium 220 mg oral tablet\nThe patient was placed on a careplan:\n- physiotherapy care plan (record artifact)\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "83468b72-fda0-6b34-b3e2-e533bdcca747",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2023-10-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 41 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), sprain of ankle, stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet; naproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), full-time employment (finding), social isolation (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free, td (adult), 5 lf tetanus toxoid, preservative free, adsorbed, hep a, adult. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "b045eb14-c47b-5fb5-37c8-51284fb377bb",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2024-10-09\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 42 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), sprain of ankle, stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet; naproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), unemployed (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "f6cf82aa-f28c-be85-32e2-b3474c4d7eb2",
+    "patient_id": "f33313d5-1a98-77de-f0b3-5078cbd6c599",
+    "document_type": "History and physical note",
+    "text_content": "\n2025-10-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nErick204\n is a 43 year-old nonhispanic asian male. Patient has a history of part-time employment (finding), sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), unemployed (finding), viral sinusitis (disorder), sprain of ankle, stress (finding), social isolation (finding).\n\n# Social History\nPatient is single. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient did not finish high school.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 400 mg oral tablet [ibu]; amlodipine 2.5 mg oral tablet; naproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\nThe patient was prescribed the following medications:\n- ibuprofen 400 mg oral tablet [ibu]\n- amlodipine 2.5 mg oral tablet\n",
+    "source_bundle": "Erick204_Funk324_f33313d5-1a98-77de-f0b3-5078cbd6c599.json"
+  },
+  {
+    "resource_id": "22c2f17a-d438-2df8-97b5-d5003002aeb7",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2015-01-23\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 17 year-old hispanic white male.\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with risk activity involvement (finding). \n\n## Plan\n\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "75dd31f5-5395-6203-9208-10495990099a",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-01-29\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 18 year-old hispanic white male.\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), received higher education (finding), full-time employment (finding), limited social contact (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "05abcb93-bbe8-b900-5b68-739fb137e738",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-07-28\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 18 year-old hispanic white male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with viral sinusitis (disorder). \n\n## Plan\n\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "4fccf888-f420-3163-0761-fa079e05f86e",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-02-03\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 19 year-old hispanic white male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), stress (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "060f2dcc-0988-1cbf-c8bd-130c69329630",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-02-07\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 22 year-old hispanic white male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), stress (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with limited social contact (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free, td (adult), 5 lf tetanus toxoid, preservative free, adsorbed, hep b, adult, meningococcal mcv4p. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "52fb3d40-0c97-5c72-1d7b-fcb4ff7ae1ce",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-11-09\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 22 year-old hispanic white male. Patient has a history of medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), stress (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with sprain (morphologic abnormality), sprain of ankle. \n\n## Plan\n\nThe patient was prescribed the following medications:\n- naproxen sodium 220 mg oral tablet\nThe patient was placed on a careplan:\n- physiotherapy care plan (record artifact)\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "e1295e5a-00c1-065e-c280-50fa309e4317",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-08-20\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 23 year-old hispanic white male. Patient has a history of sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), sprain of ankle, stress (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nnaproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: sars-cov-2 (covid-19) vaccine, vector non-replicating, recombinant spike protein-ad26, preservative free, 0.5 ml. \n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "75870db1-a976-9534-e4b1-10af7d422349",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2023-02-10\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 25 year-old hispanic white male. Patient has a history of sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), sprain of ankle, stress (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nnaproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with part-time employment (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "3eecc431-b340-4652-c448-8eb272b53935",
+    "patient_id": "bfa59a47-1c5f-2453-6b1c-87d44f643384",
+    "document_type": "History and physical note",
+    "text_content": "\n2024-07-30\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nRaleigh478\n is a 26 year-old hispanic white male. Patient has a history of sprain (morphologic abnormality), medication review due (situation), limited social contact (finding), full-time employment (finding), viral sinusitis (disorder), sprain of ankle, stress (finding).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has UnitedHealthcare.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nnaproxen sodium 220 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with viral sinusitis (disorder). \n\n## Plan\n\n",
+    "source_bundle": "Raleigh478_Sipes176_bfa59a47-1c5f-2453-6b1c-87d44f643384.json"
+  },
+  {
+    "resource_id": "6dedfad4-26cb-5015-009a-dea657b59005",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2000-01-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 12 year-old hispanic black male.\n\n# Social History\n Patient quit smoking at age 17.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with risk activity involvement (finding). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "9eb6cbab-d1a9-4ce5-109f-e420f1a1163c",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2005-02-01\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 17 year-old hispanic black male. Patient has a history of risk activity involvement (finding).\n\n# Social History\n Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with risk activity involvement (finding). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "4832f501-dc1b-1192-f132-b34c8faa5a55",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2005-04-01\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 17 year-old hispanic black male. Patient has a history of risk activity involvement (finding).\n\n# Social History\n Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with chronic pain. \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "e42639fc-4a88-3c0e-3625-b691b1a6cd96",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2006-02-07\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 18 year-old hispanic black male. Patient has a history of risk activity involvement (finding).\n\n# Social History\n Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with received certificate of high school equivalency (finding), stress (finding). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "581907ab-e006-7a32-a017-7a017c80c04f",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2007-02-13\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 19 year-old hispanic black male. Patient has a history of risk activity involvement (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Anthem.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "11f4acf1-f544-f68e-5ab8-55f1b38faa1d",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2010-02-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 22 year-old hispanic black male. Patient has a history of risk activity involvement (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Aetna.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with social isolation (finding), stress (finding). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "c2fee549-412a-4986-db74-05410a80bb6f",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2013-02-19\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 25 year-old hispanic black male. Patient has a history of risk activity involvement (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with prediabetes, anemia (disorder), part-time employment (finding). \n\n## Plan\n\nThe patient was placed on a careplan:\n- diabetes self management plan\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "506901e5-f55c-a1a5-992c-aae5b3a75534",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2013-02-26\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 25 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- vitamin b12 5 mg/ml injectable solution\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "280c63d8-6c36-d9d7-cc0b-5d033a73fce5",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2013-09-24\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 25 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was placed on a careplan:\n- respiratory therapy\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "eea3d89c-1f9b-723e-13fd-a040816ff21e",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-02-23\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 28 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "7bcecd3c-b661-a5af-b8f1-dbe0b55ad07d",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2019-02-26\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 31 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), medication review due (situation), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with not in labor force (finding), limited social contact (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free, td (adult), 5 lf tetanus toxoid, preservative free, adsorbed. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "de27b9cb-b456-0788-c867-a95e6139d9b9",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-04-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 32 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), medication review due (situation), not in labor force (finding), limited social contact (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with concussion injury of brain (disorder), concussion with no loss of consciousness. \n\n## Plan\n\nThe patient was placed on a careplan:\n- head injury rehabilitation\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "6d61eb32-e4ac-bf41-a7f1-e7178fe5b3cd",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-05-29\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 32 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), medication review due (situation), concussion injury of brain (disorder), concussion with no loss of consciousness, not in labor force (finding), limited social contact (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "94d8b752-6965-04db-4868-00161264c326",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-08-21\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 32 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), medication review due (situation), concussion injury of brain (disorder), concussion with no loss of consciousness, not in labor force (finding), limited social contact (finding), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with acute viral pharyngitis (disorder), suspected covid-19. \n\n## Plan\n\nThe following procedures were conducted:\n- throat culture (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "c460ccfb-75db-21f4-9691-b73b656dced8",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2020-12-17\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 33 year-old hispanic black male. Patient has a history of part-time employment (finding), risk activity involvement (finding), medication review due (situation), concussion injury of brain (disorder), concussion with no loss of consciousness, not in labor force (finding), limited social contact (finding), full-time employment (finding), acute viral pharyngitis (disorder), suspected covid-19, stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with cough (finding), fever (finding), covid-19. \n\n## Plan\n\nThe following procedures were conducted:\n- face mask (physical object)\nThe patient was placed on a careplan:\n- infectious disease care plan (record artifact)\n- infectious disease care plan (record artifact)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "0e6b48b0-f318-a799-2cfc-d002f2953d00",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-02-12\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 33 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with sinusitis (disorder). \n\n## Plan\n\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "379deaab-6bc4-a314-05db-0dba0fc39c3f",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-04-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 33 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\n\nThe following procedures were conducted:\n- nasal sinus endoscopy (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "ae622b3c-9dd2-a662-ad5b-560adaf5b506",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-08-24\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 33 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: sars-cov-2 (covid-19) vaccine, mrna, spike protein, lnp, preservative free, 30 mcg/0.3ml dose. \n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "9deaaf37-e6a1-52ed-db0d-bddbe59a7dbb",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2021-09-14\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 33 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: sars-cov-2 (covid-19) vaccine, mrna, spike protein, lnp, preservative free, 30 mcg/0.3ml dose. \n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "8182e6e4-22c3-84bb-0dbd-76e0076ebdb0",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2022-03-01\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 34 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), full-time employment (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "b5db4a84-076e-0ef9-7984-4a4252219e42",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2024-05-23\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 36 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with laceration - injury (disorder), facial laceration. \n\n## Plan\n\nThe following procedures were conducted:\n- suture open wound\n- injection of tetanus antitoxin\nThe patient was prescribed the following medications:\n- ibuprofen 200 mg oral tablet\nThe patient was placed on a careplan:\n- wound care\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "eb5ff08f-7278-a57e-40fc-6ad58fc0a371",
+    "patient_id": "2a38188d-be4c-5805-7557-ffc3b74da39d",
+    "document_type": "History and physical note",
+    "text_content": "\n2025-03-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nJos\u00e9 Luis472\n is a 37 year-old hispanic black male. Patient has a history of medication review due (situation), concussion with no loss of consciousness, acute viral pharyngitis (disorder), suspected covid-19, facial laceration, covid-19, part-time employment (finding), risk activity involvement (finding), fever (finding), concussion injury of brain (disorder), not in labor force (finding), limited social contact (finding), sinusitis (disorder), full-time employment (finding), cough (finding), laceration - injury (disorder), stress (finding).\n\n# Social History\nPatient is single. Patient quit smoking at age 17.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has a high school education.\nPatient currently has Humana.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nibuprofen 200 mg oral tablet\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- screening for domestic abuse (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\n",
+    "source_bundle": "Jos\u00e9_Luis472_Rael318_2a38188d-be4c-5805-7557-ffc3b74da39d.json"
+  },
+  {
+    "resource_id": "7900c14b-aa24-9af7-9a49-db9f05db9259",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1985-02-06\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a newborn hispanic other female.\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "f4f39b0e-10ae-6a9f-c796-78c5cbbf74e8",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1985-03-13\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 1 month-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "34181254-4db1-cc19-d6f5-ca0f5ebc14eb",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1985-05-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 3 month-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "712e3fb3-40bf-5942-4ca9-f0c3e54c8370",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1985-07-17\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 5 month-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "9d7ec632-7478-5ae6-8c43-08c4a9211254",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1985-10-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 8 month-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "2efb827b-98ef-006a-019e-603354000ab3",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1986-04-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 1 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "4886b26c-d364-d5dd-f13e-205b97a76811",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1986-07-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 1 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "a66e3a29-0f48-e106-cf91-84b48627cd4a",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1987-01-14\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 1 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "d1d7f982-fa87-2655-ffb3-75340b2bb37f",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1987-07-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 2 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "7d717a73-4edf-bd3b-87ba-4d162c97784c",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1988-01-13\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 2 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "ca841419-abf5-aed2-733b-820870384107",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1988-07-13\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 3 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "993489c5-8573-6509-3dc1-b3f360ef161a",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1990-01-17\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 4 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "611d57e7-3e41-970a-8586-a5561a1f1f8f",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1992-01-29\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 6 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "040a5496-eab9-8598-4e95-cb75d6fdaebb",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1994-02-09\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 9 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "702ae002-55c8-2f0c-2b9a-56246a59d442",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1995-02-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 10 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "967bd11a-6680-7d02-ffc9-3ff644090226",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1996-02-21\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 11 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "cec50d79-940c-e160-44e7-220b39429cd0",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1998-03-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 13 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "b945d229-6b7a-3040-e269-1cb4e2591c84",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1999-01-06\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 13 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "4fd78267-0fa8-56d8-0745-712b523a8b81",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n1999-03-10\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 14 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "1e5c816f-d213-bbbc-d617-927a1ae65e99",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2000-03-15\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 15 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "67c9e9f5-f20b-1efc-2339-6018069cc432",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2001-03-21\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 16 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with risk activity involvement (finding). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "110a14c7-55bc-ac57-086c-36107010080e",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2003-04-02\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 18 year-old hispanic other female. Patient has a history of medication review due (situation).\n\n# Social History\n Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), housing unsatisfactory (finding), received higher education (finding), part-time employment (finding), transport problem (finding). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "32f38a79-ff1c-0d1a-0596-6831ba2d1763",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2004-04-07\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 19 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "4d7ae673-49b9-3fae-57c3-b9162770fabf",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2010-04-14\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 25 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with lack of access to transportation (finding). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "d1baced9-b00a-0620-bdfe-f7fcfa957cff",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2011-05-11\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 26 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), prediabetes, anemia (disorder). \n\n## Plan\n\nThe patient was placed on a careplan:\n- diabetes self management plan\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "8629d3b8-6bfc-55cc-cf44-271422f3b7ed",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2011-05-20\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 26 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\n\n\n## Plan\n\nThe patient was prescribed the following medications:\n- vitamin b12 5 mg/ml injectable solution\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "1fd34473-5c56-5a0d-2a1c-17163a0e151e",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2014-01-31\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 28 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has Medicaid.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nNo Active Medications.\n\n# Assessment and Plan\nPatient is presenting with chronic pain (finding), chronic low back pain (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "92a7f1e6-ea17-aeb7-0183-cf6f6f3c1805",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2014-04-23\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 29 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with part-time employment (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "102cc1e0-c4bd-2859-724e-0afb1818df50",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2015-04-29\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 30 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding), stress (finding). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "5559688d-b8d7-ea6d-c348-2cd04b0c9324",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-05-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 31 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free, td (adult), 5 lf tetanus toxoid, preservative free, adsorbed. \nThe following procedures were conducted:\n- medication reconciliation (procedure)\n- assessment of health and social care needs (procedure)\n- depression screening (procedure)\n- depression screening using patient health questionnaire two-item score (procedure)\n- assessment of substance use (procedure)\n- screening for drug abuse (procedure)\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "a4b00073-5510-224d-aef8-d31632c7dd5e",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2016-07-20\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 31 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), stress (finding).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with acute viral pharyngitis (disorder). \n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "c6c686bd-4de1-118a-0d5b-9dab0bb999dd",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-05-10\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 32 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), stress (finding).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with medication review due (situation), part-time employment (finding), social isolation (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\n- assessment of substance use (procedure)\n- assessment using alcohol use disorders identification test - consumption (procedure)\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "33bc025c-a52a-cf73-1173-bd6daf73a216",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-07-31\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 32 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), stress (finding), social isolation (finding).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with burn injury (morphologic abnormality), epidermal burn of skin (disorder). \n\n## Plan\n\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet\nThe patient was placed on a careplan:\n- burn care\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "e47bcc44-7617-d77b-4dc9-3b2053a05ca0",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-07-31\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 32 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), stress (finding), social isolation (finding).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with patient transfer to skilled nursing facility (procedure). \n\n## Plan\n\nThe following procedures were conducted:\n- history and physical examination (procedure)\n- initial patient assessment (procedure)\n- development of individualized plan of care (procedure)\n- nursing care/supplementary surveillance (regime/therapy)\n- professional / ancillary services care (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- professional / ancillary services care (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- speech and language therapy regime (regime/therapy)\n- professional / ancillary services care (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- professional / ancillary services care (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- occupational therapy (regime/therapy)\n- speech and language therapy regime (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- speech and language therapy regime (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- professional / ancillary services care (regime/therapy)\n- nursing care/supplementary surveillance (regime/therapy)\n- pre-discharge assessment (procedure)\n- discharge from skilled nursing facility (procedure)\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "e987c998-5290-720e-2c19-fe4109fe60d3",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2017-09-04\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 32 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\n\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "a2605a8e-3be3-f99a-b36a-a360dec1b155",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-05-16\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with full-time employment (finding), victim of intimate partner abuse (finding). \n\n## Plan\nPatient was given the following immunizations: influenza, seasonal, injectable, preservative free. \nThe following procedures were conducted:\n- assessment of health and social care needs (procedure)\n- assessment of anxiety (procedure)\nThe patient was prescribed the following medications:\n- acetaminophen 325 mg oral tablet [tylenol]\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "2c29dc8a-8992-50cd-b7a0-bb76cdbb7417",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-06-27\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), victim of intimate partner abuse (finding), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\nPatient is presenting with normal pregnancy. \n\n## Plan\n\nThe following procedures were conducted:\n- standard pregnancy test\n- ultrasound scan for fetal viability\n- evaluation of uterine fundal height\n- auscultation of the fetal heart\n- blood group typing (procedure)\n- hemogram, automated, with rbc, wbc, hgb, hct, indices, platelet count, and manual wbc differential\n- hepatitis b surface antigen measurement\n- human immunodeficiency virus antigen test\n- chlamydia antigen test\n- gonorrhea infection titer test (procedure)\n- syphilis infectious titer test (procedure)\n- urine culture\n- cytopathology procedure, preparation of smear, genital source\n- urine screening test for diabetes\n- hepatitis c antibody, confirmatory test\n- rubella screening\n- measurement of varicella-zoster virus antibody\n- skin test for tuberculosis, tine test (procedure)\n- urine protein test\n- physical examination procedure (procedure)\nThe patient was placed on a careplan:\n- routine antenatal care\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "1c0a239f-68b8-80d6-6695-9a7e54fca9f9",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-07-25\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), normal pregnancy, medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), victim of intimate partner abuse (finding), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\n\nThe following procedures were conducted:\n- evaluation of uterine fundal height\n- auscultation of the fetal heart\n- detection of chromosomal aneuploidy in prenatal amniotic fluid specimen using fluorescence in situ hybridization screening technique (procedure)\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "f42a79e6-8a89-9168-3eb5-f0c576cdba8c",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-08-22\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), normal pregnancy, medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), victim of intimate partner abuse (finding), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\n\nThe following procedures were conducted:\n- fetal anatomy study\n- afp test - antenatal\n- evaluation of uterine fundal height\n- auscultation of the fetal heart\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "fc0a125b-f1ed-c44e-4695-893ade31ed72",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-09-19\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), normal pregnancy, medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), victim of intimate partner abuse (finding), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\n\nThe following procedures were conducted:\n- evaluation of uterine fundal height\n- auscultation of the fetal heart\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  },
+  {
+    "resource_id": "15a3a19a-5240-c1a4-5835-d64309aeb068",
+    "patient_id": "75412b73-e14f-c862-5670-74eed8ff66d1",
+    "document_type": "History and physical note",
+    "text_content": "\n2018-10-17\n\n# Chief Complaint\nNo complaints.\n\n# History of Present Illness\nAnne636\n is a 33 year-old hispanic other female. Patient has a history of part-time employment (finding), normal pregnancy, medication review due (situation), full-time employment (finding), acute viral pharyngitis (disorder), epidermal burn of skin (disorder), victim of intimate partner abuse (finding), stress (finding), social isolation (finding), burn injury (morphologic abnormality), patient transfer to skilled nursing facility (procedure).\n\n# Social History\nPatient is married. Patient has never smoked.\n Patient identifies as heterosexual.\n\nPatient comes from a middle socioeconomic background.\n Patient has completed some college courses.\nPatient currently has NO INSURANCE.\n\n# Allergies\nNo Known Allergies.\n\n# Medications\nacetaminophen 325 mg oral tablet; acetaminophen 325 mg oral tablet [tylenol]\n\n# Assessment and Plan\n\n\n## Plan\n\nThe following procedures were conducted:\n- evaluation of uterine fundal height\n- auscultation of the fetal heart\n",
+    "source_bundle": "Anne636_Schuster709_75412b73-e14f-c862-5670-74eed8ff66d1.json"
+  }
+]

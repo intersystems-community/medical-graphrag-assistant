@@ -1,0 +1,220 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://fhir-ai-hackathon-kit/schemas/search-response.json",
+    "title": "Image Search Response",
+    "description": "MCP tool output schema for search_medical_images with similarity scoring",
+    "type": "object",
+    "properties": {
+        "query": {
+            "type": "string",
+            "description": "Original search query"
+        },
+        "results_count": {
+            "type": "integer",
+            "description": "Number of results returned (may be less than total_results due to pagination)"
+        },
+        "total_results": {
+            "type": "integer",
+            "description": "Total number of matching results (before pagination)"
+        },
+        "search_mode": {
+            "type": "string",
+            "enum": [
+                "semantic",
+                "keyword",
+                "hybrid"
+            ],
+            "description": "Search mode used: semantic (NV-CLIP), keyword (fallback), or hybrid"
+        },
+        "execution_time_ms": {
+            "type": "integer",
+            "description": "Query execution time in milliseconds"
+        },
+        "cache_hit": {
+            "type": "boolean",
+            "description": "Whether the text embedding was retrieved from cache"
+        },
+        "fallback_reason": {
+            "type": "string",
+            "description": "Reason for fallback to keyword search (if search_mode='keyword')",
+            "examples": [
+                "NV-CLIP service unavailable",
+                "NVIDIA_API_KEY not set",
+                "Embedding generation failed"
+            ]
+        },
+        "avg_score": {
+            "type": "number",
+            "description": "Average similarity score across all results (null for keyword search)",
+            "minimum": 0.0,
+            "maximum": 1.0
+        },
+        "max_score": {
+            "type": "number",
+            "description": "Highest similarity score (null for keyword search)",
+            "minimum": 0.0,
+            "maximum": 1.0
+        },
+        "min_score": {
+            "type": "number",
+            "description": "Lowest similarity score (null for keyword search)",
+            "minimum": 0.0,
+            "maximum": 1.0
+        },
+        "images": {
+            "type": "array",
+            "description": "Array of image search results",
+            "items": {
+                "$ref": "#/definitions/ImageResult"
+            }
+        }
+    },
+    "required": [
+        "query",
+        "results_count",
+        "search_mode",
+        "images"
+    ],
+    "definitions": {
+        "ImageResult": {
+            "type": "object",
+            "description": "Individual image search result with metadata and scoring",
+            "properties": {
+                "image_id": {
+                    "type": "string",
+                    "description": "Unique image identifier (DICOM filename without extension)"
+                },
+                "study_id": {
+                    "type": "string",
+                    "description": "Study identifier"
+                },
+                "subject_id": {
+                    "type": "string",
+                    "description": "Patient identifier (anonymized)"
+                },
+                "view_position": {
+                    "type": "string",
+                    "description": "Radiographic view position",
+                    "enum": [
+                        "PA",
+                        "AP",
+                        "LATERAL",
+                        "LL",
+                        "SWIMMERS",
+                        null
+                    ]
+                },
+                "image_path": {
+                    "type": "string",
+                    "description": "Relative file system path to DICOM image"
+                },
+                "similarity_score": {
+                    "type": "number",
+                    "description": "Cosine similarity score between query and image (0.0-1.0). Null for keyword search.",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                },
+                "score_color": {
+                    "type": "string",
+                    "enum": [
+                        "green",
+                        "yellow",
+                        "gray"
+                    ],
+                    "description": "Color code for UI rendering: green (≥0.7), yellow (0.5-0.7), gray (<0.5)"
+                },
+                "confidence_level": {
+                    "type": "string",
+                    "enum": [
+                        "strong",
+                        "moderate",
+                        "weak"
+                    ],
+                    "description": "Human-readable confidence label: strong (≥0.7), moderate (0.5-0.7), weak (<0.5)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the image"
+                },
+                "embedding_model": {
+                    "type": "string",
+                    "description": "Model used for embedding generation",
+                    "default": "nvidia/nvclip"
+                },
+                "clinical_note": {
+                    "type": "string",
+                    "description": "Associated clinical note/radiology report (P2 feature, optional)"
+                },
+                "clinical_note_preview": {
+                    "type": "string",
+                    "description": "Truncated preview of clinical note (first 300 characters)"
+                }
+            },
+            "required": [
+                "image_id",
+                "study_id",
+                "subject_id",
+                "image_path",
+                "description"
+            ]
+        }
+    },
+    "examples": [
+        {
+            "query": "chest X-ray showing pneumonia",
+            "results_count": 3,
+            "total_results": 127,
+            "search_mode": "semantic",
+            "execution_time_ms": 1247,
+            "cache_hit": true,
+            "avg_score": 0.74,
+            "max_score": 0.89,
+            "min_score": 0.61,
+            "images": [
+                {
+                    "image_id": "4b369dbe-417168fa-7e2b5f04-00582488-c50504e7",
+                    "study_id": "53819164",
+                    "subject_id": "10045779",
+                    "view_position": "PA",
+                    "image_path": "../mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/p10/p10045779/s53819164/4b369dbe.dcm",
+                    "similarity_score": 0.89,
+                    "score_color": "green",
+                    "confidence_level": "strong",
+                    "description": "Chest X-ray (PA) for patient 10045779",
+                    "embedding_model": "nvidia/nvclip"
+                },
+                {
+                    "image_id": "257cc0ad-2c02d807-720a3765-0f647de2-e356eb25",
+                    "study_id": "53819164",
+                    "subject_id": "10045779",
+                    "view_position": "LATERAL",
+                    "image_path": "../mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/p10/p10045779/s53819164/257cc0ad.dcm",
+                    "similarity_score": 0.72,
+                    "score_color": "green",
+                    "confidence_level": "strong",
+                    "description": "Chest X-ray (LATERAL) for patient 10045779",
+                    "embedding_model": "nvidia/nvclip"
+                }
+            ]
+        },
+        {
+            "query": "chest X-ray",
+            "results_count": 5,
+            "total_results": 5,
+            "search_mode": "keyword",
+            "execution_time_ms": 87,
+            "cache_hit": false,
+            "fallback_reason": "NVIDIA_API_KEY not set",
+            "images": [
+                {
+                    "image_id": "4b369dbe-417168fa-7e2b5f04-00582488-c50504e7",
+                    "study_id": "53819164",
+                    "subject_id": "10045779",
+                    "view_position": "PA",
+                    "image_path": "../mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/p10/p10045779/s53819164/4b369dbe.dcm",
+                    "description": "Chest X-ray (PA) for patient 10045779"
+                }
+            ]
+        }
+    ]
+}
