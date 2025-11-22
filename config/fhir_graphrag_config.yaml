@@ -39,18 +39,24 @@ storage:
     allowed_schemas:                # Whitelist of allowed schema names
       - "HSFHIR_X0001_R"
 
+  # ✅ CloudConfiguration API vector settings (iris-vector-rag v0.5.4+)
+  # These settings are read by SchemaManager via CloudConfiguration
+  vector_dimension: 384             # Vector dimensionality for embeddings
+  distance_metric: "COSINE"         # Distance metric for similarity search
+  index_type: "HNSW"                # Vector index type
+
 # Vector Storage Configuration (existing vectors)
 vector_storage:
   table_name: "VectorSearch.FHIRResourceVectors"
   reference_column: "ResourceID"   # FK to FHIR native table
   vector_column: "Vector"          # 384-dimensional vector column
   model_column: "VectorModel"      # Embedding model name
-  dimension: 384                   # Vector dimensionality
+  dimension: 384                   # Vector dimensionality (legacy, kept for compatibility)
 
 # Embedding Configuration
 embeddings:
   model: "sentence-transformers/all-MiniLM-L6-v2"
-  dimension: 384
+  dimension: 384                   # Legacy setting (CloudConfiguration uses storage.vector_dimension)
   batch_size: 32                   # Batch size for embedding generation
   normalize: true                  # Normalize embeddings to unit length
   device: "cpu"                    # Device for embedding generation (cpu/cuda)

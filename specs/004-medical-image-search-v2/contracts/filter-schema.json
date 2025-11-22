@@ -1,0 +1,234 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://fhir-ai-hackathon-kit/schemas/filter-schema.json",
+    "title": "Search Filters",
+    "description": "Filter parameters for medical image search (P2 feature)",
+    "type": "object",
+    "properties": {
+        "view_positions": {
+            "$ref": "#/definitions/ViewPositionFilter"
+        },
+        "date_range": {
+            "$ref": "#/definitions/DateRangeFilter"
+        },
+        "score_threshold": {
+            "$ref": "#/definitions/ScoreThresholdFilter"
+        },
+        "patient_id": {
+            "$ref": "#/definitions/PatientIdFilter"
+        }
+    },
+    "definitions": {
+        "ViewPositionFilter": {
+            "type": "object",
+            "description": "Filter by radiographic view position",
+            "properties": {
+                "include": {
+                    "type": "array",
+                    "description": "Include only these view positions",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "PA",
+                            "AP",
+                            "LATERAL",
+                            "LL",
+                            "SWIMMERS"
+                        ]
+                    },
+                    "uniqueItems": true
+                },
+                "exclude": {
+                    "type": "array",
+                    "description": "Exclude these view positions",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "PA",
+                            "AP",
+                            "LATERAL",
+                            "LL",
+                            "SWIMMERS"
+                        ]
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "not": {
+                "required": [
+                    "include",
+                    "exclude"
+                ]
+            },
+            "examples": [
+                {
+                    "include": [
+                        "PA",
+                        "AP"
+                    ]
+                },
+                {
+                    "exclude": [
+                        "LATERAL"
+                    ]
+                }
+            ]
+        },
+        "DateRangeFilter": {
+            "type": "object",
+            "description": "Filter by study date range",
+            "properties": {
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Start date (inclusive) in YYYY-MM-DD format"
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "End date (inclusive) in YYYY-MM-DD format"
+                }
+            },
+            "required": [
+                "start_date",
+                "end_date"
+            ],
+            "examples": [
+                {
+                    "start_date": "2024-01-01",
+                    "end_date": "2024-03-31"
+                }
+            ]
+        },
+        "ScoreThresholdFilter": {
+            "type": "object",
+            "description": "Filter by similarity score",
+            "properties": {
+                "min_score": {
+                    "type": "number",
+                    "description": "Minimum similarity score (inclusive)",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                },
+                "max_score": {
+                    "type": "number",
+                    "description": "Maximum similarity score (inclusive)",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                },
+                "confidence_levels": {
+                    "type": "array",
+                    "description": "Filter by confidence level labels",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "strong",
+                            "moderate",
+                            "weak"
+                        ]
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "examples": [
+                {
+                    "min_score": 0.7
+                },
+                {
+                    "confidence_levels": [
+                        "strong",
+                        "moderate"
+                    ]
+                },
+                {
+                    "min_score": 0.5,
+                    "max_score": 0.9
+                }
+            ]
+        },
+        "PatientIdFilter": {
+            "type": "object",
+            "description": "Filter by patient/subject ID",
+            "properties": {
+                "exact_match": {
+                    "type": "string",
+                    "description": "Exact SubjectID match"
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "SQL LIKE pattern (use % as wildcard)",
+                    "examples": [
+                        "10%",
+                        "%779",
+                        "100_5%"
+                    ]
+                },
+                "in_list": {
+                    "type": "array",
+                    "description": "Match any of these SubjectIDs",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "exact_match"
+                    ]
+                },
+                {
+                    "required": [
+                        "pattern"
+                    ]
+                },
+                {
+                    "required": [
+                        "in_list"
+                    ]
+                }
+            ],
+            "examples": [
+                {
+                    "exact_match": "10045779"
+                },
+                {
+                    "pattern": "10%"
+                },
+                {
+                    "in_list": [
+                        "10045779",
+                        "10046823"
+                    ]
+                }
+            ]
+        }
+    },
+    "examples": [
+        {
+            "view_positions": {
+                "include": [
+                    "PA"
+                ]
+            },
+            "score_threshold": {
+                "min_score": 0.7
+            }
+        },
+        {
+            "date_range": {
+                "start_date": "2024-01-01",
+                "end_date": "2024-12-31"
+            },
+            "view_positions": {
+                "exclude": [
+                    "LATERAL"
+                ]
+            },
+            "patient_id": {
+                "pattern": "10%"
+            }
+        }
+    ]
+}

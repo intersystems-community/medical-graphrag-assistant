@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+echo "Checking Docker..."
+sudo systemctl status docker --no-pager || sudo systemctl start docker
+echo "Stopping existing NIM container..."
+sudo docker stop nim-embedding 2>/dev/null || true
+sudo docker rm nim-embedding 2>/dev/null || true
+echo "Starting NVIDIA NIM Embedding Service..."
+sudo docker run -d --name nim-embedding --gpus all --restart unless-stopped -p 8080:8000 nvcr.io/nim/nvidia/nv-embedqa-e5-v5:latest || sudo docker run -d --name nim-embedding --restart unless-stopped -p 8080:8000 -e MODEL=nvidia/nv-embedqa-e5-v5 nvcr.io/nvidia/nv-ingest:latest
+sleep 15
+echo "Checking service..."
+sudo docker logs nim-embedding --tail 30
+curl -s http://localhost:8080/v1/models || echo "Starting up..."
+echo "NIM Embedding Service deployed on port 8080"

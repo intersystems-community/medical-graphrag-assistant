@@ -1,0 +1,51 @@
+# NVIDIA NIM Service Configuration
+
+# NIM LLM Configuration
+nim_llm:
+  model: meta/llama-3.1-8b-instruct
+  container_registry: nvcr.io/nim/meta/llama-3.1-8b-instruct
+  tag: latest
+  port: 8001  # External port (maps to container port 8000)
+  gpu_allocation: all
+  shared_memory: 16g
+  environment:
+    NIM_MODEL_PROFILE: auto
+  health_check:
+    endpoint: /v1/models
+    timeout: 300  # seconds
+    interval: 10  # seconds
+
+# NIM Embeddings Configuration (Cloud API)
+nim_embeddings:
+  model: nvidia/nv-embedqa-e5-v5
+  api_endpoint: https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/
+  embedding_dimension: 1024
+  batch_size: 50
+  rate_limit:
+    requests_per_minute: 60
+    retry_attempts: 3
+    retry_backoff: exponential  # exponential or linear
+
+# NIM Vision Configuration
+nim_vision:
+  model: nvidia/nv-clip-vit
+  container_registry: nvcr.io/nim/nvidia/nv-clip-vit
+  tag: latest
+  port: 8002  # External port (maps to container port 8000)
+  gpu_allocation: all
+  shared_memory: 8g
+  environment:
+    NIM_MODEL_PROFILE: auto
+  health_check:
+    endpoint: /health
+    timeout: 180  # seconds
+    interval: 10  # seconds
+
+# Common Docker Settings
+docker:
+  restart_policy: unless-stopped
+  network_mode: bridge
+  log_driver: json-file
+  log_options:
+    max-size: 100m
+    max-file: "3"

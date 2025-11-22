@@ -1,0 +1,145 @@
+# AWS EC2 Configuration for FHIR GraphRAG
+# This configuration connects to IRIS running on AWS EC2 g5.xlarge
+
+# Database Connection Settings (AWS EC2)
+database:
+  iris:
+    host: "3.84.250.46"            # AWS EC2 public IP
+    port: 1972                     # IRIS SQL port
+    namespace: "%SYS"              # Use %SYS namespace (DEMO has access restrictions on AWS)
+    username: "_SYSTEM"            # Database username
+    password: "SYS"                # SuperUser password
+    connection_timeout: 30
+    pool_size: 5
+    max_overflow: 10
+
+# BYOT Storage Configuration (use existing vector table on AWS)
+# Note: Using SQLUser.ClinicalNoteVectors which already has vectorized data
+storage:
+  iris:
+    table_name: "SQLUser.ClinicalNoteVectors"
+    column_mapping:
+      id_column: "ID"
+      text_column: "TextContent"
+      metadata_columns:
+        - "ResourceID"
+        - "PatientID"
+        - "DocumentType"
+    zero_copy: true
+    preserve_schema: true
+    validate_table_name: false  # Disable validation since this is a custom table
+
+  # ✅ CloudConfiguration API vector settings (iris-vector-rag v0.5.4+)
+  # These settings are read by SchemaManager via CloudConfiguration
+  # Using 1024-dim for NVIDIA NIM embeddings (NV-EmbedQA-E5-v5)
+  vector_dimension: 1024            # Vector dimensionality for NVIDIA NIM embeddings
+  distance_metric: "COSINE"         # Distance metric for similarity search
+  index_type: "HNSW"                # Vector index type
+
+# Vector Storage Configuration (AWS tables)
+vector_storage:
+  table_name: "SQLUser.ClinicalNoteVectors"
+  reference_column: "ResourceID"
+  vector_column: "Embedding"       # VECTOR(DOUBLE, 1024)
+  model_column: "EmbeddingModel"
+  dimension: 1024                  # Legacy setting (CloudConfiguration uses storage.vector_dimension)
+
+# Knowledge Graph Storage (AWS tables)
+# Note: Using SQLUser schema with fully qualified names for AWS IRIS
+knowledge_graph:
+  entities_table: "SQLUser.Entities"
+  relationships_table: "SQLUser.EntityRelationships"
+
+# Embedding Configuration (NVIDIA NIM)
+embeddings:
+  model: "nvidia/nv-embedqa-e5-v5"  # NVIDIA NIM embedding model
+  dimension: 1024                   # Legacy setting (CloudConfiguration uses storage.vector_dimension)
+  batch_size: 32
+  normalize: true
+  device: "cuda"                    # Use GPU on EC2 g5.xlarge
+
+# GraphRAG Pipeline Configuration
+pipelines:
+  graphrag:
+    entity_extraction_enabled: true
+    entity_types:
+      - "SYMPTOM"
+      - "CONDITION"
+      - "MEDICATION"
+      - "PROCEDURE"
+      - "BODY_PART"
+      - "TEMPORAL"
+
+    relationship_types:
+      - "TREATS"
+      - "CAUSES"
+      - "LOCATED_IN"
+      - "CO_OCCURS_WITH"
+      - "PRECEDES"
+
+    min_entity_confidence: 0.7
+    min_relationship_confidence: 0.6
+
+    # Multi-modal search settings
+    vector_k: 30
+    text_k: 30
+    graph_k: 10
+    rrf_k: 60
+    fusion_method: "rrf"
+
+    # Performance settings
+    batch_size: 10
+    parallel_extraction: true
+    max_workers: 4
+
+# LLM Configuration (NVIDIA NIM LLM)
+llm:
+  provider: "nvidia_nim"
+  model: "nvidia/llama-3.1-nemotron-70b-instruct"
+  base_url: "http://3.84.250.46:8000"  # NIM LLM service on AWS
+  temperature: 0.0
+  max_tokens: 500
+  timeout: 30
+  fallback_to_regex: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/fhir_graphrag_aws.log"
+  rotation: "daily"
+  max_bytes: 10485760
+  backup_count: 7
+
+# Monitoring
+monitoring:
+  enabled: true
+  metrics:
+    - "entity_extraction_time"
+    - "entity_extraction_count"
+    - "relationship_extraction_count"
+    - "query_latency"
+    - "graph_traversal_depth"
+    - "gpu_utilization"           # AWS-specific: monitor GPU usage
+    - "network_latency"           # AWS-specific: monitor network latency
+
+  performance_targets:
+    entity_extraction_time_ms: 1000  # Faster with GPU
+    query_latency_ms: 500            # Target sub-second queries
+    knowledge_graph_build_time_ms: 60000  # < 1 minute for 51 documents
+
+# Feature Flags
+features:
+  entity_normalization: false
+  temporal_analysis: false
+  entity_feedback: false
+  query_history: true              # Enable for production monitoring
+  gpu_acceleration: true           # AWS-specific: use GPU for embeddings
+
+# AWS-Specific Settings
+aws:
+  region: "us-east-1"
+  instance_id: "i-0432eba10b98c4949"
+  instance_type: "g5.xlarge"
+  gpu_type: "NVIDIA A10G"
+  enable_cloudwatch: false         # CloudWatch metrics integration (future)

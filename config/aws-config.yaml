@@ -1,0 +1,51 @@
+# AWS EC2 Instance Configuration
+instance:
+  type: g5.xlarge  # NVIDIA A10G GPU, 4 vCPUs, 16GB RAM
+  ami: ami-0e86e20dae9224db8  # Ubuntu 24.04 LTS (us-east-1)
+  region: us-east-1
+  availability_zone: us-east-1a
+
+# Security Group Configuration
+security_group:
+  name: fhir-rag-security-group
+  description: Security group for FHIR RAG GPU instance
+  ingress_rules:
+    - port: 22
+      protocol: tcp
+      cidr: 0.0.0.0/0  # SSH access (restrict to your IP in production)
+      description: SSH access
+    - port: 1972
+      protocol: tcp
+      cidr: 0.0.0.0/0  # IRIS SQL port
+      description: IRIS database SQL
+    - port: 52773
+      protocol: tcp
+      cidr: 0.0.0.0/0  # IRIS management portal
+      description: IRIS management portal
+    - port: 8000
+      protocol: tcp
+      cidr: 0.0.0.0/0  # NIM embeddings service
+      description: NIM embeddings API
+    - port: 8001
+      protocol: tcp
+      cidr: 0.0.0.0/0  # NIM LLM service
+      description: NIM LLM API
+    - port: 8002
+      protocol: tcp
+      cidr: 0.0.0.0/0  # NIM Vision service
+      description: NIM Vision API
+
+# EBS Volume Configuration
+ebs_volume:
+  type: gp3  # General Purpose SSD
+  size: 500  # GB
+  iops: 3000
+  throughput: 125  # MB/s
+  delete_on_termination: false  # Preserve data on instance termination
+
+# Tags for Resource Tracking
+tags:
+  Project: FHIR-AI-Hackathon
+  Environment: Development
+  ManagedBy: deployment-automation
+  CostCenter: ML-Infrastructure

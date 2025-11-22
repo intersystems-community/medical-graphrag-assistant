@@ -34,3 +34,14 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Deployment-specific (AWS NIM RAG project)
+*.pem
+*.key
+vectorization_state.db
+*.db
+iris-data/
+iris-config/
+.terraform/
+*.tfstate*
+*.tfvars

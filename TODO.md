@@ -61,6 +61,55 @@
 
 ## In Progress 🚧
 
+### NVIDIA NIM Multimodal Integration (Priority P0) - PLANNING COMPLETE ✅
+
+**Phase 1: Large-Scale Test Dataset**
+- [ ] Install Synthea or download pre-generated 1M patient dataset
+- [ ] Generate/subset 10,000 synthetic patients in FHIR R4 format
+- [ ] Access MIMIC-CXR dataset (PhysioNet credentialed access)
+- [ ] Download 500-2,000 chest X-ray DICOM files + radiology reports
+- [ ] Create ImagingStudy FHIR resources linking images to synthetic patients
+- [ ] Load dataset into IRIS FHIR repository
+- [ ] Verify: 10K patients, 500+ ImagingStudy, 20K+ total resources
+
+**Phase 2: Multimodal Architecture**
+- [ ] Create VectorSearch.FHIRTextVectors table (1024-dim for NIM text embeddings)
+- [ ] Create VectorSearch.FHIRImageVectors table (TBD-dim for NIM vision embeddings)
+- [ ] Implement FHIRModalityDetector class (text vs. image detection)
+- [ ] Design cross-modal RRF fusion algorithm (text + image + graph)
+- [ ] Update integration tests for multimodal support
+
+**Phase 3: NIM Text Embeddings**
+- [ ] Get NVIDIA API key from build.nvidia.com
+- [ ] Install langchain-nvidia-ai-endpoints
+- [ ] Implement NIMTextEmbeddings class (NV-EmbedQA-E5-v5)
+- [ ] Create nim_text_vectorize.py script
+- [ ] Re-vectorize existing 51 DocumentReferences with NIM embeddings
+- [ ] Test query performance vs. SentenceTransformer baseline
+- [ ] Update fhir_graphrag_query.py to use NIM embeddings
+
+**Phase 4: NIM Vision Embeddings**
+- [ ] Research NIM vision API documentation (Nemotron Nano VL)
+- [ ] Install pydicom for DICOM processing
+- [ ] Implement DICOMExtractor class
+- [ ] Implement NIMVisionEmbeddings class
+- [ ] Create nim_image_vectorize.py script
+- [ ] Vectorize all ImagingStudy images with NIM vision embeddings
+- [ ] Test image search functionality
+
+**Phase 5: Cross-Modal Query**
+- [ ] Implement FHIRMultimodalQuery class
+- [ ] Add text_search() method (NIM text embeddings)
+- [ ] Add image_search() method (NIM vision embeddings)
+- [ ] Add rrf_fusion() method (text + image + graph)
+- [ ] Create multimodal query CLI interface
+- [ ] Performance benchmarking with 10K+ dataset
+- [ ] Integration tests for multimodal search (target: 20/20 passing)
+
+**Documentation Created**:
+- ✅ STATUS.md updated with NVIDIA NIM research findings
+- ✅ NVIDIA_NIM_MULTIMODAL_PLAN.md (comprehensive implementation plan)
+
 ### Optional Enhancements (Not Started)
 
 **Phase 5: Performance Optimization (Priority P3)** - Optional
