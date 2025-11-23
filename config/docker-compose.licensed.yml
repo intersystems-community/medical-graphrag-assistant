@@ -1,0 +1,104 @@
+# Docker Compose for Licensed IRIS with ACORN=1 HNSW Optimization
+# FHIR AI Hackathon Kit - Enterprise Edition
+# Provides 10-50x faster vector search performance for multimodal medical data
+#
+# IRIS Enterprise Features:
+# - ACORN=1 HNSW optimization for vector search
+# - Enhanced ML capabilities
+# - Production-ready performance
+#
+# Adapted from rag-templates for FHIR-specific configuration
+
+services:
+  iris-fhir-licensed:
+    image: docker.iscinternal.com/intersystems/iris:2025.3.0EHAT.127.0-linux-arm64v8
+    container_name: iris-fhir-licensed
+    ports:
+      - "32782:1972"   # IRIS SuperServer port (same as current iris-fhir)
+      - "32783:52773"  # IRIS Management Portal (same as current iris-fhir)
+    environment:
+      - IRISNAMESPACE=DEMO         # FHIR data namespace
+      - ISC_DEFAULT_PASSWORD=ISCDEMO  # Match current FHIR setup
+    volumes:
+      - iris-fhir-licensed-data:/usr/irissys/mgr  # Named volume for persistence
+      - .:/home/irisowner/dev  # Mount project directory
+      - ./iris.key:/usr/irissys/mgr/iris.key  # Enterprise license key
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "/usr/irissys/bin/iris", "session", "iris", "-U%SYS", "##class(%SYSTEM.Process).CurrentDirectory()"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    command: --check-caps false
+
+volumes:
+  iris-fhir-licensed-data: {}
+
+# =============================================================================
+# USAGE INSTRUCTIONS - FHIR AI Hackathon Kit (Licensed IRIS)
+# =============================================================================
+#
+# 1. MIGRATION FROM COMMUNITY IRIS:
+#
+#    a. Stop current iris-fhir container:
+#       docker stop iris-fhir
+#
+#    b. Export/backup current data (optional but recommended):
+#       docker exec iris-fhir iris export /tmp/backup.gof DEMO
+#
+#    c. Start licensed IRIS:
+#       docker-compose -f docker-compose.licensed.yml up -d
+#
+#    d. Wait for container to be healthy:
+#       docker-compose -f docker-compose.licensed.yml ps
+#
+#    e. Import data if backed up:
+#       docker exec iris-fhir-licensed iris import /tmp/backup.gof DEMO
+#
+# 2. IRIS ACCESS:
+#    - SuperServer: localhost:32782 (for Python apps)
+#    - Management Portal: http://localhost:32783/csp/sys/UtilHome.csp
+#    - Credentials: _SYSTEM / ISCDEMO
+#    - Namespace: DEMO (FHIR data)
+#
+# 3. VERIFY ACORN=1 HNSW OPTIMIZATION:
+#    - Access Management Portal: http://localhost:32783/csp/sys/UtilHome.csp
+#    - Navigate to: System Administration > Configuration > Memory and Startup
+#    - Check for ACORN=1 or iris_graph_core settings
+#    - Run benchmark: python test_vector_search_performance.py
+#
+# 4. EXPECTED PERFORMANCE IMPROVEMENTS:
+#    - Text vector search (3072-dim, 200K docs): <50ms (vs ~1-2s)
+#    - Image vector search (1024-dim, 944 images): <10ms (vs ~100ms)
+#    - Cross-modal search: <100ms (vs ~500ms)
+#    - Multi-modal fusion: <200ms (vs ~1s)
+#    - Throughput: 1000+ queries/sec (vs ~100 queries/sec)
+#
+# 5. DATA ALREADY IN IRIS (will be accessible after migration):
+#    - VectorSearch.FHIRTextVectors: 199,969 radiology reports (OpenAI 3072-dim)
+#    - VectorSearch.MIMICCXRImages: 944 chest X-rays (NV-CLIP 1024-dim)
+#    - VectorSearch.FHIRResourceVectors: 51 clinical notes (384-dim)
+#    - RAG.Entities: 171 medical entities
+#    - RAG.EntityRelationships: 10 entity relationships
+#
+# 6. ROLLBACK TO COMMUNITY IRIS (if needed):
+#    docker-compose -f docker-compose.licensed.yml down
+#    docker start iris-fhir
+#
+# 7. MANAGING BOTH CONTAINERS:
+#    - Licensed IRIS uses volume: iris-fhir-licensed-data
+#    - Community IRIS uses volume: fhir-server_iris-fhir-data (or similar)
+#    - Both can coexist but only one should run at a time (same ports)
+#
+# PORT MAPPING:
+# - Container port 1972 (SuperServer) → Host port 32782
+# - Container port 52773 (Management Portal) → Host port 32783
+# - Matches current iris-fhir setup for seamless migration
+#
+# ARCHITECTURE:
+# - Licensed IRIS 2025.3.0EHAT.127.0 (Enhanced Analytics Technology)
+# - ACORN=1 HNSW optimization for vector search
+# - Native VECTOR(DOUBLE, N) type support
+# - Production-ready for clinical decision support

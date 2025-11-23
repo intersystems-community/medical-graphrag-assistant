@@ -20,32 +20,44 @@ class NVCLIPEmbeddings:
 
     def __init__(
         self,
-        api_key: str = None
+        api_key: str = None,
+        base_url: str = None
     ):
         """
         Initialize NV-CLIP embeddings.
 
         Args:
             api_key: NVIDIA API key (or set NVIDIA_API_KEY env var)
+            base_url: Base URL for NV-CLIP API (or set NVCLIP_BASE_URL env var)
+                     Default: https://integrate.api.nvidia.com/v1 (NVIDIA Cloud)
+                     For local NIM: http://localhost:8002/v1
         """
+        # Get base URL from parameter, env var, or default
+        self.base_url = base_url or os.getenv('NVCLIP_BASE_URL', 'https://integrate.api.nvidia.com/v1')
+
+        # API key: required for cloud, optional for local NIM
         self.api_key = api_key or os.getenv('NVIDIA_API_KEY')
-        if not self.api_key:
+        is_local_nim = 'localhost' in self.base_url or '127.0.0.1' in self.base_url
+
+        if not self.api_key and not is_local_nim:
             raise ValueError(
-                "NVIDIA API key required. Set NVIDIA_API_KEY env var or pass api_key parameter.\n"
-                "Get your key at: https://build.nvidia.com/nvidia/nvclip"
+                "NVIDIA API key required for cloud API. Set NVIDIA_API_KEY env var or pass api_key parameter.\n"
+                "Get your key at: https://build.nvidia.com/nvidia/nvclip\n"
+                "For local NIM, set NVCLIP_BASE_URL=http://localhost:8002/v1"
             )
 
-        # Initialize OpenAI client with NVIDIA endpoint
+        # Initialize OpenAI client
         self.client = OpenAI(
-            api_key=self.api_key,
-            base_url="https://integrate.api.nvidia.com/v1"
+            api_key=self.api_key or "dummy",  # Local NIM doesn't validate key
+            base_url=self.base_url
         )
 
         self.model = "nvidia/nvclip"
         self.provider = "nvclip"
         self.dimension = 1024  # NV-CLIP ViT-H output dimension
 
-        print(f"NV-CLIP initialized")
+        print(f"NV-CLIP initialized ({'Local NIM' if is_local_nim else 'Cloud API'})")
+        print(f"Endpoint: {self.base_url}")
         print(f"Model: {self.model}")
         print(f"Embedding dimension: {self.dimension}")
 
