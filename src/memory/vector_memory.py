@@ -158,7 +158,7 @@ class VectorMemory:
         Recall memories semantically similar to query using vector search.
 
         Args:
-            query: Search query
+            query: Search query (empty string returns all memories sorted by use_count)
             memory_type: Optional filter by memory type
             top_k: Number of results to return
             min_similarity: Minimum similarity threshold (0-1)
@@ -166,6 +166,50 @@ class VectorMemory:
         Returns:
             List of memory dictionaries with similarity scores
         """
+        # Handle empty query - return all memories sorted by use count
+        if not query or not query.strip():
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            try:
+                if memory_type:
+                    sql = """
+                        SELECT TOP ?
+                            MemoryID, MemoryType, MemoryText, Metadata, UseCount
+                        FROM SQLUser.AgentMemoryVectors
+                        WHERE MemoryType = ?
+                        ORDER BY UseCount DESC, UpdatedAt DESC
+                    """
+                    cursor.execute(sql, (top_k, memory_type))
+                else:
+                    sql = """
+                        SELECT TOP ?
+                            MemoryID, MemoryType, MemoryText, Metadata, UseCount
+                        FROM SQLUser.AgentMemoryVectors
+                        ORDER BY UseCount DESC, UpdatedAt DESC
+                    """
+                    cursor.execute(sql, (top_k,))
+
+                results = []
+                for row in cursor.fetchall():
+                    memory_id, mtype, text, metadata_str, use_count = row
+                    metadata = json.loads(metadata_str) if metadata_str else {}
+
+                    results.append({
+                        'memory_id': memory_id,
+                        'memory_type': mtype,
+                        'text': text,
+                        'metadata': metadata,
+                        'use_count': use_count,
+                        'similarity': 1.0  # No similarity for browse all
+                    })
+
+                return results
+
+            finally:
+                cursor.close()
+                conn.close()
+
         # Generate query embedding
         query_embedding = self._get_embedding(query)
         embedding_str = ','.join(map(str, query_embedding))
@@ -199,8 +243,10 @@ class VectorMemory:
             for row in cursor.fetchall():
                 memory_id, mtype, text, metadata_str, use_count, similarity = row
 
-                # Handle None similarity (shouldn't happen but be safe)
-                if similarity is None:
+                # Convert similarity to float (IRIS may return as string)
+                try:
+                    similarity = float(similarity) if similarity is not None else 0.0
+                except (ValueError, TypeError):
                     similarity = 0.0
 
                 # Filter by minimum similarity

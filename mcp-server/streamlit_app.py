@@ -979,12 +979,20 @@ with st.sidebar:
                 )
 
                 # Search interface
-                search_query = st.text_input("Search memories", placeholder="e.g., 'pneumonia'", key="memory_search")
+                search_query = st.text_input("Search memories", placeholder="e.g., 'pneumonia' or leave empty to browse all", key="memory_search")
 
-                if st.button("🔍 Search", key="memory_search_btn") and search_query:
+                # Initialize search results in session state
+                if 'memory_search_results' not in st.session_state:
+                    st.session_state.memory_search_results = None
+
+                if st.button("🔍 Search", key="memory_search_btn"):
                     filter_type = None if memory_type_filter == "all" else memory_type_filter
-                    results = memory.recall(search_query, memory_type=filter_type, top_k=10)
+                    # Empty query returns all memories sorted by use count
+                    st.session_state.memory_search_results = memory.recall(search_query or "", memory_type=filter_type, top_k=10)
 
+                # Display results from session state
+                if st.session_state.memory_search_results is not None:
+                    results = st.session_state.memory_search_results
                     if results:
                         st.write(f"Found {len(results)} memories:")
                         for idx, mem in enumerate(results):
@@ -997,6 +1005,7 @@ with st.sidebar:
                                 with col2:
                                     if st.button("🗑️", key=f"del_{idx}_{mem['memory_id'][:8]}"):
                                         memory.forget(memory_id=mem['memory_id'])
+                                        st.session_state.memory_search_results = None  # Clear results
                                         st.success("Deleted!")
                                         st.rerun()
                     else:

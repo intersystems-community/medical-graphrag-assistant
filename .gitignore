@@ -45,3 +45,6 @@ iris-config/
 .terraform/
 *.tfstate*
 *.tfvars
+
+# Archive directory
+archive/
