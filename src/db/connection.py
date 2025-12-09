@@ -7,7 +7,7 @@ for AWS production IRIS instance.
 
 import os
 from typing import Optional
-import intersystems_iris.dbapi._DBAPI as iris
+import iris
 
 
 class DatabaseConnection:
