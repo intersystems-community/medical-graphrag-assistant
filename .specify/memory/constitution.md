@@ -18,14 +18,19 @@ Follow-up TODOs: None
 ## Core Principles
 
 ### I. Authorship & Attribution
-All artifacts, code, documentation, and intellectual property in this project are authored and owned by **Thomas Dyar (thomas.dyar@intersystems.com)**. Attribution to AI coding assistants (Claude Code, Copilot, etc.) MUST NOT appear in:
-- README files or documentation
-- Commit messages
+All artifacts, code, documentation, and intellectual property in this project are authored and owned exclusively by **Thomas Dyar (thomas.dyar@intersystems.com)**.
+
+**ABSOLUTE PROHIBITION**: Attribution to AI coding assistants (Claude Code, Copilot, GitHub Copilot, ChatGPT, or any other AI tool) MUST NEVER appear anywhere in this project including:
+- README files or any documentation
+- Commit messages (no "Co-Authored-By: Claude", no "Generated with Claude Code")
 - Code comments
 - License files
-- Any public-facing materials
+- Pull request descriptions
+- Any public-facing or internal materials
 
-Rationale: Maintains clear ownership and professional attribution for all project deliverables.
+This prohibition applies to all forms of AI attribution including emoji markers, links to AI tools, or any text suggesting AI involvement.
+
+Rationale: Thomas Dyar is the sole author and owner of all project deliverables. No AI attribution is permitted under any circumstances.
 
 ### II. MCP-First Architecture
 All AI assistant capabilities MUST be exposed through Model Context Protocol (MCP) tools. Direct API integrations that bypass MCP are prohibited for user-facing features.
