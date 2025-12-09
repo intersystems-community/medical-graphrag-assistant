@@ -1231,22 +1231,24 @@ for idx, msg in enumerate(st.session_state.messages):
             if content is not None:
                 st.write(content)
 
-# Examples
-st.write("**💡 Examples:**")
+# Examples - organized in 3 columns with short labels
+st.write("**💡 Try these:**")
 examples = [
-    "What are the most common symptoms?",
-    "Show me a chart of symptom frequency",
-    "Search for chest pain cases",
-    "What's in the knowledge graph?",
-    "Plot entity distribution",
-    "Show me chest X-rays of pneumonia"
+    ("🔍 Common Symptoms", "What are the most common symptoms?"),
+    ("📊 Symptom Chart", "Show me a chart of symptom frequency"),
+    ("💔 Chest Pain", "Search for chest pain cases"),
+    ("🕸️ Knowledge Graph", "What's in the knowledge graph?"),
+    ("📈 Entity Stats", "Plot entity distribution"),
+    ("🩻 Pneumonia X-rays", "Show me chest X-rays of pneumonia")
 ]
 
-cols = st.columns(len(examples))
-for idx, (col, ex) in enumerate(zip(cols, examples)):
+# Use 3 columns with 2 rows for better visibility
+col1, col2, col3 = st.columns(3)
+for idx, (label, query) in enumerate(examples):
+    col = [col1, col2, col3][idx % 3]
     with col:
-        if st.button(ex[:12] + "...", key=f"ex_{idx}", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": ex})
+        if st.button(label, key=f"ex_{idx}", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": query})
             st.rerun()
 
 st.divider()
