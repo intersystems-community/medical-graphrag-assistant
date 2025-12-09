@@ -1,0 +1,43 @@
+name: Backup to S3
+
+on:
+  push:
+    branches:
+      - main
+      - '**'  # All branches
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for complete backup
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Sync to S3 (rsync-style - only changed files)
+        run: |
+          # Get branch name, sanitize for S3 path
+          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+
+          # Sync entire repo to S3 (excludes .git by default behavior)
+          # --delete ensures S3 mirrors the repo exactly
+          # --size-only for efficiency (like rsync)
+          aws s3 sync . s3://medical-graphrag-backup/repo/${BRANCH_NAME}/ \
+            --exclude ".git/*" \
+            --exclude "*.pyc" \
+            --exclude "__pycache__/*" \
+            --exclude ".env" \
+            --delete
+
+          echo "Backup complete: s3://medical-graphrag-backup/repo/${BRANCH_NAME}/"
+          echo "Commit: ${GITHUB_SHA}"
+          echo "Time: $(date -u)"
