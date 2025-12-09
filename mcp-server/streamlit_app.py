@@ -1091,7 +1091,7 @@ def chat_with_tools(user_message: str):
 # UI
 st.title("🤖 Agentic Medical Chat")
 st.caption("Claude autonomously calls MCP tools to answer your questions")
-st.caption("🔧 **Build: v2.12.0** - Agent Memory Editor: Browse, search, and manage agent memories with pure IRIS vector search")
+st.caption("🔧 **Build: v2.13.0** - Multi-LLM support (NIM > OpenAI > Bedrock), OneDrive backup")
 
 # Sidebar
 with st.sidebar:
