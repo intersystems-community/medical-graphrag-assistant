@@ -12,6 +12,13 @@ import os
 import sys
 import plotly.graph_objects as go
 
+# OpenAI support
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+
 # DICOM support
 try:
     import pydicom
@@ -44,21 +51,60 @@ st.set_page_config(page_title="Agentic Medical Chat", page_icon="🤖", layout="
 # Initialize
 if 'messages' not in st.session_state:
     st.session_state.messages = []
+
+# Determine LLM provider priority: NIM (local) > OpenAI > Bedrock
+if 'llm_provider' not in st.session_state:
+    st.session_state.llm_provider = None
+    st.session_state.openai_client = None
+    st.session_state.llm_model = None
+
+    # 1. Check for local NIM LLM first (most secure - data never leaves instance)
+    nim_llm_url = os.getenv('NIM_LLM_URL')  # e.g., http://localhost:8003/v1
+    if nim_llm_url and OPENAI_AVAILABLE:
+        try:
+            client = OpenAI(base_url=nim_llm_url, api_key="not-needed")
+            # NIM uses OpenAI-compatible API
+            st.session_state.openai_client = client
+            st.session_state.llm_provider = 'nim'
+            st.session_state.llm_model = os.getenv('NIM_LLM_MODEL', 'meta/llama-3.1-8b-instruct')
+            st.success(f"✅ Using local NIM LLM ({st.session_state.llm_model}) - data stays on instance")
+        except Exception as e:
+            pass  # Try next option
+
+    # 2. Check for OpenAI
+    if st.session_state.llm_provider is None:
+        openai_key = os.getenv('OPENAI_API_KEY')
+        if openai_key and OPENAI_AVAILABLE:
+            try:
+                client = OpenAI(api_key=openai_key)
+                st.session_state.openai_client = client
+                st.session_state.llm_provider = 'openai'
+                st.session_state.llm_model = os.getenv('OPENAI_MODEL', 'gpt-4o')
+                st.success(f"✅ Using OpenAI ({st.session_state.llm_model}) for synthesis")
+            except Exception as e:
+                st.warning(f"⚠️ OpenAI initialization failed: {e}")
+
+    # 3. Fall back to Bedrock
+    if st.session_state.llm_provider is None:
+        try:
+            test_cmd = [
+                "aws", "bedrock-runtime", "converse",
+                "--model-id", "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+                "--messages", json.dumps([{"role": "user", "content": [{"text": "test"}]}])
+            ]
+            result = subprocess.run(test_cmd, capture_output=True, text=True, env=os.environ.copy(), timeout=10)
+            if result.returncode == 0:
+                st.session_state.llm_provider = 'bedrock'
+                st.session_state.llm_model = 'claude-sonnet-4.5'
+                st.success("✅ Using AWS Bedrock Claude for synthesis")
+            else:
+                st.warning(f"⚠️ No LLM provider available. Running in demo mode without synthesis.")
+        except Exception as e:
+            st.warning(f"⚠️ No LLM provider available ({str(e)}). Running in demo mode without synthesis.")
+
+# Backward compatibility
 if 'bedrock_available' not in st.session_state:
-    # Test if AWS CLI Bedrock works
-    try:
-        test_cmd = [
-            "aws", "bedrock-runtime", "converse",
-            "--model-id", "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-            "--messages", json.dumps([{"role": "user", "content": [{"text": "test"}]}])
-        ]
-        result = subprocess.run(test_cmd, capture_output=True, text=True, env=os.environ.copy(), timeout=10)
-        st.session_state.bedrock_available = (result.returncode == 0)
-        if not st.session_state.bedrock_available:
-            st.warning(f"⚠️ AWS Bedrock not available. Running in demo mode without Claude synthesis.")
-    except Exception as e:
-        st.session_state.bedrock_available = False
-        st.warning(f"⚠️ AWS Bedrock not available ({str(e)}). Running in demo mode without Claude synthesis.")
+    st.session_state.bedrock_available = (st.session_state.llm_provider is not None)
 
 # Define MCP tools for Claude
 MCP_TOOLS = [
@@ -649,6 +695,102 @@ def demo_mode_search(user_message: str):
         status.empty()
         return f"❌ Error in demo mode: {str(e)}"
 
+def call_openai_compatible(messages, tools=None):
+    """Call OpenAI or NIM LLM (both use OpenAI-compatible API)"""
+    client = st.session_state.openai_client
+    model = st.session_state.llm_model
+
+    # Convert MCP tools to OpenAI function format
+    openai_tools = []
+    if tools:
+        for tool in tools:
+            openai_tools.append({
+                "type": "function",
+                "function": {
+                    "name": tool["toolSpec"]["name"],
+                    "description": tool["toolSpec"]["description"],
+                    "parameters": tool["toolSpec"]["inputSchema"]["json"]
+                }
+            })
+
+    # Build OpenAI messages
+    openai_messages = []
+    for msg in messages:
+        if msg["role"] == "user":
+            if isinstance(msg["content"], str):
+                openai_messages.append({"role": "user", "content": msg["content"]})
+            elif isinstance(msg["content"], list):
+                # Handle tool results
+                for block in msg["content"]:
+                    if block.get("type") == "tool_result":
+                        openai_messages.append({
+                            "role": "tool",
+                            "tool_call_id": block["tool_use_id"],
+                            "content": block["content"]
+                        })
+        elif msg["role"] == "assistant":
+            if isinstance(msg["content"], str):
+                openai_messages.append({"role": "assistant", "content": msg["content"]})
+            elif isinstance(msg["content"], list):
+                # Handle assistant messages with tool calls
+                text_content = ""
+                tool_calls = []
+                for block in msg["content"]:
+                    if isinstance(block, dict):
+                        if block.get("type") == "text":
+                            text_content += block.get("text", "")
+                        elif block.get("type") == "tool_use":
+                            tool_calls.append({
+                                "id": block.get("id"),
+                                "type": "function",
+                                "function": {
+                                    "name": block.get("name"),
+                                    "arguments": json.dumps(block.get("input", {}))
+                                }
+                            })
+                assistant_msg = {"role": "assistant", "content": text_content or None}
+                if tool_calls:
+                    assistant_msg["tool_calls"] = tool_calls
+                openai_messages.append(assistant_msg)
+
+    # Call OpenAI/NIM
+    kwargs = {
+        "model": model,
+        "messages": openai_messages,
+        "max_tokens": 4000
+    }
+    if openai_tools:
+        kwargs["tools"] = openai_tools
+        kwargs["tool_choice"] = "auto"
+
+    response = client.chat.completions.create(**kwargs)
+
+    # Convert response to Bedrock-like format for compatibility
+    choice = response.choices[0]
+    result = {"output": {"message": {"role": "assistant", "content": []}}}
+
+    if choice.message.content:
+        result["output"]["message"]["content"].append({"text": choice.message.content})
+
+    if choice.message.tool_calls:
+        for tc in choice.message.tool_calls:
+            result["output"]["message"]["content"].append({
+                "toolUse": {
+                    "toolUseId": tc.id,
+                    "name": tc.function.name,
+                    "input": json.loads(tc.function.arguments)
+                }
+            })
+
+    # Set stop reason
+    if choice.finish_reason == "tool_calls":
+        result["stopReason"] = "tool_use"
+    else:
+        result["stopReason"] = "end_turn"
+
+    return result
+
+
 def call_claude_via_cli(messages, tools=None):
     """Call Claude via AWS CLI instead of boto3"""
 
@@ -796,8 +938,11 @@ def chat_with_tools(user_message: str):
                     }
                 })
 
-            # Call Claude via AWS CLI
-            response = call_claude_via_cli(messages, converse_tools if converse_tools else None)
+            # Call LLM based on provider
+            if st.session_state.llm_provider in ('openai', 'nim'):
+                response = call_openai_compatible(messages, converse_tools if converse_tools else None)
+            else:
+                response = call_claude_via_cli(messages, converse_tools if converse_tools else None)
 
             # Process response
             stop_reason = response.get('stopReason')
