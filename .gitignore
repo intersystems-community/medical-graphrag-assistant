@@ -48,3 +48,7 @@ iris-config/
 
 # Archive directory
 archive/
+
+# Medical images (large binary files - download separately)
+medical_images/
+*.dcm
