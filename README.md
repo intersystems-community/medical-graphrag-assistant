@@ -4,7 +4,7 @@ A production-ready medical AI assistant platform built on Model Context Protocol
 
 **Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
-**Current Version**: v2.12.0 (Agent Memory & Medical Image Search)
+**Current Version**: v2.13.0 (Multi-LLM Support & OneDrive Backup)
 
 ## What This Is
 
@@ -50,18 +50,20 @@ python mcp-server/fhir_graphrag_mcp_server.py
 
 ```
 ┌─────────────────────────────────────┐
-│  Streamlit Chat UI (v2.12.0)       │
+│  Streamlit Chat UI (v2.13.0)       │
 │  - Conversation history             │
 │  - Chart visualization              │
 │  - Agent memory editor              │
 │  - Medical image display            │
 └──────────────┬──────────────────────┘
-               │ AWS Bedrock Converse API
+               │ Multi-LLM Support
 ┌──────────────▼──────────────────────┐
-│  Claude Sonnet 4.5                  │
+│  LLM Provider (priority order):     │
+│  1. NIM (local Llama 3.1 8B)        │
+│  2. OpenAI (GPT-4o)                 │
+│  3. AWS Bedrock (Claude Sonnet 4.5) │
 │  - Agentic tool calling             │
 │  - Multi-iteration reasoning        │
-│  - Agent memory integration         │
 └──────────────┬──────────────────────┘
                │ MCP Protocol (stdio)
 ┌──────────────▼──────────────────────┐
@@ -128,17 +130,17 @@ python mcp-server/fhir_graphrag_mcp_server.py
 - ✅ **Error Handling** - Graceful handling of API issues with detailed logs
 - ✅ **Max Iterations Control** - Prevents infinite loops (10 iteration limit)
 
-### Current Version: v2.12.0
+### Current Version: v2.13.0
 
-**Recent Features (v2.12.0):**
-- ✅ Agent memory system with pure IRIS vector storage (no SQLite)
-- ✅ Medical image search with NV-CLIP embeddings (1024-dim)
-- ✅ Memory editor UI in Streamlit sidebar
-- ✅ Semantic memory recall with similarity scoring
-- ✅ Fixed embeddings for images and memories (real NV-CLIP vectors)
-- ✅ Session state persistence for memory search results
+**Recent Features (v2.13.0):**
+- ✅ Multi-LLM provider support: NIM (local) > OpenAI > Bedrock priority
+- ✅ OneDrive backup script for automatic cloud sync
+- ✅ Improved button UX with emoji labels
+- ✅ Strengthened authorship policy in constitution
+- ✅ Cleaned up broken DICOM symlinks
 
 **Previous Updates:**
+- v2.12.0: Agent memory system with pure IRIS vector storage
 - v2.10.2: Fixed content processing errors, increased max iterations
 - v2.10.0: GraphRAG multi-modal search with RRF fusion
 - v2.0.0: AWS deployment with NVIDIA NIM integration
@@ -259,6 +261,17 @@ Try these in the chat interface:
 - "Show a chart of conditions by frequency"
 - "Visualize the knowledge graph for chest pain"
 - "Graph the entity relationships"
+
+## Backup
+
+The project uses OneDrive for automatic cloud backup:
+
+```bash
+# Run backup (rsync to OneDrive folder)
+./scripts/backup-to-onedrive.sh
+```
+
+Backup includes all code, configs, and medical images (~195 MB). OneDrive automatically syncs to cloud.
 
 ## Development
 
