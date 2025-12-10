@@ -28,6 +28,9 @@ plotly
 # Graph layout algorithms
 networkx
 
+# Interactive graph visualization
+streamlit-agraph
+
 # Testing (for P1 implementation)
 pytest
 pytest-cov

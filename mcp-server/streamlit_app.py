@@ -12,6 +12,14 @@ import os
 import sys
 import plotly.graph_objects as go
 
+# Interactive graph visualization
+try:
+    from streamlit_agraph import agraph, Node, Edge, Config
+    AGRAPH_AVAILABLE = True
+except ImportError:
+    AGRAPH_AVAILABLE = False
+    print("Warning: streamlit-agraph not available, using static graphs", file=sys.stderr)
+
 # Load .env file if present
 try:
     from dotenv import load_dotenv
@@ -340,128 +348,172 @@ def render_chart(tool_name: str, data, unique_id: str = None):
             return True
 
         elif tool_name == "plot_entity_network":
-            # Create network graph visualization
-            nodes = data["data"]["nodes"]
-            edges = data["data"]["edges"]
+            # Create interactive network graph using streamlit-agraph
+            nodes_data = data["data"]["nodes"]
+            edges_data = data["data"]["edges"]
 
-            # Extract node and edge data
-            node_x = [n["x"] for n in nodes]
-            node_y = [n["y"] for n in nodes]
-            node_text = [f"{n['name']}<br>Type: {n['type']}" for n in nodes]
+            if AGRAPH_AVAILABLE:
+                # Build agraph nodes and edges
+                agraph_nodes = []
+                agraph_edges = []
 
-            # Create edge traces
-            edge_traces = []
-            for edge in edges:
-                x0, y0 = nodes[edge["source"]]["x"], nodes[edge["source"]]["y"]
-                x1, y1 = nodes[edge["target"]]["x"], nodes[edge["target"]]["y"]
-                edge_traces.append(go.Scatter(
-                    x=[x0, x1, None],
-                    y=[y0, y1, None],
-                    mode='lines',
-                    line=dict(width=0.5, color='#888'),
-                    hoverinfo='none',
-                    showlegend=False
-                ))
+                for i, n in enumerate(nodes_data):
+                    agraph_nodes.append(Node(
+                        id=str(i),
+                        label=n["name"],
+                        size=25,
+                        color=n.get("color", "#97c2fc"),
+                        title=f"{n['name']}\nType: {n['type']}"
+                    ))
 
-            # Create node trace
-            node_trace = go.Scatter(
-                x=node_x,
-                y=node_y,
-                mode='markers+text',
-                text=[n["name"] for n in nodes],
-                textposition="top center",
-                hovertext=node_text,
-                hoverinfo='text',
-                marker=dict(
-                    size=10,
-                    color=[n.get("color", "lightblue") for n in nodes],
-                    line=dict(width=2, color='white')
+                for edge in edges_data:
+                    agraph_edges.append(Edge(
+                        source=str(edge["source"]),
+                        target=str(edge["target"]),
+                        label=edge.get("type", ""),
+                        color="#888888"
+                    ))
+
+                # Configure the graph - physics enables force-directed animation
+                config = Config(
+                    width=800,
+                    height=600,
+                    directed=False,
+                    physics=True,  # Enable force-directed physics
+                    hierarchical=False,
+                    nodeHighlightBehavior=True,
+                    highlightColor="#F7A7A6",
+                    collapsible=False,
+                    node={'labelProperty': 'label'},
+                    link={'labelProperty': 'label', 'renderLabel': True}
                 )
-            )
 
-            # Create figure
-            fig = go.Figure(data=edge_traces + [node_trace])
-            fig.update_layout(
-                title="Entity Relationship Network",
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=0, l=0, r=0, t=40),
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                height=600
-            )
-            st.plotly_chart(fig, key=unique_id, use_container_width=True)
-            return True
+                st.subheader("Entity Relationship Network (Interactive)")
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
+                agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
+                return True
+            else:
+                # Fallback to static Plotly if agraph not available
+                node_x = [n["x"] for n in nodes_data]
+                node_y = [n["y"] for n in nodes_data]
+                node_text = [f"{n['name']}<br>Type: {n['type']}" for n in nodes_data]
+
+                edge_traces = []
+                for edge in edges_data:
+                    x0, y0 = nodes_data[edge["source"]]["x"], nodes_data[edge["source"]]["y"]
+                    x1, y1 = nodes_data[edge["target"]]["x"], nodes_data[edge["target"]]["y"]
+                    edge_traces.append(go.Scatter(
+                        x=[x0, x1, None], y=[y0, y1, None],
+                        mode='lines', line=dict(width=0.5, color='#888'),
+                        hoverinfo='none', showlegend=False
+                    ))
+
+                node_trace = go.Scatter(
+                    x=node_x, y=node_y, mode='markers+text',
+                    text=[n["name"] for n in nodes_data], textposition="top center",
+                    hovertext=node_text, hoverinfo='text',
+                    marker=dict(size=10, color=[n.get("color", "lightblue") for n in nodes_data],
+                                line=dict(width=2, color='white'))
+                )
+
+                fig = go.Figure(data=edge_traces + [node_trace])
+                fig.update_layout(
+                    title="Entity Relationship Network", showlegend=False, hovermode='closest',
+                    margin=dict(b=0, l=0, r=0, t=40), height=600,
+                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+                )
+                st.plotly_chart(fig, key=unique_id, use_container_width=True)
+                return True
 
         elif tool_name == "visualize_graphrag_results":
-            # Create GraphRAG results visualization with query node at center
-            nodes = data["data"]["nodes"]
-            edges = data["data"]["edges"]
+            # Create interactive GraphRAG results visualization
+            nodes_data = data["data"]["nodes"]
+            edges_data = data["data"]["edges"]
 
-            # Extract node and edge data
-            node_x = [n["x"] for n in nodes]
-            node_y = [n["y"] for n in nodes]
-            node_text = [f"{n['name']}<br>Type: {n['type']}" for n in nodes]
+            if AGRAPH_AVAILABLE:
+                # Build agraph nodes and edges
+                agraph_nodes = []
+                agraph_edges = []
 
-            # Different sizes for query node vs entity nodes
-            node_sizes = [20 if n.get("type") == "QUERY" else 12 for n in nodes]
-
-            # Create edge traces - different styles for MATCHES vs CO_OCCURS_WITH
-            edge_traces = []
-            for edge in edges:
-                x0, y0 = nodes[edge["source"]]["x"], nodes[edge["source"]]["y"]
-                x1, y1 = nodes[edge["target"]]["x"], nodes[edge["target"]]["y"]
-
-                # MATCHES edges (query to entities) are thicker and darker
-                if edge.get("type") == "MATCHES":
-                    edge_traces.append(go.Scatter(
-                        x=[x0, x1, None],
-                        y=[y0, y1, None],
-                        mode='lines',
-                        line=dict(width=1.5, color='#444'),
-                        hoverinfo='none',
-                        showlegend=False
-                    ))
-                else:
-                    edge_traces.append(go.Scatter(
-                        x=[x0, x1, None],
-                        y=[y0, y1, None],
-                        mode='lines',
-                        line=dict(width=0.5, color='#888'),
-                        hoverinfo='none',
-                        showlegend=False
+                for i, n in enumerate(nodes_data):
+                    # Query node is larger
+                    size = 35 if n.get("type") == "QUERY" else 25
+                    agraph_nodes.append(Node(
+                        id=str(i),
+                        label=n["name"],
+                        size=size,
+                        color=n.get("color", "#97c2fc"),
+                        title=f"{n['name']}\nType: {n['type']}"
                     ))
 
-            # Create node trace
-            node_trace = go.Scatter(
-                x=node_x,
-                y=node_y,
-                mode='markers+text',
-                text=[n["name"] for n in nodes],
-                textposition="top center",
-                hovertext=node_text,
-                hoverinfo='text',
-                marker=dict(
-                    size=node_sizes,
-                    color=[n.get("color", "lightblue") for n in nodes],
-                    line=dict(width=2, color='white')
+                for edge in edges_data:
+                    # MATCHES edges are thicker
+                    width = 3 if edge.get("type") == "MATCHES" else 1
+                    color = "#444444" if edge.get("type") == "MATCHES" else "#888888"
+                    agraph_edges.append(Edge(
+                        source=str(edge["source"]),
+                        target=str(edge["target"]),
+                        label=edge.get("type", ""),
+                        color=color,
+                        width=width
+                    ))
+
+                # Configure the graph with physics for animation
+                config = Config(
+                    width=800,
+                    height=600,
+                    directed=False,
+                    physics=True,
+                    hierarchical=False,
+                    nodeHighlightBehavior=True,
+                    highlightColor="#F7A7A6",
+                    collapsible=False,
+                    node={'labelProperty': 'label'},
+                    link={'labelProperty': 'label', 'renderLabel': True}
                 )
-            )
 
-            # Create figure
-            fig = go.Figure(data=edge_traces + [node_trace])
-            fig.update_layout(
-                title=f"GraphRAG Search Results: {data.get('query', 'Unknown Query')} ({data.get('entities_found', 0)} entities found)",
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=0, l=0, r=0, t=40),
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                height=600
-            )
-            st.plotly_chart(fig, key=unique_id, use_container_width=True)
+                st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
+                agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
+                return True
+            else:
+                # Fallback to static Plotly
+                node_x = [n["x"] for n in nodes_data]
+                node_y = [n["y"] for n in nodes_data]
+                node_text = [f"{n['name']}<br>Type: {n['type']}" for n in nodes_data]
+                node_sizes = [20 if n.get("type") == "QUERY" else 12 for n in nodes_data]
 
-            return True
+                edge_traces = []
+                for edge in edges_data:
+                    x0, y0 = nodes_data[edge["source"]]["x"], nodes_data[edge["source"]]["y"]
+                    x1, y1 = nodes_data[edge["target"]]["x"], nodes_data[edge["target"]]["y"]
+                    width = 1.5 if edge.get("type") == "MATCHES" else 0.5
+                    color = '#444' if edge.get("type") == "MATCHES" else '#888'
+                    edge_traces.append(go.Scatter(
+                        x=[x0, x1, None], y=[y0, y1, None],
+                        mode='lines', line=dict(width=width, color=color),
+                        hoverinfo='none', showlegend=False
+                    ))
+
+                node_trace = go.Scatter(
+                    x=node_x, y=node_y, mode='markers+text',
+                    text=[n["name"] for n in nodes_data], textposition="top center",
+                    hovertext=node_text, hoverinfo='text',
+                    marker=dict(size=node_sizes, color=[n.get("color", "lightblue") for n in nodes_data],
+                                line=dict(width=2, color='white'))
+                )
+
+                fig = go.Figure(data=edge_traces + [node_trace])
+                fig.update_layout(
+                    title=f"GraphRAG Search Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities found)",
+                    showlegend=False, hovermode='closest',
+                    margin=dict(b=0, l=0, r=0, t=40), height=600,
+                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+                )
+                st.plotly_chart(fig, key=unique_id, use_container_width=True)
+                return True
 
         elif tool_name == "search_medical_images":
             # T020: Enhanced UX for embedder initialization
