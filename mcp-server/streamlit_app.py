@@ -1164,7 +1164,6 @@ def chat_with_tools(user_message: str):
 
         except Exception as e:
             status.empty()
-            import sys
             import traceback
             error_msg = f"❌ Error: {str(e)}"
             st.error(error_msg)
