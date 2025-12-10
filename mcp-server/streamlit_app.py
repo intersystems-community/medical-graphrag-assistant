@@ -939,6 +939,34 @@ def call_claude_via_cli(messages, tools=None):
 
     return json.loads(result.stdout)
 
+def recall_relevant_memories(query: str, top_k: int = 3) -> str:
+    """Recall relevant memories for a query and format them as context."""
+    if not MEMORY_AVAILABLE:
+        return ""
+
+    try:
+        memory = VectorMemory()
+        memories = memory.recall(query, memory_type=None, top_k=top_k)
+
+        if not memories:
+            return ""
+
+        # Format memories as context for the LLM
+        memory_context = "\n[AGENT MEMORY - User preferences and past corrections to consider:]\n"
+        for mem in memories:
+            if mem['similarity'] > 0.3:  # Only include reasonably relevant memories
+                memory_context += f"- [{mem['memory_type'].upper()}] {mem['text']}\n"
+
+        if memory_context == "\n[AGENT MEMORY - User preferences and past corrections to consider:]\n":
+            return ""  # No relevant memories above threshold
+
+        memory_context += "[END MEMORY]\n\n"
+        return memory_context
+    except Exception as e:
+        print(f"Error recalling memories: {e}", file=sys.stderr)
+        return ""
+
+
 def chat_with_tools(user_message: str):
     """Chat with Claude using tool use"""
 
@@ -946,11 +974,20 @@ def chat_with_tools(user_message: str):
     if not st.session_state.bedrock_available:
         return demo_mode_search(user_message)
 
+    # AUTOMATIC MEMORY RECALL: Inject relevant user preferences/corrections
+    memory_context = recall_relevant_memories(user_message)
+    if memory_context:
+        print(f"DEBUG: Injecting memory context:\n{memory_context}", file=sys.stderr)
+
     # Enhance user message if it's asking for visualization
     viz_keywords = ['plot', 'chart', 'graph', 'visualize', 'show me', 'display']
     if any(keyword in user_message.lower() for keyword in viz_keywords):
         # Add explicit instruction to use visualization tools
         user_message = user_message + "\n\n[IMPORTANT: Use the appropriate plot_* tool to create a visualization. Available: plot_entity_network, plot_symptom_frequency, plot_entity_distribution, plot_patient_timeline]"
+
+    # Prepend memory context to user message so LLM sees user preferences
+    if memory_context:
+        user_message = memory_context + user_message
 
     # Build conversation history from session state, converting to simple format for API
     messages = []
@@ -981,6 +1018,14 @@ def chat_with_tools(user_message: str):
 
     # Track tool execution details for transparency
     tool_execution_log = []
+
+    # Log memory recall if it happened
+    if memory_context:
+        tool_execution_log.append({
+            "iteration": 0,
+            "type": "memory_recall",
+            "content": memory_context.strip()
+        })
 
     max_iterations = 10  # Increased from 5 to handle complex multi-tool queries
     iteration = 0
@@ -1143,7 +1188,7 @@ def chat_with_tools(user_message: str):
 # UI
 st.title("🤖 Agentic Medical Chat")
 st.caption("Claude autonomously calls MCP tools to answer your questions")
-st.caption("🔧 **Build: v2.13.0** - Multi-LLM support (NIM > OpenAI > Bedrock), OneDrive backup")
+st.caption("🔧 **Build: v2.14.0** - Auto memory recall, interactive graph viz, force-directed layouts")
 
 # Sidebar
 with st.sidebar:
@@ -1269,7 +1314,10 @@ for idx, msg in enumerate(st.session_state.messages):
                     execution_log = content["execution_log"]
 
                     for i, log_entry in enumerate(execution_log):
-                        if log_entry.get("type") == "thinking":
+                        if log_entry.get("type") == "memory_recall":
+                            st.markdown(f"**🧠 Memory Recall (Pre-processing):**")
+                            st.success(log_entry["content"])
+                        elif log_entry.get("type") == "thinking":
                             st.markdown(f"**💭 Iteration {log_entry['iteration']} - Thinking:**")
                             st.info(log_entry["content"])
                         else:

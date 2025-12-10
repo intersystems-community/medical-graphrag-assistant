@@ -4,7 +4,7 @@ A production-ready medical AI assistant platform built on Model Context Protocol
 
 **Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
-**Current Version**: v2.13.0 (Multi-LLM Support & OneDrive Backup)
+**Current Version**: v2.14.0 (Auto Memory Recall & Interactive Graphs)
 
 ## What This Is
 
@@ -130,16 +130,16 @@ python mcp-server/fhir_graphrag_mcp_server.py
 - ✅ **Error Handling** - Graceful handling of API issues with detailed logs
 - ✅ **Max Iterations Control** - Prevents infinite loops (10 iteration limit)
 
-### Current Version: v2.13.0
+### Current Version: v2.14.0
 
-**Recent Features (v2.13.0):**
-- ✅ Multi-LLM provider support: NIM (local) > OpenAI > Bedrock priority
-- ✅ OneDrive backup script for automatic cloud sync
-- ✅ Improved button UX with emoji labels
-- ✅ Strengthened authorship policy in constitution
-- ✅ Cleaned up broken DICOM symlinks
+**Recent Features (v2.14.0):**
+- ✅ **Auto Memory Recall**: Memories automatically recalled before each query to guide tool selection
+- ✅ **Interactive Graph Viz**: Force-directed, draggable graphs with `streamlit-agraph`
+- ✅ **Memory in Execution Log**: See recalled memories in "Show Execution Details" pane
+- ✅ NetworkX-powered graph layouts with physics simulation
 
 **Previous Updates:**
+- v2.13.0: Multi-LLM provider support (NIM > OpenAI > Bedrock), OneDrive backup
 - v2.12.0: Agent memory system with pure IRIS vector storage
 - v2.10.2: Fixed content processing errors, increased max iterations
 - v2.10.0: GraphRAG multi-modal search with RRF fusion
