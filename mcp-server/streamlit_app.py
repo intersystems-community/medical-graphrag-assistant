@@ -229,8 +229,8 @@ def extract_entities_from_results(tool_results: List[dict]) -> List[DisplayEntit
                     context=entity_data.get("context", "")[:500]
                 ))
 
-        # Extract from visualize_graphrag_results
-        elif tool_name == "visualize_graphrag_results":
+        # Extract from visualize_graphrag_results or plot_entity_network
+        elif tool_name in ["visualize_graphrag_results", "plot_entity_network"]:
             nodes = result_data.get("data", {}).get("nodes", [])
             for idx, node in enumerate(nodes):
                 node_type = node.get("type", "other")
@@ -558,18 +558,13 @@ def render_graph_section(
                     ))
             print(f"DEBUG render_graph: valid edges={len(agraph_edges)}", file=sys.stderr)
 
-            # Configure the graph
+            # Configure the graph - vis.js-compatible options only
             config = Config(
                 width=600,
                 height=400,
                 directed=False,
                 physics=True,
-                hierarchical=False,
-                nodeHighlightBehavior=True,
-                highlightColor="#F7A7A6",
-                collapsible=False,
-                node={"labelProperty": "label", "renderLabel": True},
-                link={"labelProperty": "label", "renderLabel": False}
+                hierarchical=False
             )
 
             st.caption("Drag nodes to rearrange. Scroll to zoom.")
@@ -1026,17 +1021,13 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     ))
 
                 # Configure the graph - physics enables force-directed animation
+                # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
                     physics=True,  # Enable force-directed physics
-                    hierarchical=False,
-                    nodeHighlightBehavior=True,
-                    highlightColor="#F7A7A6",
-                    collapsible=False,
-                    node={'labelProperty': 'label'},
-                    link={'labelProperty': 'label', 'renderLabel': True}
+                    hierarchical=False
                 )
 
                 st.subheader("Entity Relationship Network (Interactive)")
@@ -1111,17 +1102,13 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     ))
 
                 # Configure the graph with physics for animation
+                # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
                     physics=True,
-                    hierarchical=False,
-                    nodeHighlightBehavior=True,
-                    highlightColor="#F7A7A6",
-                    collapsible=False,
-                    node={'labelProperty': 'label'},
-                    link={'labelProperty': 'label', 'renderLabel': True}
+                    hierarchical=False
                 )
 
                 st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
