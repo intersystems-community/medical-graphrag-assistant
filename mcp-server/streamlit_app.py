@@ -566,10 +566,12 @@ def render_graph_section(
 
             # Build agraph edges - ONLY for edges where both nodes exist
             agraph_edges = []
-            print(f"DEBUG render_graph: node_ids={node_ids}", file=sys.stderr)
-            print(f"DEBUG render_graph: total relationships={len(relationships)}", file=sys.stderr)
+            print(f"DEBUG render_graph_section EDGES: node_ids={node_ids}", file=sys.stderr)
+            print(f"DEBUG render_graph_section EDGES: total relationships={len(relationships)}", file=sys.stderr)
+            for rel in relationships[:10]:  # Log first 10 only for details panel
+                print(f"DEBUG details edge: source={rel.source_id}, target={rel.target_id}, in_nodes={rel.source_id in node_ids and rel.target_id in node_ids}", file=sys.stderr)
+            # Build all valid edges
             for rel in relationships:
-                print(f"DEBUG edge: source={rel.source_id}, target={rel.target_id}, in_nodes={rel.source_id in node_ids and rel.target_id in node_ids}", file=sys.stderr)
                 # Only add edge if both source and target nodes exist
                 if rel.source_id in node_ids and rel.target_id in node_ids:
                     agraph_edges.append(Edge(
@@ -578,7 +580,7 @@ def render_graph_section(
                         label=rel.relationship_type,
                         color="#888888"
                     ))
-            print(f"DEBUG render_graph: valid edges={len(agraph_edges)}", file=sys.stderr)
+            print(f"DEBUG render_graph_section: valid edges={len(agraph_edges)}", file=sys.stderr)
 
             # Configure the graph - vis.js-compatible options only
             config = Config(
@@ -590,7 +592,13 @@ def render_graph_section(
             )
 
             st.caption("Drag nodes to rearrange. Scroll to zoom.")
-            agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
+            print(f"DEBUG render_graph_section: calling agraph with {len(agraph_nodes)} nodes and {len(agraph_edges)} edges", file=sys.stderr)
+            try:
+                agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
+                print(f"DEBUG render_graph_section: agraph returned successfully", file=sys.stderr)
+            except Exception as e:
+                print(f"ERROR render_graph_section: agraph failed: {e}", file=sys.stderr)
+                st.error(f"Graph rendering error: {e}")
         else:
             # Fallback to relationship list
             st.markdown("**Entity Relationships:**")
