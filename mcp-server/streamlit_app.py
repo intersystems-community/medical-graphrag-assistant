@@ -536,6 +536,13 @@ def render_graph_section(
     _init_details_session_state()
 
     with st.expander("🕸️ Entity Relationships", expanded=st.session_state.details_graph_expanded):
+        # Debug logging for details panel graph
+        print(f"DEBUG render_graph_section: entities={len(entities)}, relationships={len(relationships)}", file=sys.stderr)
+        if entities:
+            print(f"DEBUG render_graph_section: first 3 entity IDs: {[e.id for e in entities[:3]]}", file=sys.stderr)
+        if relationships:
+            print(f"DEBUG render_graph_section: first 3 relationships: {[(r.source_id, r.target_id) for r in relationships[:3]]}", file=sys.stderr)
+
         # Minimum threshold check
         if len(relationships) < 1 or len(entities) < 2:
             st.info("Not enough relationships to display graph (need at least 2 entities with relationships)")
@@ -1046,12 +1053,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader("Entity Relationship Network (Interactive)")
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
-                with col2:
-                    if st.button("🔄 Reset View", key=f"reset_network_{unique_id}"):
-                        st.rerun()
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click background to fit view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -1132,12 +1134,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
-                with col2:
-                    if st.button("🔄 Reset View", key=f"reset_graphrag_{unique_id}"):
-                        st.rerun()
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click background to fit view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
