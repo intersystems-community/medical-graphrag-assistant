@@ -1951,6 +1951,38 @@ for idx, msg in enumerate(st.session_state.messages):
                     response_time_ms=0,
                     msg_idx=idx
                 )
+        elif isinstance(content, dict) and "execution_log" in content:
+            # Handle responses with execution_log but no chart_data
+            # Display text content first
+            if "text" in content:
+                st.write(content["text"])
+
+            # Extract and render execution details
+            execution_log = content.get("execution_log", [])
+            tool_results = []
+            thinking_blocks = []
+            memory_recalls = []
+
+            for log_entry in execution_log:
+                if log_entry.get("type") == "memory_recall":
+                    memory_recalls.append(log_entry.get("content", ""))
+                elif log_entry.get("type") == "thinking":
+                    thinking_blocks.append(log_entry.get("content", ""))
+                elif log_entry.get("tool_name"):
+                    tool_results.append({
+                        "tool_name": log_entry.get("tool_name", ""),
+                        "result": log_entry.get("result_summary", "")
+                    })
+
+            # Render enhanced details panel
+            render_details_panel(
+                tool_results=tool_results,
+                thinking_blocks=thinking_blocks,
+                memory_recalls=memory_recalls,
+                execution_log=execution_log,
+                response_time_ms=0,
+                msg_idx=idx
+            )
         else:
             # Display content safely - it might be a string or None
             if content is not None:
