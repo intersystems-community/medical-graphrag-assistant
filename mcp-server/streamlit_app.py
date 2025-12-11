@@ -1046,7 +1046,12 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader("Entity Relationship Network (Interactive)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click to reset view.")
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+                with col2:
+                    if st.button("🔄 Reset View", key=f"reset_network_{unique_id}"):
+                        st.rerun()
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -1127,7 +1132,12 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click to reset view.")
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+                with col2:
+                    if st.button("🔄 Reset View", key=f"reset_graphrag_{unique_id}"):
+                        st.rerun()
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
