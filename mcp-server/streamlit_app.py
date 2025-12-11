@@ -522,7 +522,7 @@ def render_graph_section(
     msg_idx: int
 ) -> Optional[str]:
     """
-    Render the force-directed relationship graph.
+    Render a static relationship graph using Plotly (works in nested expanders).
 
     Args:
         entities: List of entities as nodes
@@ -531,52 +531,126 @@ def render_graph_section(
         msg_idx: Message index for unique keys
 
     Returns:
-        Clicked node ID or None
+        None (static graph, no click handling)
     """
     _init_details_session_state()
 
     with st.expander("🕸️ Entity Relationships", expanded=st.session_state.details_graph_expanded):
-        # Debug logging for details panel graph
-        print(f"DEBUG render_graph_section: entities={len(entities)}, relationships={len(relationships)}", file=sys.stderr)
-
         # Minimum threshold check
         if len(relationships) < 1 or len(entities) < 2:
             st.info("Not enough relationships to display graph (need at least 2 entities with relationships)")
             return None
 
-        # NOTE: agraph doesn't render properly inside nested expanders due to iframe initialization issues
-        # Using a compact text-based relationship display instead for reliability
+        # Build entity lookup and limit nodes for readability
+        max_nodes = 25
+        display_entities = entities[:max_nodes]
+        entity_ids = {e.id for e in display_entities}
+        entity_names = {e.id: e.name for e in display_entities}
+        entity_types = {e.id: e.type for e in display_entities}
 
-        # Build entity name lookup
-        entity_names = {e.id: e.name for e in entities}
+        # Filter relationships to only include displayed entities
+        display_rels = [r for r in relationships
+                       if r.source_id in entity_ids and r.target_id in entity_ids]
 
-        # Group relationships by source entity for better readability
-        rel_by_source = {}
-        for rel in relationships:
-            source_name = entity_names.get(rel.source_id, rel.source_id)
-            target_name = entity_names.get(rel.target_id, rel.target_id)
-            if source_name not in rel_by_source:
-                rel_by_source[source_name] = []
-            rel_by_source[source_name].append((rel.relationship_type, target_name))
+        if len(display_rels) < 1:
+            st.info("No relationships between displayed entities")
+            return None
 
-        st.markdown(f"**{len(relationships)} relationships between {len(entities)} entities:**")
+        # Create circular layout for nodes
+        import math
+        n = len(display_entities)
+        node_positions = {}
+        for i, entity in enumerate(display_entities):
+            angle = 2 * math.pi * i / n
+            node_positions[entity.id] = (math.cos(angle), math.sin(angle))
 
-        # Show relationships in a compact format
-        displayed = 0
-        max_display = 30
-        for source_name, targets in sorted(rel_by_source.items())[:15]:
-            target_list = ", ".join([f"{t[1]}" for t in targets[:5]])
-            if len(targets) > 5:
-                target_list += f" (+{len(targets)-5} more)"
-            st.markdown(f"• **{source_name}** → {target_list}")
-            displayed += 1
-            if displayed >= max_display:
-                break
+        # Color mapping for entity types
+        type_colors = {
+            EntityType.SYMPTOM: "#FF6B6B",      # Red
+            EntityType.CONDITION: "#4ECDC4",    # Teal
+            EntityType.MEDICATION: "#45B7D1",   # Blue
+            EntityType.PROCEDURE: "#96CEB4",    # Green
+            EntityType.ANATOMY: "#FFEAA7",      # Yellow
+            EntityType.LAB_RESULT: "#DDA0DD",   # Plum
+            EntityType.VITAL_SIGN: "#98D8C8",   # Mint
+            EntityType.OTHER: "#C0C0C0",        # Gray
+        }
 
-        if len(rel_by_source) > 15:
-            st.caption(f"... and {len(rel_by_source) - 15} more entities with relationships")
+        # Build edge traces
+        edge_x = []
+        edge_y = []
+        for rel in display_rels:
+            if rel.source_id in node_positions and rel.target_id in node_positions:
+                x0, y0 = node_positions[rel.source_id]
+                x1, y1 = node_positions[rel.target_id]
+                edge_x.extend([x0, x1, None])
+                edge_y.extend([y0, y1, None])
 
-        st.caption("💡 The full interactive graph is shown above in the main response area.")
+        edge_trace = go.Scatter(
+            x=edge_x, y=edge_y,
+            mode='lines',
+            line=dict(width=1, color='#888888'),
+            hoverinfo='none'
+        )
+
+        # Build node traces (one per type for legend)
+        node_traces = []
+        for entity_type in EntityType:
+            type_entities = [e for e in display_entities if e.type == entity_type]
+            if not type_entities:
+                continue
+
+            node_x = [node_positions[e.id][0] for e in type_entities]
+            node_y = [node_positions[e.id][1] for e in type_entities]
+            node_text = [e.name for e in type_entities]
+            hover_text = [f"{e.name}<br>Type: {e.type.value}<br>Score: {e.score:.2f}" for e in type_entities]
+
+            node_traces.append(go.Scatter(
+                x=node_x, y=node_y,
+                mode='markers+text',
+                name=entity_type.value.replace('_', ' ').title(),
+                text=node_text,
+                textposition="top center",
+                textfont=dict(size=8),
+                hovertext=hover_text,
+                hoverinfo='text',
+                marker=dict(
+                    size=12,
+                    color=type_colors.get(entity_type, '#C0C0C0'),
+                    line=dict(width=1, color='white')
+                )
+            ))
+
+        # Create figure
+        fig = go.Figure(
+            data=[edge_trace] + node_traces,
+            layout=go.Layout(
+                title=f"{len(display_rels)} relationships between {len(display_entities)} entities",
+                titlefont=dict(size=12),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.2,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=9)
+                ),
+                hovermode='closest',
+                margin=dict(b=60, l=5, r=5, t=30),
+                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)'
+            )
+        )
+
+        # Render static Plotly chart
+        st.plotly_chart(fig, key=f"details_graph_{msg_idx}", use_container_width=True)
+
+        if len(entities) > max_nodes:
+            st.caption(f"Showing top {max_nodes} of {len(entities)} entities. Full graph in main response area.")
 
     return None
 
