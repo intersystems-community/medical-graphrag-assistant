@@ -1699,7 +1699,8 @@ def chat_with_tools(user_message: str):
                             "iteration": iteration,
                             "tool_name": tool_name,
                             "tool_input": tool_input,
-                            "result_summary": str(result)[:200] + "..." if len(str(result)) > 200 else str(result)
+                            "result_summary": str(result)[:200] + "..." if len(str(result)) > 200 else str(result),
+                            "full_result": result  # Store full result for entity extraction
                         })
 
                         # Render chart if applicable and track it (only for visualization tools)
@@ -1937,9 +1938,10 @@ for idx, msg in enumerate(st.session_state.messages):
                         thinking_blocks.append(log_entry.get("content", ""))
                     elif log_entry.get("tool_name"):
                         # Convert log entry to tool result format for extraction
+                        # Use full_result if available, otherwise fall back to result_summary
                         tool_results.append({
                             "tool_name": log_entry.get("tool_name", ""),
-                            "result": log_entry.get("result_summary", "")
+                            "result": log_entry.get("full_result", log_entry.get("result_summary", ""))
                         })
 
                 # Render enhanced details panel
@@ -1969,9 +1971,10 @@ for idx, msg in enumerate(st.session_state.messages):
                 elif log_entry.get("type") == "thinking":
                     thinking_blocks.append(log_entry.get("content", ""))
                 elif log_entry.get("tool_name"):
+                    # Use full_result if available, otherwise fall back to result_summary
                     tool_results.append({
                         "tool_name": log_entry.get("tool_name", ""),
-                        "result": log_entry.get("result_summary", "")
+                        "result": log_entry.get("full_result", log_entry.get("result_summary", ""))
                     })
 
             # Render enhanced details panel
