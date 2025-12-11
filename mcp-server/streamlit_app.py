@@ -538,72 +538,45 @@ def render_graph_section(
     with st.expander("🕸️ Entity Relationships", expanded=st.session_state.details_graph_expanded):
         # Debug logging for details panel graph
         print(f"DEBUG render_graph_section: entities={len(entities)}, relationships={len(relationships)}", file=sys.stderr)
-        if entities:
-            print(f"DEBUG render_graph_section: first 3 entity IDs: {[e.id for e in entities[:3]]}", file=sys.stderr)
-        if relationships:
-            print(f"DEBUG render_graph_section: first 3 relationships: {[(r.source_id, r.target_id) for r in relationships[:3]]}", file=sys.stderr)
 
         # Minimum threshold check
         if len(relationships) < 1 or len(entities) < 2:
             st.info("Not enough relationships to display graph (need at least 2 entities with relationships)")
             return None
 
-        if AGRAPH_AVAILABLE:
-            # Build agraph nodes
-            agraph_nodes = []
-            node_ids = set()  # Track which node IDs we have
-            for entity in entities[:50]:  # Limit for performance
-                # Highlight selected entity
-                color = "#F7A7A6" if entity.id == selected_entity_id else "#97c2fc"
-                agraph_nodes.append(Node(
-                    id=entity.id,
-                    label=entity.name,
-                    size=25,
-                    color=color,
-                    title=f"{entity.name}\nType: {entity.type.value}\nScore: {entity.score:.2f}"
-                ))
-                node_ids.add(entity.id)
+        # NOTE: agraph doesn't render properly inside nested expanders due to iframe initialization issues
+        # Using a compact text-based relationship display instead for reliability
 
-            # Build agraph edges - ONLY for edges where both nodes exist
-            agraph_edges = []
-            print(f"DEBUG render_graph_section EDGES: node_ids={node_ids}", file=sys.stderr)
-            print(f"DEBUG render_graph_section EDGES: total relationships={len(relationships)}", file=sys.stderr)
-            for rel in relationships[:10]:  # Log first 10 only for details panel
-                print(f"DEBUG details edge: source={rel.source_id}, target={rel.target_id}, in_nodes={rel.source_id in node_ids and rel.target_id in node_ids}", file=sys.stderr)
-            # Build all valid edges
-            for rel in relationships:
-                # Only add edge if both source and target nodes exist
-                if rel.source_id in node_ids and rel.target_id in node_ids:
-                    agraph_edges.append(Edge(
-                        source=rel.source_id,
-                        target=rel.target_id,
-                        label=rel.relationship_type,
-                        color="#888888"
-                    ))
-            print(f"DEBUG render_graph_section: valid edges={len(agraph_edges)}", file=sys.stderr)
+        # Build entity name lookup
+        entity_names = {e.id: e.name for e in entities}
 
-            # Configure the graph - vis.js-compatible options only
-            config = Config(
-                width=600,
-                height=400,
-                directed=False,
-                physics=True,
-                hierarchical=False
-            )
+        # Group relationships by source entity for better readability
+        rel_by_source = {}
+        for rel in relationships:
+            source_name = entity_names.get(rel.source_id, rel.source_id)
+            target_name = entity_names.get(rel.target_id, rel.target_id)
+            if source_name not in rel_by_source:
+                rel_by_source[source_name] = []
+            rel_by_source[source_name].append((rel.relationship_type, target_name))
 
-            st.caption("Drag nodes to rearrange. Scroll to zoom.")
-            print(f"DEBUG render_graph_section: calling agraph with {len(agraph_nodes)} nodes and {len(agraph_edges)} edges", file=sys.stderr)
-            try:
-                agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
-                print(f"DEBUG render_graph_section: agraph returned successfully", file=sys.stderr)
-            except Exception as e:
-                print(f"ERROR render_graph_section: agraph failed: {e}", file=sys.stderr)
-                st.error(f"Graph rendering error: {e}")
-        else:
-            # Fallback to relationship list
-            st.markdown("**Entity Relationships:**")
-            for rel in relationships[:20]:
-                st.markdown(f"• {rel.source_id} **{rel.relationship_type}** → {rel.target_id}")
+        st.markdown(f"**{len(relationships)} relationships between {len(entities)} entities:**")
+
+        # Show relationships in a compact format
+        displayed = 0
+        max_display = 30
+        for source_name, targets in sorted(rel_by_source.items())[:15]:
+            target_list = ", ".join([f"{t[1]}" for t in targets[:5]])
+            if len(targets) > 5:
+                target_list += f" (+{len(targets)-5} more)"
+            st.markdown(f"• **{source_name}** → {target_list}")
+            displayed += 1
+            if displayed >= max_display:
+                break
+
+        if len(rel_by_source) > 15:
+            st.caption(f"... and {len(rel_by_source) - 15} more entities with relationships")
+
+        st.caption("💡 The full interactive graph is shown above in the main response area.")
 
     return None
 
