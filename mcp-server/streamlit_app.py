@@ -1023,18 +1023,35 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                         color="#888888"
                     ))
 
+                st.subheader("Entity Relationship Network (Interactive)")
+
+                # Physics controls - initialize session state
+                if "graph_physics_enabled" not in st.session_state:
+                    st.session_state.graph_physics_enabled = True
+
+                # Control panel for graph settings
+                ctrl_cols = st.columns([2, 3, 2])
+                with ctrl_cols[0]:
+                    physics_enabled = st.checkbox(
+                        "Physics Animation",
+                        value=st.session_state.graph_physics_enabled,
+                        key=f"physics_toggle_{unique_id}",
+                        help="Toggle force-directed layout animation"
+                    )
+                    st.session_state.graph_physics_enabled = physics_enabled
+                with ctrl_cols[1]:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+
                 # Configure the graph - physics enables force-directed animation
                 # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
-                    physics=True,  # Enable force-directed physics
+                    physics=physics_enabled,
                     hierarchical=False
                 )
 
-                st.subheader("Entity Relationship Network (Interactive)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click background to fit view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -1104,18 +1121,35 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                         width=width
                     ))
 
+                st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
+
+                # Physics controls - initialize session state
+                if "graph_physics_enabled" not in st.session_state:
+                    st.session_state.graph_physics_enabled = True
+
+                # Control panel for graph settings
+                ctrl_cols = st.columns([2, 3, 2])
+                with ctrl_cols[0]:
+                    physics_enabled = st.checkbox(
+                        "Physics Animation",
+                        value=st.session_state.graph_physics_enabled,
+                        key=f"physics_toggle_{unique_id}",
+                        help="Toggle force-directed layout animation"
+                    )
+                    st.session_state.graph_physics_enabled = physics_enabled
+                with ctrl_cols[1]:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+
                 # Configure the graph with physics for animation
                 # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
-                    physics=True,
+                    physics=physics_enabled,
                     hierarchical=False
                 )
 
-                st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click background to fit view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
