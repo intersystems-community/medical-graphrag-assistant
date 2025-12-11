@@ -284,17 +284,32 @@ def extract_relationships_from_results(tool_results: List[dict], entities: List[
 
         # Extract from plot_entity_network or visualize_graphrag_results
         if tool_name in ["plot_entity_network", "visualize_graphrag_results"]:
+            nodes = result_data.get("data", {}).get("nodes", [])
             edges = result_data.get("data", {}).get("edges", [])
+
+            # Build index-to-entityID mapping (edges use array indices, but we need entity IDs)
+            idx_to_entity_id = {}
+            for idx, node in enumerate(nodes):
+                # Use database entity ID if available, otherwise use index
+                entity_id = str(node.get("id", idx))
+                idx_to_entity_id[idx] = entity_id
+
             for idx, edge in enumerate(edges):
-                rel_id = f"{edge.get('source', idx)}_{edge.get('target', idx)}"
+                # Convert array indices to entity IDs
+                source_idx = edge.get("source", idx)
+                target_idx = edge.get("target", idx)
+                source_id = idx_to_entity_id.get(source_idx, str(source_idx))
+                target_id = idx_to_entity_id.get(target_idx, str(target_idx))
+
+                rel_id = f"{min(source_id, target_id)}_{max(source_id, target_id)}"
                 if rel_id in seen_ids:
                     continue
                 seen_ids.add(rel_id)
 
                 relationships.append(DisplayRelationship(
                     id=rel_id,
-                    source_id=str(edge.get("source", "")),
-                    target_id=str(edge.get("target", "")),
+                    source_id=source_id,
+                    target_id=target_id,
                     relationship_type=edge.get("type", edge.get("label", "related")),
                     strength=float(edge.get("weight", edge.get("strength", 0.5)))
                 ))
