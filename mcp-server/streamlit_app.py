@@ -1031,7 +1031,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     agraph_edges.append(Edge(
                         source=str(edge["source"]),
                         target=str(edge["target"]),
-                        label=edge.get("type", ""),
+                        # No label on main graph to reduce clutter (hover shows relationship)
                         color="#888888"
                     ))
 
@@ -1046,7 +1046,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader("Entity Relationship Network (Interactive)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click to reset view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -1111,7 +1111,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     agraph_edges.append(Edge(
                         source=str(edge["source"]),
                         target=str(edge["target"]),
-                        label=edge.get("type", ""),
+                        # No label to reduce clutter (hover shows relationship)
                         color=color,
                         width=width
                     ))
@@ -1127,7 +1127,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                 )
 
                 st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
+                st.caption("Drag nodes to rearrange. Scroll to zoom. Double-click to reset view.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
