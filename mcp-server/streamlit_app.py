@@ -544,7 +544,10 @@ def render_graph_section(
 
             # Build agraph edges - ONLY for edges where both nodes exist
             agraph_edges = []
+            print(f"DEBUG render_graph: node_ids={node_ids}", file=sys.stderr)
+            print(f"DEBUG render_graph: total relationships={len(relationships)}", file=sys.stderr)
             for rel in relationships:
+                print(f"DEBUG edge: source={rel.source_id}, target={rel.target_id}, in_nodes={rel.source_id in node_ids and rel.target_id in node_ids}", file=sys.stderr)
                 # Only add edge if both source and target nodes exist
                 if rel.source_id in node_ids and rel.target_id in node_ids:
                     agraph_edges.append(Edge(
@@ -553,18 +556,7 @@ def render_graph_section(
                         label=rel.relationship_type,
                         color="#888888"
                     ))
-
-            # If no valid edges but we have multiple entities, create query-related edges
-            if len(agraph_edges) == 0 and len(agraph_nodes) >= 2:
-                # Create star graph from first entity to others
-                center_id = entities[0].id
-                for other in entities[1:min(8, len(entities))]:
-                    agraph_edges.append(Edge(
-                        source=center_id,
-                        target=other.id,
-                        label="query-related",
-                        color="#cccccc"  # Lighter color for synthetic edges
-                    ))
+            print(f"DEBUG render_graph: valid edges={len(agraph_edges)}", file=sys.stderr)
 
             # Configure the graph
             config = Config(
