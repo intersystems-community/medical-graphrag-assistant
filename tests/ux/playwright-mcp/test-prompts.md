@@ -268,3 +268,106 @@ SUMMARY: 2/10 passed, 1 failed, 7 skipped
 | "Element not found" | Check selector in this file, app UI may have changed |
 | "AI response timeout" | LLM backend may be slow/unavailable, check AWS status |
 | "Chart not rendering" | May need longer timeout, check browser console for errors |
+
+---
+
+## Feature 005: GraphRAG Details Panel Tests
+
+### TC-011: Details Expander Visible
+
+**Objective**: Verify "Show Execution Details" expander appears after a query response
+
+**Steps**:
+1. Click "Common Symptoms" example button
+2. Wait for AI response to complete (30s timeout)
+3. Take `browser_snapshot`
+4. Search for "Show Execution Details" text
+
+**Pass Criteria**: Expander with "Show Execution Details" is visible
+
+**Timeout**: 35000ms
+
+---
+
+### TC-012: Entity Section Visible
+
+**Objective**: Verify entity section appears when details panel is expanded
+
+**Steps**:
+1. Complete TC-011 prerequisites (response visible)
+2. Click the "Show Execution Details" expander using `browser_click`
+3. Take `browser_snapshot`
+4. Search for "Entities Found" text
+
+**Pass Criteria**: "Entities Found" section header is visible
+
+**Timeout**: 5000ms
+
+---
+
+### TC-013: Graph Section Visible
+
+**Objective**: Verify relationship graph section appears in details panel
+
+**Steps**:
+1. Complete TC-012 prerequisites (details expanded)
+2. Take `browser_snapshot`
+3. Search for "Entity Relationships" text
+
+**Pass Criteria**: "Entity Relationships" section is visible in details panel
+
+**Timeout**: 5000ms
+
+---
+
+### TC-014: Tool Execution Section Visible
+
+**Objective**: Verify tool execution timeline appears in details panel
+
+**Steps**:
+1. Complete TC-012 prerequisites (details expanded)
+2. Take `browser_snapshot`
+3. Search for "Tool Execution" text
+
+**Pass Criteria**: "Tool Execution" section is visible showing tools used
+
+**Timeout**: 5000ms
+
+---
+
+### TC-015: Sub-Sections Collapsible
+
+**Objective**: Verify each sub-section can be independently collapsed
+
+**Steps**:
+1. Complete TC-012 prerequisites (details expanded)
+2. Click "Entities Found" expander header
+3. Verify it collapses (content hidden)
+4. Click again to expand
+5. Verify it expands (content visible)
+
+**Pass Criteria**: Sub-sections toggle independently between collapsed/expanded states
+
+**Timeout**: 5000ms
+
+---
+
+## Feature 005 Test Suite Prompt
+
+```
+Run UX tests for GraphRAG Details Panel at http://54.209.84.148:8501
+
+Execute these tests after TC-001 to TC-010:
+
+1. [TC-011] After response, verify "Show Execution Details" expander visible
+2. [TC-012] Click details expander, verify "Entities Found" section visible
+3. [TC-013] Verify "Entity Relationships" section visible in details
+4. [TC-014] Verify "Tool Execution" section visible with tools used
+5. [TC-015] Verify sub-sections can be collapsed/expanded independently
+
+For each test:
+- Report PASS/FAIL status with timing
+- On failure: capture screenshot, report error, STOP execution
+
+At end: Report summary (X/5 passed for feature 005)
+```

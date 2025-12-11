@@ -529,6 +529,7 @@ def render_graph_section(
         if AGRAPH_AVAILABLE:
             # Build agraph nodes
             agraph_nodes = []
+            node_ids = set()  # Track which node IDs we have
             for entity in entities[:50]:  # Limit for performance
                 # Highlight selected entity
                 color = "#F7A7A6" if entity.id == selected_entity_id else "#97c2fc"
@@ -539,16 +540,31 @@ def render_graph_section(
                     color=color,
                     title=f"{entity.name}\nType: {entity.type.value}\nScore: {entity.score:.2f}"
                 ))
+                node_ids.add(entity.id)
 
-            # Build agraph edges
+            # Build agraph edges - ONLY for edges where both nodes exist
             agraph_edges = []
             for rel in relationships:
-                agraph_edges.append(Edge(
-                    source=rel.source_id,
-                    target=rel.target_id,
-                    label=rel.relationship_type,
-                    color="#888888"
-                ))
+                # Only add edge if both source and target nodes exist
+                if rel.source_id in node_ids and rel.target_id in node_ids:
+                    agraph_edges.append(Edge(
+                        source=rel.source_id,
+                        target=rel.target_id,
+                        label=rel.relationship_type,
+                        color="#888888"
+                    ))
+
+            # If no valid edges but we have multiple entities, create query-related edges
+            if len(agraph_edges) == 0 and len(agraph_nodes) >= 2:
+                # Create star graph from first entity to others
+                center_id = entities[0].id
+                for other in entities[1:min(8, len(entities))]:
+                    agraph_edges.append(Edge(
+                        source=center_id,
+                        target=other.id,
+                        label="query-related",
+                        color="#cccccc"  # Lighter color for synthetic edges
+                    ))
 
             # Configure the graph
             config = Config(

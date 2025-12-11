@@ -20,6 +20,12 @@ Follow-up TODOs: None
 ### I. Authorship & Attribution
 All artifacts, code, documentation, and intellectual property in this project are authored and owned exclusively by **Thomas Dyar (thomas.dyar@intersystems.com)**.
 
+**Git Configuration Requirement**: All commits MUST be authored by Thomas Dyar. Configure git locally:
+```bash
+git config user.name "Thomas Dyar"
+git config user.email "thomas.dyar@intersystems.com"
+```
+
 **ABSOLUTE PROHIBITION**: Attribution to AI coding assistants (Claude Code, Copilot, GitHub Copilot, ChatGPT, or any other AI tool) MUST NEVER appear anywhere in this project including:
 - README files or any documentation
 - Commit messages (no "Co-Authored-By: Claude", no "Generated with Claude Code")
