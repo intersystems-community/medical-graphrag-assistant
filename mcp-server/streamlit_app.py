@@ -189,16 +189,21 @@ def extract_entities_from_results(tool_results: List[dict]) -> List[DisplayEntit
         # Extract from search_knowledge_graph
         if tool_name == "search_knowledge_graph":
             for entity_data in result_data.get("entities", []):
-                entity_id = str(entity_data.get("id", hash(entity_data.get("name", ""))))
+                # Handle both 'name' and 'text' field names
+                entity_name = entity_data.get("name") or entity_data.get("text", "Unknown")
+                entity_id = str(entity_data.get("id", hash(entity_name)))
                 if entity_id in seen_ids:
                     continue
                 seen_ids.add(entity_id)
 
+                # Handle both 'score', 'relevance', and 'confidence' field names
+                score = entity_data.get("score") or entity_data.get("confidence") or entity_data.get("relevance", 0.0)
+
                 entities.append(DisplayEntity(
                     id=entity_id,
-                    name=entity_data.get("name", "Unknown"),
+                    name=entity_name,
                     type=_map_entity_type(entity_data.get("type", "other")),
-                    score=float(entity_data.get("score", entity_data.get("relevance", 0.0))),
+                    score=float(score) if score else 0.0,
                     context=entity_data.get("context", "")[:500],
                     sources=[SourceReference(
                         document_id=src.get("doc_id", ""),
