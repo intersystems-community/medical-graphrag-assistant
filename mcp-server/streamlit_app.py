@@ -299,70 +299,24 @@ def extract_relationships_from_results(tool_results: List[dict], entities: List[
                     strength=float(edge.get("weight", edge.get("strength", 0.5)))
                 ))
 
-        # Extract from search_knowledge_graph - generate co-occurrence relationships
+        # Extract from search_knowledge_graph - use real relationships from EntityRelationships table
         elif tool_name == "search_knowledge_graph":
-            # Build entity-to-document mapping for co-occurrence
-            entity_docs = {}  # entity_id -> set of document fhir_ids
-            entities_data = result_data.get("entities", [])
-            documents_data = result_data.get("documents", [])
+            # Extract real relationships returned by the tool
+            for rel_data in result_data.get("relationships", []):
+                src_id = str(rel_data.get("source_id", ""))
+                tgt_id = str(rel_data.get("target_id", ""))
+                rel_id = f"{min(src_id, tgt_id)}_{max(src_id, tgt_id)}"
+                if rel_id in seen_ids:
+                    continue
+                seen_ids.add(rel_id)
 
-            # Map entities to their matched keywords
-            for entity in entities_data:
-                eid = str(entity.get("id", ""))
-                keyword = entity.get("matched_keyword", "")
-                if eid not in entity_docs:
-                    entity_docs[eid] = {"keyword": keyword, "docs": set()}
-
-            # Documents contain entities, so entities that appear in same document are related
-            # Since we don't have explicit entity-to-document mapping, create relationships
-            # between entities that share the same matched keyword (semantic co-occurrence)
-            entities_by_keyword = {}
-            for entity in entities_data:
-                keyword = entity.get("matched_keyword", "")
-                if keyword:
-                    if keyword not in entities_by_keyword:
-                        entities_by_keyword[keyword] = []
-                    entities_by_keyword[keyword].append(entity)
-
-            # Create relationships between entities with same keyword
-            for keyword, keyword_entities in entities_by_keyword.items():
-                for i, e1 in enumerate(keyword_entities):
-                    for e2 in keyword_entities[i+1:]:
-                        e1_id = str(e1.get("id", ""))
-                        e2_id = str(e2.get("id", ""))
-                        rel_id = f"{min(e1_id, e2_id)}_{max(e1_id, e2_id)}"
-                        if rel_id in seen_ids:
-                            continue
-                        seen_ids.add(rel_id)
-
-                        relationships.append(DisplayRelationship(
-                            id=rel_id,
-                            source_id=e1_id,
-                            target_id=e2_id,
-                            relationship_type=f"co-occurs ({keyword})",
-                            strength=0.5
-                        ))
-
-            # Also create relationships between entities of different types
-            # that share no keyword but are in same result set (weaker relationship)
-            if len(relationships) == 0 and len(entities_data) >= 2:
-                # Create a simple star graph from first entity to others
-                center_entity = entities_data[0]
-                center_id = str(center_entity.get("id", ""))
-                for other_entity in entities_data[1:min(6, len(entities_data))]:
-                    other_id = str(other_entity.get("id", ""))
-                    rel_id = f"{min(center_id, other_id)}_{max(center_id, other_id)}"
-                    if rel_id in seen_ids:
-                        continue
-                    seen_ids.add(rel_id)
-
-                    relationships.append(DisplayRelationship(
-                        id=rel_id,
-                        source_id=center_id,
-                        target_id=other_id,
-                        relationship_type="query-related",
-                        strength=0.3
-                    ))
+                relationships.append(DisplayRelationship(
+                    id=rel_id,
+                    source_id=src_id,
+                    target_id=tgt_id,
+                    relationship_type=rel_data.get("type", "related"),
+                    strength=0.7
+                ))
 
     # If still no relationships but we have entities, create relationships between them
     if len(relationships) == 0 and entities and len(entities) >= 2:

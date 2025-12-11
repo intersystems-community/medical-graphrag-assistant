@@ -501,11 +501,15 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             all_entities.sort(key=lambda x: x['confidence'], reverse=True)
             top_entities = all_entities[:limit]
 
-            # Get documents for these entities
+            documents = []
+            relationships = []
+
+            # Get documents and relationships for these entities
             if top_entities:
                 entity_ids = [e['id'] for e in top_entities]
                 placeholders = ','.join(['?'] * len(entity_ids))
 
+                # Get documents containing these entities
                 doc_sql = f"""
                     SELECT DISTINCT e.ResourceID, f.FHIRResourceId,
                            COUNT(DISTINCT e.EntityID) as EntityCount
@@ -517,14 +521,36 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 """
 
                 cursor.execute(doc_sql, entity_ids)
-                documents = []
                 for resource_id, fhir_id, entity_count in cursor.fetchall():
                     documents.append({
                         'fhir_id': fhir_id,
                         'entity_count': entity_count
                     })
-            else:
-                documents = []
+
+                # Get relationships between found entities from EntityRelationships table
+                rel_sql = f"""
+                    SELECT r.SourceEntityID, r.TargetEntityID, r.RelationshipType,
+                           e1.EntityText as SourceText, e2.EntityText as TargetText
+                    FROM SQLUser.EntityRelationships r
+                    JOIN SQLUser.Entities e1 ON r.SourceEntityID = e1.EntityID
+                    JOIN SQLUser.Entities e2 ON r.TargetEntityID = e2.EntityID
+                    WHERE r.SourceEntityID IN ({placeholders})
+                    OR r.TargetEntityID IN ({placeholders})
+                """
+                cursor.execute(rel_sql, entity_ids + entity_ids)
+                seen_rels = set()
+                for src_id, tgt_id, rel_type, src_text, tgt_text in cursor.fetchall():
+                    # Deduplicate relationships
+                    rel_key = f"{min(src_id, tgt_id)}_{max(src_id, tgt_id)}"
+                    if rel_key not in seen_rels:
+                        seen_rels.add(rel_key)
+                        relationships.append({
+                            'source_id': src_id,
+                            'target_id': tgt_id,
+                            'source_text': src_text,
+                            'target_text': tgt_text,
+                            'type': rel_type or 'related'
+                        })
 
             cursor.close()
             conn.close()
@@ -535,6 +561,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                     "query": query,
                     "entities_found": len(top_entities),
                     "entities": top_entities,
+                    "relationships_found": len(relationships),
+                    "relationships": relationships,
                     "documents_found": len(documents),
                     "documents": documents
                 }, indent=2)
