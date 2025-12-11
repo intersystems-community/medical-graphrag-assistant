@@ -625,8 +625,10 @@ def render_graph_section(
         fig = go.Figure(
             data=[edge_trace] + node_traces,
             layout=go.Layout(
-                title=f"{len(display_rels)} relationships between {len(display_entities)} entities",
-                titlefont=dict(size=12),
+                title=dict(
+                    text=f"{len(display_rels)} relationships between {len(display_entities)} entities",
+                    font=dict(size=12)
+                ),
                 showlegend=True,
                 legend=dict(
                     orientation="h",
