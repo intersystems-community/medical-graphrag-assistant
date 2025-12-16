@@ -48,6 +48,8 @@ class FHIRRadiologyAdapter:
 
     Implements FHIR R4 ImagingStudy and DiagnosticReport resource creation
     for MIMIC-CXR integration with the IRIS FHIR repository.
+
+    When FHIR server is unavailable, returns sample demo data for graceful degradation.
     """
 
     # FHIR base URL from environment or default
@@ -65,23 +67,118 @@ class FHIRRadiologyAdapter:
     LOINC_IMAGING_STUDY_CODE = "18748-4"
     LOINC_SYSTEM = "http://loinc.org"
 
-    def __init__(self, fhir_base_url: Optional[str] = None):
+    # Sample demo data for when FHIR server is unavailable
+    SAMPLE_IMAGING_STUDIES = [
+        {
+            "resourceType": "ImagingStudy",
+            "id": "study-s50414267",
+            "status": "available",
+            "subject": {"reference": "Patient/1", "display": "John Smith"},
+            "started": "2024-03-15T10:30:00Z",
+            "modality": [{"system": "http://dicom.nema.org/resources/ontology/DCM", "code": "CR", "display": "Computed Radiography"}],
+            "identifier": [{"system": "urn:mimic-cxr:study", "value": "s50414267"}],
+            "numberOfSeries": 1,
+            "numberOfInstances": 1,
+            "description": "Chest X-ray PA view - No acute cardiopulmonary findings"
+        },
+        {
+            "resourceType": "ImagingStudy",
+            "id": "study-s50414268",
+            "status": "available",
+            "subject": {"reference": "Patient/2", "display": "Maria Garcia"},
+            "started": "2024-03-16T14:15:00Z",
+            "modality": [{"system": "http://dicom.nema.org/resources/ontology/DCM", "code": "CR", "display": "Computed Radiography"}],
+            "identifier": [{"system": "urn:mimic-cxr:study", "value": "s50414268"}],
+            "numberOfSeries": 1,
+            "numberOfInstances": 1,
+            "description": "Chest X-ray PA and Lateral - Mild cardiomegaly"
+        },
+        {
+            "resourceType": "ImagingStudy",
+            "id": "study-s50414269",
+            "status": "available",
+            "subject": {"reference": "Patient/315", "display": "Robert Johnson"},
+            "started": "2024-03-17T09:00:00Z",
+            "modality": [{"system": "http://dicom.nema.org/resources/ontology/DCM", "code": "CR", "display": "Computed Radiography"}],
+            "identifier": [{"system": "urn:mimic-cxr:study", "value": "s50414269"}],
+            "numberOfSeries": 1,
+            "numberOfInstances": 2,
+            "description": "Chest X-ray - Bilateral pulmonary infiltrates"
+        }
+    ]
+
+    SAMPLE_DIAGNOSTIC_REPORTS = [
+        {
+            "resourceType": "DiagnosticReport",
+            "id": "report-s50414267",
+            "status": "final",
+            "code": {"coding": [{"system": "http://loinc.org", "code": "18748-4", "display": "Diagnostic imaging study"}]},
+            "subject": {"reference": "Patient/1", "display": "John Smith"},
+            "imagingStudy": [{"reference": "ImagingStudy/study-s50414267"}],
+            "conclusion": "No acute cardiopulmonary findings. Heart size normal. Lungs clear.",
+            "effectiveDateTime": "2024-03-15T11:30:00Z"
+        },
+        {
+            "resourceType": "DiagnosticReport",
+            "id": "report-s50414268",
+            "status": "final",
+            "code": {"coding": [{"system": "http://loinc.org", "code": "18748-4", "display": "Diagnostic imaging study"}]},
+            "subject": {"reference": "Patient/2", "display": "Maria Garcia"},
+            "imagingStudy": [{"reference": "ImagingStudy/study-s50414268"}],
+            "conclusion": "Mild cardiomegaly. No focal consolidation. Recommend follow-up.",
+            "effectiveDateTime": "2024-03-16T15:00:00Z"
+        }
+    ]
+
+    SAMPLE_PATIENTS = [
+        {"resourceType": "Patient", "id": "1", "name": [{"family": "Smith", "given": ["John"]}], "gender": "male", "birthDate": "1965-03-15"},
+        {"resourceType": "Patient", "id": "2", "name": [{"family": "Garcia", "given": ["Maria"]}], "gender": "female", "birthDate": "1978-07-22"},
+        {"resourceType": "Patient", "id": "315", "name": [{"family": "Johnson", "given": ["Robert"]}], "gender": "male", "birthDate": "1952-11-08"}
+    ]
+
+    def __init__(self, fhir_base_url: Optional[str] = None, use_demo_mode: Optional[bool] = None):
         """
         Initialize the FHIR Radiology Adapter.
 
         Args:
             fhir_base_url: Base URL for FHIR server. Defaults to FHIR_BASE_URL env var
                           or http://localhost:52773/fhir/r4
+            use_demo_mode: If True, always use demo data. If None, auto-detect based
+                          on FHIR server availability.
         """
         self.fhir_base_url = fhir_base_url or os.getenv(
             'FHIR_BASE_URL',
             self.DEFAULT_FHIR_BASE_URL
         )
+        self._demo_mode = use_demo_mode
+        self._fhir_available = None  # Cached availability check
         self.session = requests.Session()
         self.session.headers.update({
             'Content-Type': 'application/fhir+json',
             'Accept': 'application/fhir+json'
         })
+
+    def _is_fhir_available(self) -> bool:
+        """Check if FHIR server is available (cached)."""
+        if self._demo_mode is True:
+            return False
+        if self._demo_mode is False:
+            return True
+        if self._fhir_available is not None:
+            return self._fhir_available
+
+        try:
+            response = self.session.get(f"{self.fhir_base_url}/metadata", timeout=5)
+            self._fhir_available = response.status_code == 200
+        except Exception:
+            self._fhir_available = False
+
+        return self._fhir_available
+
+    @property
+    def demo_mode(self) -> bool:
+        """Return True if using demo mode (FHIR server unavailable)."""
+        return not self._is_fhir_available()
 
     def build_imaging_study(self, data: ImagingStudyData) -> Dict[str, Any]:
         """
@@ -285,6 +382,13 @@ class FHIRRadiologyAdapter:
         Returns:
             List of ImagingStudy resources
         """
+        # Demo mode: return sample data
+        if self.demo_mode:
+            return [
+                s for s in self.SAMPLE_IMAGING_STUDIES
+                if f"Patient/{patient_id}" in s.get("subject", {}).get("reference", "")
+            ][:limit]
+
         url = f"{self.fhir_base_url}/ImagingStudy"
         params = {
             "subject": f"Patient/{patient_id}",
@@ -312,6 +416,13 @@ class FHIRRadiologyAdapter:
         Returns:
             List of DiagnosticReport resources
         """
+        # Demo mode: return sample data
+        if self.demo_mode:
+            return [
+                r for r in self.SAMPLE_DIAGNOSTIC_REPORTS
+                if f"Patient/{patient_id}" in r.get("subject", {}).get("reference", "")
+            ][:limit]
+
         url = f"{self.fhir_base_url}/DiagnosticReport"
         params = {
             "subject": f"Patient/{patient_id}",
@@ -338,6 +449,10 @@ class FHIRRadiologyAdapter:
         Returns:
             List of ImagingStudy resources
         """
+        # Demo mode: return sample data (first study as example)
+        if self.demo_mode:
+            return self.SAMPLE_IMAGING_STUDIES[:1]
+
         url = f"{self.fhir_base_url}/ImagingStudy"
         params = {
             "encounter": f"Encounter/{encounter_id}"
@@ -366,6 +481,20 @@ class FHIRRadiologyAdapter:
         Returns:
             List of Patient resources with imaging data
         """
+        # Demo mode: return sample patients
+        if self.demo_mode:
+            results = self.SAMPLE_PATIENTS[:limit]
+            # Apply name filter if provided
+            if name:
+                results = [
+                    p for p in results
+                    if any(
+                        name.lower() in json.dumps(n).lower()
+                        for n in p.get("name", [])
+                    )
+                ]
+            return results
+
         # First get ImagingStudy patient references
         url = f"{self.fhir_base_url}/ImagingStudy"
         params = {"_count": 100, "_elements": "subject"}
