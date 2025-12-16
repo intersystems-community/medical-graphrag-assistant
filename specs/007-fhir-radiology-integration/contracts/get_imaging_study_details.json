@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "get_imaging_study_details",
+  "description": "Retrieve detailed information for a specific ImagingStudy resource, including series and instance metadata.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "study_id": {
+        "type": "string",
+        "description": "ImagingStudy resource ID (e.g., 'study-s50414267') or MIMIC study ID (e.g., 's50414267')"
+      },
+      "_include": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["ImagingStudy:subject", "ImagingStudy:encounter", "*"]
+        },
+        "description": "Optional FHIR _include parameters to fetch related resources"
+      }
+    },
+    "required": ["study_id"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "identifier": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "system": { "type": "string" },
+            "value": { "type": "string" }
+          }
+        }
+      },
+      "status": { "type": "string", "enum": ["registered", "available", "cancelled"] },
+      "subject": {
+        "type": "object",
+        "properties": {
+          "reference": { "type": "string" },
+          "display": { "type": "string" }
+        }
+      },
+      "encounter": {
+        "type": "object",
+        "properties": {
+          "reference": { "type": "string" }
+        }
+      },
+      "started": { "type": "string", "format": "date-time" },
+      "modality": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "system": { "type": "string" },
+            "code": { "type": "string" }
+          }
+        }
+      },
+      "numberOfSeries": { "type": "integer" },
+      "numberOfInstances": { "type": "integer" },
+      "series": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "uid": { "type": "string" },
+            "modality": { "type": "object" },
+            "numberOfInstances": { "type": "integer" },
+            "instance": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "uid": { "type": "string" },
+                  "sopClass": { "type": "object" },
+                  "number": { "type": "integer" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "note": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          }
+        }
+      },
+      "linked_images": {
+        "type": "array",
+        "description": "MIMIC-CXR images linked to this study",
+        "items": {
+          "type": "object",
+          "properties": {
+            "image_id": { "type": "string" },
+            "view_position": { "type": "string" },
+            "image_path": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": { "study_id": "s50414267" },
+      "output": {
+        "id": "study-s50414267",
+        "identifier": [{ "system": "urn:mimic-cxr:study", "value": "s50414267" }],
+        "status": "available",
+        "subject": { "reference": "Patient/p10002428", "display": "John Smith" },
+        "started": "2024-01-15T10:30:00Z",
+        "modality": [{ "system": "http://dicom.nema.org/resources/ontology/DCM", "code": "CR" }],
+        "numberOfSeries": 1,
+        "numberOfInstances": 1,
+        "series": [{
+          "uid": "1.2.3.4.5",
+          "modality": { "code": "CR" },
+          "numberOfInstances": 1,
+          "instance": [{ "uid": "1.2.3.4.5.1", "number": 1 }]
+        }],
+        "linked_images": [{
+          "image_id": "p10002428_s50414267_view1",
+          "view_position": "PA",
+          "image_path": "/mimic-cxr/p10/p10002428/s50414267/view1.dcm"
+        }]
+      }
+    }
+  ]
+}
