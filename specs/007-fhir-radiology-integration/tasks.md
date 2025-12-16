@@ -204,7 +204,13 @@
 |-----------|--------|-------|
 | Contract Tests | ✅ PASSED | 20/20 |
 | UX Tests (Playwright) | ✅ PASSED | 21/21 |
-| E2E Tests | ⏳ SKIPPED | 21/21 (FHIR server unavailable) |
+| E2E Tests | ⚠️ PARTIAL | 13/21 PASSED, 8 skipped (no ImagingStudy data in FHIR) |
+
+**E2E Test Details** (tested 2025-12-16 against http://13.218.19.254:52773/csp/healthshare/demo/fhir/r4):
+- FHIR `/metadata` returns 200 ✅ (server is accessible)
+- FHIR `/ImagingStudy` and `/Patient` endpoints work but return 0 resources
+- 13 tests passed: list_radiology_queries, error handling, invalid IDs
+- 8 tests skipped: require actual ImagingStudy data in FHIR repository
 
 ---
 
@@ -238,8 +244,9 @@ Task: T039 - Create DiagnosticReport resources
 - [Story] label maps task to specific user story for traceability
 - **Feature 007 core implementation is COMPLETE** (US1, US2, US4)
 - **US3 (P3)** is lower priority and can be deferred
-- **Next milestone**: Production data import (Phase 7) requires FHIR server access
-- E2E tests are written but skipped until FHIR server is available
+- **Next milestone**: Production data import (Phase 7) - create ImagingStudy resources in FHIR
+- E2E tests: 13 passed against live FHIR server, 8 require ImagingStudy data to pass
+- **Blocker**: FHIR server has no ImagingStudy or DiagnosticReport resources - need to run `scripts/create_imaging_studies.py` or data import
 
 ---
 
