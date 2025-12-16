@@ -397,6 +397,26 @@ async def list_tools() -> List[Tool]:
                 "type": "object",
                 "properties": {}
             }
+        ),
+        Tool(
+            name="get_encounter_imaging",
+            description="Retrieve imaging studies associated with a specific patient encounter. "
+                       "Useful for viewing all radiology performed during a hospital visit.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "encounter_id": {
+                        "type": "string",
+                        "description": "FHIR Encounter resource ID (e.g., 'enc-123' or 'Encounter/enc-123')"
+                    },
+                    "include_reports": {
+                        "type": "boolean",
+                        "description": "Whether to include associated DiagnosticReport resources",
+                        "default": True
+                    }
+                },
+                "required": ["encounter_id"]
+            }
         )
     ]
 
@@ -1443,6 +1463,93 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return [TextContent(
                 type="text",
                 text=json.dumps(stats, indent=2)
+            )]
+
+        elif name == "get_encounter_imaging":
+            encounter_id = arguments["encounter_id"]
+            include_reports = arguments.get("include_reports", True)
+
+            # Strip 'Encounter/' prefix if present
+            if encounter_id.startswith("Encounter/"):
+                encounter_id = encounter_id[len("Encounter/"):]
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+
+            adapter = FHIRRadiologyAdapter()
+
+            # Get the encounter details first
+            encounter_url = f"{adapter.fhir_base_url}/Encounter/{encounter_id}"
+            encounter_response = adapter.session.get(encounter_url)
+
+            encounter_data = None
+            if encounter_response.status_code == 200:
+                encounter_resource = encounter_response.json()
+                encounter_data = {
+                    "id": encounter_resource.get("id"),
+                    "status": encounter_resource.get("status"),
+                    "class": encounter_resource.get("class", {}).get("display", "unknown"),
+                    "period": {
+                        "start": encounter_resource.get("period", {}).get("start"),
+                        "end": encounter_resource.get("period", {}).get("end")
+                    },
+                    "patient_ref": encounter_resource.get("subject", {}).get("reference")
+                }
+
+            # Get imaging studies for this encounter
+            imaging_studies = adapter.get_encounter_imaging(encounter_id)
+
+            # Format studies for output per contract
+            formatted_studies = []
+            for study in imaging_studies:
+                study_entry = {
+                    "id": study.get("id"),
+                    "study_id": None,
+                    "status": study.get("status"),
+                    "started": study.get("started"),
+                    "modality": None,
+                    "number_of_instances": study.get("numberOfInstances", 0)
+                }
+
+                # Extract MIMIC study ID from identifiers
+                for identifier in study.get("identifier", []):
+                    if identifier.get("system") == "urn:mimic-cxr:study":
+                        study_entry["study_id"] = identifier.get("value")
+
+                # Extract modality
+                modalities = study.get("modality", [])
+                if modalities:
+                    study_entry["modality"] = modalities[0].get("code", "unknown")
+
+                # Include report if requested
+                if include_reports:
+                    # Look up DiagnosticReport referencing this ImagingStudy
+                    report_url = f"{adapter.fhir_base_url}/DiagnosticReport"
+                    report_params = {
+                        "imaging-study": f"ImagingStudy/{study.get('id')}"
+                    }
+                    report_response = adapter.session.get(report_url, params=report_params)
+
+                    if report_response.status_code == 200:
+                        report_bundle = report_response.json()
+                        report_entries = report_bundle.get("entry", [])
+                        if report_entries:
+                            report_resource = report_entries[0].get("resource", {})
+                            study_entry["report"] = {
+                                "id": report_resource.get("id"),
+                                "conclusion": report_resource.get("conclusion"),
+                                "status": report_resource.get("status")
+                            }
+
+                formatted_studies.append(study_entry)
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "encounter": encounter_data,
+                    "imaging_studies": formatted_studies,
+                    "total_studies": len(formatted_studies)
+                }, indent=2)
             )]
 
         else:
