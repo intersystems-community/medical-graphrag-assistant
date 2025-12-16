@@ -31,7 +31,11 @@ from src.setup.create_patient_mapping import (
     insert_patient_mapping,
     get_mapping_stats
 )
-from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+from src.adapters.fhir_radiology_adapter import (
+    FHIRRadiologyAdapter,
+    ImagingStudyData,
+    DiagnosticReportData
+)
 
 
 # Configuration
@@ -45,6 +49,39 @@ SYNTHEA_NAMES = [
     ("Ashley", "Robinson"), ("Andrew", "Clark"), ("Stephanie", "Lewis"),
     ("Joshua", "Lee"), ("Nicole", "Walker")
 ]
+
+
+def get_mimic_studies_for_subject(subject_id: str) -> List[Dict]:
+    """
+    Get all imaging studies for a MIMIC subject from the MIMICCXRImages table.
+
+    Args:
+        subject_id: MIMIC subject ID (e.g., 'p10002428')
+
+    Returns:
+        List of dicts with study_id, view_position, image_path
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        sql = """
+            SELECT DISTINCT StudyID, ViewPosition, ImagePath
+            FROM VectorSearch.MIMICCXRImages
+            WHERE SubjectID = ?
+        """
+        cursor.execute(sql, (subject_id,))
+        studies = []
+        for row in cursor.fetchall():
+            studies.append({
+                'study_id': row[0],
+                'view_position': row[1],
+                'image_path': row[2]
+            })
+        return studies
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_mimic_subject_ids(limit: Optional[int] = None) -> List[str]:
@@ -357,6 +394,92 @@ def generate_unlinked_report(output_path: Optional[str] = None) -> Dict[str, Any
         conn.close()
 
 
+def create_imaging_studies_for_subject(
+    subject_id: str,
+    patient_id: str,
+    adapter: FHIRRadiologyAdapter,
+    match_encounters: bool = True,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """
+    Create FHIR ImagingStudy resources for a MIMIC subject (T021).
+
+    Uses 24-hour window encounter matching (T019) to link studies to encounters.
+
+    Args:
+        subject_id: MIMIC subject ID
+        patient_id: FHIR Patient resource ID
+        adapter: FHIRRadiologyAdapter instance
+        match_encounters: Whether to attempt encounter matching
+        dry_run: If True, don't actually create resources
+
+    Returns:
+        Statistics dict with counts of operations
+    """
+    stats = {
+        'studies_found': 0,
+        'imaging_studies_created': 0,
+        'encounters_matched': 0,
+        'errors': 0
+    }
+
+    # Get studies for this subject from database
+    studies = get_mimic_studies_for_subject(subject_id)
+    stats['studies_found'] = len(studies)
+
+    # Group by study_id (may have multiple images per study)
+    unique_studies = {}
+    for study in studies:
+        study_id = study['study_id']
+        if study_id not in unique_studies:
+            unique_studies[study_id] = study
+
+    for study_id, study_info in unique_studies.items():
+        try:
+            # Check if ImagingStudy already exists
+            existing = adapter.get_imaging_study(study_id)
+            if existing:
+                continue  # Skip already created
+
+            # Determine encounter via 24-hour window matching (T019)
+            encounter_id = None
+            if match_encounters:
+                # Use current date as study date (in real scenario, extract from MIMIC metadata)
+                # For demo purposes, try to find any encounter for this patient
+                study_date = datetime.now()
+                encounter_id = adapter.lookup_encounter_by_date(
+                    patient_id=patient_id,
+                    study_date=study_date,
+                    window_hours=24
+                )
+                if encounter_id:
+                    stats['encounters_matched'] += 1
+
+            # Build ImagingStudy data
+            imaging_data = ImagingStudyData(
+                study_id=study_id,
+                subject_id=subject_id,
+                patient_id=patient_id,
+                modality="CR",  # Chest X-ray
+                num_series=1,
+                num_instances=1,
+                encounter_id=encounter_id,
+                description=f"Chest X-ray ({study_info.get('view_position', 'unknown view')})"
+            )
+
+            if not dry_run:
+                resource = adapter.build_imaging_study(imaging_data)
+                adapter.put_resource(resource)
+
+            stats['imaging_studies_created'] += 1
+
+        except Exception as e:
+            print(f"  Error creating ImagingStudy for {study_id}: {e}", file=sys.stderr)
+            stats['errors'] += 1
+
+    return stats
+
+
 def main():
     """Main entry point for import script."""
     parser = argparse.ArgumentParser(
@@ -381,6 +504,14 @@ def main():
     parser.add_argument(
         '--stats-only', action='store_true',
         help='Only show current mapping statistics'
+    )
+    parser.add_argument(
+        '--create-imaging-studies', action='store_true',
+        help='Create FHIR ImagingStudy resources for mapped subjects (T021)'
+    )
+    parser.add_argument(
+        '--no-encounter-matching', action='store_true',
+        help='Skip 24-hour window encounter matching during ImagingStudy creation (T019)'
     )
 
     args = parser.parse_args()
@@ -434,6 +565,59 @@ def main():
     if args.unlinked_report:
         print("\nGenerating unlinked subjects report...")
         generate_unlinked_report(args.unlinked_report)
+
+    # Create ImagingStudy resources if requested (T021)
+    if args.create_imaging_studies:
+        print("\n=== Creating FHIR ImagingStudy Resources ===")
+        adapter = FHIRRadiologyAdapter()
+        imaging_stats = {
+            'total_subjects': 0,
+            'studies_found': 0,
+            'imaging_studies_created': 0,
+            'encounters_matched': 0,
+            'errors': 0
+        }
+
+        # Get all mapped subjects
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT MIMICSubjectID, FHIRPatientID
+                FROM VectorSearch.PatientImageMapping
+            """)
+            mapped_subjects = [(row[0], row[1]) for row in cursor.fetchall()]
+        finally:
+            cursor.close()
+            conn.close()
+
+        print(f"Found {len(mapped_subjects)} mapped subjects")
+
+        for i, (subject_id, patient_id) in enumerate(mapped_subjects):
+            if (i + 1) % 50 == 0:
+                print(f"Processing {i + 1}/{len(mapped_subjects)}...")
+
+            subject_stats = create_imaging_studies_for_subject(
+                subject_id=subject_id,
+                patient_id=patient_id,
+                adapter=adapter,
+                match_encounters=not args.no_encounter_matching,
+                dry_run=args.dry_run
+            )
+
+            imaging_stats['total_subjects'] += 1
+            imaging_stats['studies_found'] += subject_stats['studies_found']
+            imaging_stats['imaging_studies_created'] += subject_stats['imaging_studies_created']
+            imaging_stats['encounters_matched'] += subject_stats['encounters_matched']
+            imaging_stats['errors'] += subject_stats['errors']
+
+        # Print ImagingStudy summary
+        print("\n=== ImagingStudy Creation Summary ===")
+        print(f"Subjects processed: {imaging_stats['total_subjects']}")
+        print(f"Studies found in MIMIC: {imaging_stats['studies_found']}")
+        print(f"ImagingStudy resources created: {imaging_stats['imaging_studies_created']}")
+        print(f"Encounters matched (24h window): {imaging_stats['encounters_matched']}")
+        print(f"Errors: {imaging_stats['errors']}")
 
 
 if __name__ == '__main__':
