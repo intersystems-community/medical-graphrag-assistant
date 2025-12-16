@@ -417,6 +417,109 @@ async def list_tools() -> List[Tool]:
                 },
                 "required": ["encounter_id"]
             }
+        ),
+        Tool(
+            name="get_patient_imaging_studies",
+            description="Retrieve all ImagingStudy resources for a given patient. "
+                       "Returns study dates, modalities, and associated report references.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": "FHIR Patient resource ID (e.g., 'p10002428')"
+                    },
+                    "date_from": {
+                        "type": "string",
+                        "description": "Optional start date filter (YYYY-MM-DD)"
+                    },
+                    "date_to": {
+                        "type": "string",
+                        "description": "Optional end date filter (YYYY-MM-DD)"
+                    },
+                    "modality": {
+                        "type": "string",
+                        "description": "Filter by modality (CR, DX, CT, MR, US, NM, PT)"
+                    }
+                },
+                "required": ["patient_id"]
+            }
+        ),
+        Tool(
+            name="get_imaging_study_details",
+            description="Retrieve detailed information for a specific ImagingStudy resource, "
+                       "including series and instance metadata and linked MIMIC-CXR images.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "study_id": {
+                        "type": "string",
+                        "description": "ImagingStudy resource ID (e.g., 'study-s50414267') or MIMIC study ID"
+                    }
+                },
+                "required": ["study_id"]
+            }
+        ),
+        Tool(
+            name="get_radiology_reports",
+            description="Retrieve DiagnosticReport resources for radiology studies. "
+                       "Returns clinical findings, impressions, and full report text.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "study_id": {
+                        "type": "string",
+                        "description": "ImagingStudy resource ID to find associated reports"
+                    },
+                    "patient_id": {
+                        "type": "string",
+                        "description": "Patient ID to find all radiology reports for a patient"
+                    },
+                    "include_full_text": {
+                        "type": "boolean",
+                        "description": "Include full report text (base64 decoded)",
+                        "default": True
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="search_patients_with_imaging",
+            description="Search for patients who have imaging studies. "
+                       "Filter by modality, date range, or clinical findings text.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "modality": {
+                        "type": "string",
+                        "description": "Filter by modality (CR, DX, CT, MR, US)"
+                    },
+                    "finding_text": {
+                        "type": "string",
+                        "description": "Search report conclusions (e.g., 'pneumonia')"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum patients to return",
+                        "default": 20
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="list_radiology_queries",
+            description="List available pre-defined radiology query templates. "
+                       "Returns a catalog of supported FHIR queries for radiology data.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "description": "Filter by category: patient, study, report, encounter, or all",
+                        "default": "all"
+                    }
+                }
+            }
         )
     ]
 
@@ -1549,6 +1652,400 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                     "encounter": encounter_data,
                     "imaging_studies": formatted_studies,
                     "total_studies": len(formatted_studies)
+                }, indent=2)
+            )]
+
+        elif name == "get_patient_imaging_studies":
+            patient_id = arguments["patient_id"]
+            date_from = arguments.get("date_from")
+            date_to = arguments.get("date_to")
+            modality = arguments.get("modality")
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+
+            adapter = FHIRRadiologyAdapter()
+
+            # Build FHIR search URL with parameters
+            search_url = f"{adapter.fhir_base_url}/ImagingStudy"
+            params = {"subject": f"Patient/{patient_id}"}
+
+            if date_from:
+                params["started"] = f"ge{date_from}"
+            if date_to:
+                if "started" in params:
+                    # Can't have two started params, use _filter or adjust
+                    pass  # FHIR servers handle date ranges differently
+                else:
+                    params["started"] = f"le{date_to}"
+            if modality:
+                params["modality"] = modality
+
+            response = adapter.session.get(search_url, params=params)
+
+            studies = []
+            if response.status_code == 200:
+                bundle = response.json()
+                for entry in bundle.get("entry", []):
+                    resource = entry.get("resource", {})
+                    study_entry = {
+                        "id": resource.get("id"),
+                        "status": resource.get("status"),
+                        "started": resource.get("started"),
+                        "modality": None,
+                        "description": resource.get("description"),
+                        "number_of_series": resource.get("numberOfSeries", 0),
+                        "number_of_instances": resource.get("numberOfInstances", 0)
+                    }
+
+                    # Extract modality
+                    modalities = resource.get("modality", [])
+                    if modalities:
+                        study_entry["modality"] = modalities[0].get("code")
+
+                    # Extract study ID from identifiers
+                    for identifier in resource.get("identifier", []):
+                        if identifier.get("system") == "urn:mimic-cxr:study":
+                            study_entry["mimic_study_id"] = identifier.get("value")
+
+                    studies.append(study_entry)
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "patient_id": patient_id,
+                    "studies": studies,
+                    "total_count": len(studies)
+                }, indent=2)
+            )]
+
+        elif name == "get_imaging_study_details":
+            study_id = arguments["study_id"]
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+
+            adapter = FHIRRadiologyAdapter()
+
+            # Try to get by FHIR ID first
+            study_url = f"{adapter.fhir_base_url}/ImagingStudy/{study_id}"
+            response = adapter.session.get(study_url)
+
+            study_data = None
+            if response.status_code == 200:
+                study_data = response.json()
+            else:
+                # Try searching by MIMIC study ID
+                search_url = f"{adapter.fhir_base_url}/ImagingStudy"
+                params = {"identifier": f"urn:mimic-cxr:study|{study_id}"}
+                response = adapter.session.get(search_url, params=params)
+                if response.status_code == 200:
+                    bundle = response.json()
+                    entries = bundle.get("entry", [])
+                    if entries:
+                        study_data = entries[0].get("resource")
+
+            if not study_data:
+                return [TextContent(
+                    type="text",
+                    text=json.dumps({"error": f"ImagingStudy '{study_id}' not found"})
+                )]
+
+            # Format study details
+            result = {
+                "id": study_data.get("id"),
+                "status": study_data.get("status"),
+                "started": study_data.get("started"),
+                "description": study_data.get("description"),
+                "modality": None,
+                "patient_reference": study_data.get("subject", {}).get("reference"),
+                "encounter_reference": study_data.get("encounter", {}).get("reference"),
+                "number_of_series": study_data.get("numberOfSeries", 0),
+                "number_of_instances": study_data.get("numberOfInstances", 0),
+                "series": [],
+                "linked_images": []
+            }
+
+            # Extract modality
+            modalities = study_data.get("modality", [])
+            if modalities:
+                result["modality"] = modalities[0].get("code")
+
+            # Extract MIMIC study ID
+            mimic_study_id = None
+            for identifier in study_data.get("identifier", []):
+                if identifier.get("system") == "urn:mimic-cxr:study":
+                    mimic_study_id = identifier.get("value")
+                    result["mimic_study_id"] = mimic_study_id
+
+            # Extract series information
+            for series in study_data.get("series", []):
+                series_entry = {
+                    "uid": series.get("uid"),
+                    "number": series.get("number"),
+                    "modality": series.get("modality", {}).get("code"),
+                    "description": series.get("description"),
+                    "number_of_instances": series.get("numberOfInstances", 0),
+                    "instances": []
+                }
+
+                for instance in series.get("instance", []):
+                    series_entry["instances"].append({
+                        "uid": instance.get("uid"),
+                        "sop_class": instance.get("sopClass", {}).get("code"),
+                        "number": instance.get("number")
+                    })
+
+                result["series"].append(series_entry)
+
+            # Get linked MIMIC-CXR images from database
+            if mimic_study_id:
+                try:
+                    sql = """
+                        SELECT ImageID, SubjectID, ViewPosition, ImagePath
+                        FROM VectorSearch.MIMICCXRImages
+                        WHERE StudyID = ?
+                    """
+                    cursor.execute(sql, (mimic_study_id,))
+                    for row in cursor.fetchall():
+                        result["linked_images"].append({
+                            "image_id": row[0],
+                            "subject_id": row[1],
+                            "view_position": row[2],
+                            "image_path": row[3]
+                        })
+                except Exception as e:
+                    result["linked_images_error"] = str(e)
+
+            cursor.close()
+            conn.close()
+
+            return [TextContent(
+                type="text",
+                text=json.dumps(result, indent=2)
+            )]
+
+        elif name == "get_radiology_reports":
+            study_id = arguments.get("study_id")
+            patient_id = arguments.get("patient_id")
+            include_full_text = arguments.get("include_full_text", True)
+
+            if not study_id and not patient_id:
+                return [TextContent(
+                    type="text",
+                    text=json.dumps({"error": "Either study_id or patient_id is required"})
+                )]
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+
+            adapter = FHIRRadiologyAdapter()
+
+            # Build search parameters
+            search_url = f"{adapter.fhir_base_url}/DiagnosticReport"
+            params = {"category": "RAD"}  # Radiology category
+
+            if study_id:
+                params["imaging-study"] = f"ImagingStudy/{study_id}"
+            if patient_id:
+                params["subject"] = f"Patient/{patient_id}"
+
+            response = adapter.session.get(search_url, params=params)
+
+            reports = []
+            if response.status_code == 200:
+                bundle = response.json()
+                for entry in bundle.get("entry", []):
+                    resource = entry.get("resource", {})
+
+                    report_entry = {
+                        "id": resource.get("id"),
+                        "status": resource.get("status"),
+                        "issued": resource.get("issued"),
+                        "conclusion": resource.get("conclusion"),
+                        "imaging_study_references": []
+                    }
+
+                    # Extract imaging study references
+                    for study_ref in resource.get("imagingStudy", []):
+                        report_entry["imaging_study_references"].append(
+                            study_ref.get("reference")
+                        )
+
+                    # Extract full text if requested
+                    if include_full_text:
+                        for content in resource.get("presentedForm", []):
+                            if content.get("contentType") == "text/plain":
+                                data = content.get("data")
+                                if data:
+                                    import base64
+                                    try:
+                                        report_entry["full_text"] = base64.b64decode(data).decode("utf-8")
+                                    except Exception:
+                                        report_entry["full_text"] = data
+
+                    reports.append(report_entry)
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "study_id": study_id,
+                    "patient_id": patient_id,
+                    "reports": reports,
+                    "total_count": len(reports)
+                }, indent=2)
+            )]
+
+        elif name == "search_patients_with_imaging":
+            modality = arguments.get("modality")
+            finding_text = arguments.get("finding_text")
+            limit = arguments.get("limit", 20)
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+
+            adapter = FHIRRadiologyAdapter()
+
+            # Strategy: Search ImagingStudy resources and extract unique patients
+            search_url = f"{adapter.fhir_base_url}/ImagingStudy"
+            params = {"_count": limit * 3}  # Fetch more to get unique patients
+
+            if modality:
+                params["modality"] = modality
+
+            response = adapter.session.get(search_url, params=params)
+
+            patients = {}  # patient_id -> patient_data
+            if response.status_code == 200:
+                bundle = response.json()
+                for entry in bundle.get("entry", []):
+                    resource = entry.get("resource", {})
+                    patient_ref = resource.get("subject", {}).get("reference", "")
+
+                    if patient_ref and patient_ref not in patients:
+                        # Extract patient ID
+                        patient_id = patient_ref.replace("Patient/", "")
+
+                        # Get patient details
+                        patient_url = f"{adapter.fhir_base_url}/Patient/{patient_id}"
+                        patient_response = adapter.session.get(patient_url)
+
+                        if patient_response.status_code == 200:
+                            patient_data = patient_response.json()
+                            patient_name = "Unknown"
+                            names = patient_data.get("name", [])
+                            if names:
+                                name = names[0]
+                                parts = name.get("given", []) + [name.get("family", "")]
+                                patient_name = " ".join(p for p in parts if p)
+
+                            patients[patient_ref] = {
+                                "id": patient_id,
+                                "name": patient_name,
+                                "birth_date": patient_data.get("birthDate"),
+                                "gender": patient_data.get("gender"),
+                                "study_count": 0
+                            }
+
+                        if len(patients) >= limit:
+                            break
+
+                    # Increment study count
+                    if patient_ref in patients:
+                        patients[patient_ref]["study_count"] += 1
+
+            # If finding_text specified, filter by DiagnosticReport conclusions
+            if finding_text and patients:
+                filtered_patients = {}
+                for patient_ref, patient_data in patients.items():
+                    # Search reports for this patient
+                    report_url = f"{adapter.fhir_base_url}/DiagnosticReport"
+                    report_params = {
+                        "subject": patient_ref,
+                        "category": "RAD"
+                    }
+                    report_response = adapter.session.get(report_url, params=report_params)
+
+                    if report_response.status_code == 200:
+                        report_bundle = report_response.json()
+                        for report_entry in report_bundle.get("entry", []):
+                            report = report_entry.get("resource", {})
+                            conclusion = report.get("conclusion", "").lower()
+                            if finding_text.lower() in conclusion:
+                                filtered_patients[patient_ref] = patient_data
+                                break
+
+                patients = filtered_patients
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "modality": modality,
+                    "finding_text": finding_text,
+                    "patients": list(patients.values())[:limit],
+                    "total_count": len(patients)
+                }, indent=2)
+            )]
+
+        elif name == "list_radiology_queries":
+            category = arguments.get("category", "all")
+
+            # Define available query templates
+            query_catalog = {
+                "patient": [
+                    {
+                        "name": "get_patient_imaging_studies",
+                        "description": "Retrieve all imaging studies for a patient",
+                        "parameters": ["patient_id", "date_from?", "date_to?", "modality?"],
+                        "example": "get_patient_imaging_studies(patient_id='p10002428')"
+                    }
+                ],
+                "study": [
+                    {
+                        "name": "get_imaging_study_details",
+                        "description": "Get detailed information for a specific imaging study",
+                        "parameters": ["study_id"],
+                        "example": "get_imaging_study_details(study_id='study-s50414267')"
+                    },
+                    {
+                        "name": "search_medical_images",
+                        "description": "Semantic search for medical images using NV-CLIP",
+                        "parameters": ["query", "limit?"],
+                        "example": "search_medical_images(query='pneumonia chest x-ray')"
+                    }
+                ],
+                "report": [
+                    {
+                        "name": "get_radiology_reports",
+                        "description": "Retrieve diagnostic reports for studies or patients",
+                        "parameters": ["study_id?", "patient_id?", "include_full_text?"],
+                        "example": "get_radiology_reports(patient_id='p10002428')"
+                    }
+                ],
+                "encounter": [
+                    {
+                        "name": "get_encounter_imaging",
+                        "description": "Get imaging studies for a specific encounter",
+                        "parameters": ["encounter_id", "include_reports?"],
+                        "example": "get_encounter_imaging(encounter_id='enc-123')"
+                    }
+                ]
+            }
+
+            # Filter by category
+            if category == "all":
+                result = query_catalog
+            elif category in query_catalog:
+                result = {category: query_catalog[category]}
+            else:
+                result = {"error": f"Unknown category '{category}'. Valid: patient, study, report, encounter, all"}
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "category": category,
+                    "queries": result,
+                    "total_queries": sum(len(v) for v in query_catalog.values()) if category == "all" else len(result.get(category, []))
                 }, indent=2)
             )]
 
