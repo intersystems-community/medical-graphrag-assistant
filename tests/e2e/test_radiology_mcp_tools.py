@@ -19,10 +19,16 @@ import os
 import sys
 from typing import Dict, Any, List
 
-# Add project root to path
+# Add project root and mcp-server to path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+mcp_server_dir = os.path.join(parent_dir, 'mcp-server')
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
+if mcp_server_dir not in sys.path:
+    sys.path.insert(0, mcp_server_dir)
+
+# Import call_tool here after path setup (direct import since mcp-server is on path)
+from fhir_graphrag_mcp_server import call_tool
 
 
 # Skip if FHIR server not available
@@ -54,7 +60,7 @@ class TestListRadiologyQueriesE2E:
 
     def test_list_all_queries_returns_catalog(self):
         """Verify list_radiology_queries returns query catalog."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -74,7 +80,7 @@ class TestListRadiologyQueriesE2E:
 
     def test_list_patient_queries(self):
         """Verify patient category returns patient-related queries."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -93,7 +99,7 @@ class TestListRadiologyQueriesE2E:
 
     def test_list_study_queries(self):
         """Verify study category returns study-related queries."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -105,7 +111,7 @@ class TestListRadiologyQueriesE2E:
 
     def test_list_invalid_category_returns_error(self):
         """Verify invalid category returns appropriate error."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -122,7 +128,7 @@ class TestGetPatientImagingStudiesE2E:
 
     def test_get_studies_for_valid_patient(self):
         """Verify retrieval of imaging studies for a valid patient."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # First find a patient with imaging studies
@@ -150,7 +156,7 @@ class TestGetPatientImagingStudiesE2E:
 
     def test_get_studies_for_invalid_patient_returns_empty(self):
         """Verify empty result for non-existent patient."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -162,7 +168,7 @@ class TestGetPatientImagingStudiesE2E:
 
     def test_get_studies_with_modality_filter(self):
         """Verify modality filter works."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # First find a patient
@@ -196,7 +202,7 @@ class TestGetImagingStudyDetailsE2E:
 
     def test_get_study_details_by_fhir_id(self):
         """Verify retrieval of study details by FHIR resource ID."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # First find a study
@@ -234,7 +240,7 @@ class TestGetImagingStudyDetailsE2E:
 
     def test_get_study_details_invalid_id_returns_error(self):
         """Verify error response for invalid study ID."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -250,7 +256,7 @@ class TestGetRadiologyReportsE2E:
 
     def test_get_reports_by_patient(self):
         """Verify retrieval of radiology reports by patient ID."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # First find a patient with imaging
@@ -277,7 +283,7 @@ class TestGetRadiologyReportsE2E:
 
     def test_get_reports_requires_patient_or_study(self):
         """Verify error when neither patient_id nor study_id provided."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -289,7 +295,7 @@ class TestGetRadiologyReportsE2E:
 
     def test_get_reports_includes_full_text_when_requested(self):
         """Verify full report text is included when include_full_text=True."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # Find a patient
@@ -327,7 +333,7 @@ class TestSearchPatientsWithImagingE2E:
 
     def test_search_without_filters(self):
         """Verify basic search returns patients."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -342,7 +348,7 @@ class TestSearchPatientsWithImagingE2E:
 
     def test_search_with_modality_filter(self):
         """Verify modality filter returns matching patients."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -360,7 +366,7 @@ class TestSearchPatientsWithImagingE2E:
 
     def test_search_with_finding_text(self):
         """Verify finding_text filter searches report conclusions."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -378,7 +384,7 @@ class TestSearchPatientsWithImagingE2E:
 
     def test_search_respects_limit(self):
         """Verify limit parameter is respected."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -395,7 +401,7 @@ class TestGetEncounterImagingE2E:
 
     def test_get_imaging_for_valid_encounter(self):
         """Verify retrieval of imaging for a valid encounter."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
         import requests
 
@@ -429,7 +435,7 @@ class TestGetEncounterImagingE2E:
 
     def test_get_imaging_for_invalid_encounter(self):
         """Verify handling of invalid encounter ID."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(
@@ -446,7 +452,7 @@ class TestGetEncounterImagingE2E:
 
     def test_encounter_id_with_prefix(self):
         """Verify Encounter/ prefix is handled correctly."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
         import requests
 
@@ -484,7 +490,7 @@ class TestRadiologyToolIntegration:
 
     def test_patient_to_study_to_report_flow(self):
         """Verify complete flow: search patient -> get studies -> get reports."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         # Step 1: Find patients with imaging
@@ -517,7 +523,7 @@ class TestRadiologyToolIntegration:
 
     def test_query_catalog_lists_all_tools(self):
         """Verify query catalog includes all radiology tools."""
-        from mcp_server.fhir_graphrag_mcp_server import call_tool
+        # call_tool imported at module level
         import asyncio
 
         result = asyncio.get_event_loop().run_until_complete(

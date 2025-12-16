@@ -158,6 +158,14 @@ class FHIRRadiologyAdapter:
             'Accept': 'application/fhir+json'
         })
 
+        # Add Basic Auth for IRIS FHIR server
+        fhir_username = os.getenv('FHIR_USERNAME', '_SYSTEM')
+        fhir_password = os.getenv('FHIR_PASSWORD', 'sys')
+        auth_string = base64.b64encode(f"{fhir_username}:{fhir_password}".encode()).decode()
+        self.session.headers.update({
+            'Authorization': f'Basic {auth_string}'
+        })
+
     def _is_fhir_available(self) -> bool:
         """Check if FHIR server is available (cached)."""
         if self._demo_mode is True:
