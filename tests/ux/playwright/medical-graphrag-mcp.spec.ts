@@ -270,6 +270,116 @@ export const TEST_CASES = {
     assertions: [
       { type: 'toggle_works', description: 'section collapses and expands' }
     ]
+  },
+
+  // ============================================================================
+  // Feature 007: FHIR Radiology Integration (TC-016 to TC-021)
+  // ============================================================================
+
+  'TC-016': {
+    id: 'TC-016',
+    name: 'Radiology Tools Listed in Sidebar',
+    description: 'Verify radiology MCP tools appear in Available Tools sidebar',
+    mcpSteps: [
+      { tool: 'browser_navigate', params: { url: 'http://54.209.84.148:8501' } },
+      { tool: 'browser_wait_for', params: { time: 3 } },
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'contains_text', value: 'get_patient_imaging_studies' },
+      { type: 'contains_text', value: 'get_radiology_reports' }
+    ]
+  },
+
+  'TC-017': {
+    id: 'TC-017',
+    name: 'Radiology Query via Chat',
+    description: 'Verify radiology query produces AI response with imaging data',
+    mcpSteps: [
+      { tool: 'browser_snapshot', params: {} },
+      { tool: 'browser_type', params: {
+        element: 'chat input',
+        ref: 'textarea',
+        text: 'Show me available radiology queries',
+        submit: true
+      }},
+      { tool: 'browser_wait_for', params: { time: 30 } },
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'response_received', description: 'AI response with radiology query information' },
+      { type: 'contains_text', value: 'patient' }
+    ]
+  },
+
+  'TC-018': {
+    id: 'TC-018',
+    name: 'Medical Image Search Query',
+    description: 'Verify medical image search returns chest X-ray results',
+    mcpSteps: [
+      { tool: 'browser_click', params: { element: 'Clear button', ref: 'button:Clear' } },
+      { tool: 'browser_wait_for', params: { time: 2 } },
+      { tool: 'browser_type', params: {
+        element: 'chat input',
+        ref: 'textarea',
+        text: 'Search for chest X-rays showing pneumonia',
+        submit: true
+      }},
+      { tool: 'browser_wait_for', params: { time: 30 } },
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'response_received', description: 'AI response with image search results' }
+    ]
+  },
+
+  'TC-019': {
+    id: 'TC-019',
+    name: 'Patient Imaging Studies Query',
+    description: 'Verify get_patient_imaging_studies tool can be invoked via chat',
+    mcpSteps: [
+      { tool: 'browser_click', params: { element: 'Clear button', ref: 'button:Clear' } },
+      { tool: 'browser_wait_for', params: { time: 2 } },
+      { tool: 'browser_type', params: {
+        element: 'chat input',
+        ref: 'textarea',
+        text: 'Find patients who have imaging studies',
+        submit: true
+      }},
+      { tool: 'browser_wait_for', params: { time: 30 } },
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'response_received', description: 'AI response with patient imaging information' }
+    ]
+  },
+
+  'TC-020': {
+    id: 'TC-020',
+    name: 'Radiology Tool Execution Details',
+    description: 'Verify execution details show radiology tool was used',
+    prerequisite: 'TC-017',
+    mcpSteps: [
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'contains_text', value: 'Show Execution Details' }
+    ]
+  },
+
+  'TC-021': {
+    id: 'TC-021',
+    name: 'Radiology Tool in Execution Timeline',
+    description: 'Verify radiology tool appears in execution timeline after query',
+    prerequisite: 'TC-020',
+    mcpSteps: [
+      { tool: 'browser_click', params: { element: 'Show Execution Details expander', ref: 'text:Show Execution Details' } },
+      { tool: 'browser_wait_for', params: { time: 2 } },
+      { tool: 'browser_snapshot', params: {} }
+    ],
+    assertions: [
+      { type: 'contains_text', value: 'Tool Execution' }
+    ]
   }
 };
 
@@ -304,10 +414,19 @@ Execute these tests in order, stopping on first failure (fail-fast):
 14. [TC-014] Verify "Tool Execution" section visible with tools used
 15. [TC-015] Click "Entities Found" header to collapse, click again to expand - verify toggle works
 
+## Feature 007: FHIR Radiology Integration Tests (TC-016 to TC-021)
+
+16. [TC-016] Navigate to URL, verify sidebar contains "get_patient_imaging_studies" and "get_radiology_reports"
+17. [TC-017] Type "Show me available radiology queries" in chat, verify response with "patient"
+18. [TC-018] Clear chat, type "Search for chest X-rays showing pneumonia", verify AI response
+19. [TC-019] Clear chat, type "Find patients who have imaging studies", verify AI response
+20. [TC-020] After radiology query, verify "Show Execution Details" expander visible
+21. [TC-021] Click "Show Execution Details", verify "Tool Execution" section visible
+
 For each test:
 - Use browser_navigate, browser_snapshot, browser_click, browser_type, browser_wait_for
 - Report PASS/FAIL status with timing
 - On failure: capture screenshot via browser_take_screenshot, report error, STOP execution
 
-At end: Report summary (X/15 passed, total time)
+At end: Report summary (X/21 passed, total time)
 `;
