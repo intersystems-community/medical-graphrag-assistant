@@ -166,7 +166,7 @@ class TestSearchPatientsWithImagingContract:
         assert contract is not None, "Contract file should exist"
 
     def test_input_supports_search_criteria(self):
-        """Verify input supports name or condition search."""
+        """Verify input supports search/filter criteria."""
         contract = load_contract('search_patients_with_imaging')
         if contract is None:
             pytest.skip("Contract file not found")
@@ -174,12 +174,14 @@ class TestSearchPatientsWithImagingContract:
         input_schema = contract.get('input_schema') or contract.get('inputSchema', {})
         properties = input_schema.get('properties', {})
 
-        # Should support search criteria
+        # Should support search/filter criteria - per contract, modality and finding_text
         has_name = 'name' in properties or 'patient_name' in properties
         has_condition = 'condition' in properties or 'diagnosis' in properties
         has_query = 'query' in properties or 'search_term' in properties
+        has_modality = 'modality' in properties
+        has_finding = 'finding_text' in properties or 'finding' in properties
 
-        assert has_name or has_condition or has_query, \
+        assert has_name or has_condition or has_query or has_modality or has_finding, \
             "Should support some form of search criteria"
 
     def test_output_returns_patient_list(self):
