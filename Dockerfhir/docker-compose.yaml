@@ -1,16 +1,24 @@
-# FHIR Server with pre-configured ZPM packages
-# All configuration is baked into the Docker image at build time
+# FHIR Server using pre-built FHIR-enabled image
+# Uses intersystemsdc/irishealth-community-fhir which has FHIR server pre-configured
+# Reference: https://hub.docker.com/r/intersystemsdc/irishealth-community-fhir
 services:
   iris-fhir:
-    build: .
+    image: intersystemsdc/irishealth-community-fhir:latest
     container_name: iris-fhir
     restart: unless-stopped
     ports:
       - "32783:52773"  # IRIS Web/FHIR API port (external:internal)
       - "32782:1972"   # IRIS SuperServer port
+    environment:
+      - ISC_DATA_DIRECTORY=/durable
+    volumes:
+      - fhir-data:/durable
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:52773/fhir/r4/metadata | head -1 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 120s
+
+volumes:
+  fhir-data:
