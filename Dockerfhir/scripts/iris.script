@@ -1,6 +1,6 @@
 ; IRIS FHIR Server Setup Script
 ; Uses ZPM package manager to install FHIR server (works with Community Edition)
-; Based on https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
+; Based on https://github.com/intersystems-community/iris-fhir-template
 
 ; Install ZPM (IRIS Package Manager) first
 zn "USER"
@@ -13,11 +13,26 @@ do $system.OBJ.LoadStream(r.HttpResponse.Data,"c")
 ; Install FHIR server package from community registry
 zpm "install fhir-server"
 
-; Configure the FHIR endpoint at /fhir/r4
-; The fhir-server package includes fhirtemplate.Setup class
+; Configure the FHIR server endpoint at /fhir/r4
+; The FHIR server package creates FHIRSERVER namespace but doesn't configure endpoint
+write "Setting up FHIR server at /fhir/r4...",!
+
+; Switch to FHIRSERVER namespace
 zn "FHIRSERVER"
-write "Configuring FHIR endpoint...",!
-do ##class(fhirtemplate.Setup).SetupFHIR()
+
+; Install FHIR namespace elements (required for FHIR server functionality)
+write "Installing FHIR namespace elements...",!
+do ##class(HS.FHIRServer.Installer).InstallNamespace()
+
+; Install FHIR service instance at /fhir/r4
+; Parameters: endpoint, strategy class, metadata packages
+set appKey = "/fhir/r4"
+set strategyClass = "HS.FHIRServer.Storage.Json.InteractionsStrategy"
+set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
+
+write "Installing FHIR instance at ",appKey,"...",!
+do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages)
+
 write "FHIR endpoint configured at /fhir/r4",!
 
 ; Install swagger-ui for API documentation
