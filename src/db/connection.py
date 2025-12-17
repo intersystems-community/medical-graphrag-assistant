@@ -2,7 +2,7 @@
 Database connection module for IRIS.
 
 Provides environment-aware connection management with sensible defaults
-for AWS production IRIS instance.
+for local Docker IRIS instance (used on EC2 deployment).
 """
 
 import os
@@ -13,31 +13,31 @@ import iris
 class DatabaseConnection:
     """
     IRIS database connection manager with environment-based configuration.
-    
-    Defaults to AWS production IRIS (3.84.250.46:1972/%SYS) unless
-    environment variables override.
-    
+
+    Defaults to localhost:32782 (Docker IRIS container) which is the
+    standard deployment configuration on EC2.
+
     Environment Variables:
-        IRIS_HOST: Database hostname (default: 3.84.250.46)
-        IRIS_PORT: Database port (default: 1972)
+        IRIS_HOST: Database hostname (default: localhost)
+        IRIS_PORT: Database port (default: 32782)
         IRIS_NAMESPACE: Database namespace (default: %SYS)
         IRIS_USERNAME: Database username (default: _SYSTEM)
         IRIS_PASSWORD: Database password (default: SYS)
-    
+
     Example:
-        # Use defaults (AWS IRIS)
+        # Use defaults (local Docker IRIS)
         conn = DatabaseConnection.get_connection()
-        
-        # Override with environment variables
-        # export IRIS_HOST=localhost
-        # export IRIS_PORT=32782
+
+        # Override with environment variables for different setup
+        # export IRIS_HOST=192.168.1.100
+        # export IRIS_PORT=1972
         conn = DatabaseConnection.get_connection()
     """
-    
-    # Default configuration (AWS Production IRIS)
+
+    # Default configuration (Local Docker IRIS)
     DEFAULT_CONFIG = {
-        'hostname': '3.84.250.46',
-        'port': 1972,
+        'hostname': 'localhost',
+        'port': 32782,
         'namespace': '%SYS',
         'username': '_SYSTEM',
         'password': 'SYS'
@@ -100,26 +100,32 @@ class DatabaseConnection:
         return hostname in ('localhost', '127.0.0.1', '::1')
     
     @classmethod
-    def is_aws(cls) -> bool:
+    def is_docker(cls) -> bool:
         """
-        Check if configured database is AWS production instance.
-        
+        Check if configured database is using default Docker config.
+
         Returns:
-            bool: True if using default AWS config
+            bool: True if using default localhost:32782 config
         """
         hostname = os.getenv('IRIS_HOST', cls.DEFAULT_CONFIG['hostname'])
-        return hostname == cls.DEFAULT_CONFIG['hostname']
-    
+        port = int(os.getenv('IRIS_PORT', cls.DEFAULT_CONFIG['port']))
+        return hostname in ('localhost', '127.0.0.1') and port == 32782
+
     @classmethod
     def get_info(cls) -> str:
         """
         Get human-readable connection info string.
-        
+
         Returns:
-            str: Connection info (hostname masked for security)
+            str: Connection info
         """
         config = cls.get_config()
-        env = 'AWS' if cls.is_aws() else ('Local' if cls.is_local() else 'Custom')
+        if cls.is_docker():
+            env = 'Docker'
+        elif cls.is_local():
+            env = 'Local'
+        else:
+            env = 'Remote'
         return f"{env} IRIS @ {config['hostname']}:{config['port']}/{config['namespace']}"
 
 
