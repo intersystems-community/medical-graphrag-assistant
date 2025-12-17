@@ -1,16 +1,16 @@
-
-
+# FHIR Server with pre-configured ZPM packages
+# All configuration is baked into the Docker image at build time
 services:
   iris-fhir:
     build: .
     container_name: iris-fhir
     restart: unless-stopped
     ports:
-      - "32783:52773"  # Map local port 8080 to IRIS web port 52773
-      - "32782:1972"  # Map local port 1972 to iris for health superserver port 1972
-    volumes:
-      - ./data:/data  # Map local 'data' directory to '/data' inside container
-    environment:
-      ISC_DATA_DIRECTORY: /data/ifconfig
-      ISC_CPF_MERGE_FILE: /merge/CMF.cpf
-    entrypoint: ["/iris-main"]
+      - "32783:52773"  # IRIS Web/FHIR API port (external:internal)
+      - "32782:1972"   # IRIS SuperServer port
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:52773/fhir/r4/metadata | head -1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
