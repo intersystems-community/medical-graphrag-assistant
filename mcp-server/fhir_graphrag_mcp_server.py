@@ -524,6 +524,14 @@ async def list_tools() -> List[Tool]:
     ]
 
 
+# Helper function to check if a table-not-found error occurred
+def is_table_not_found_error(error_msg: str) -> bool:
+    """Check if error is a 'table not found' SQL error."""
+    error_lower = str(error_msg).lower()
+    return ('table' in error_lower and 'not found' in error_lower) or \
+           ('sqlcode' in error_lower and '-30' in error_lower)
+
+
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
     """Handle tool invocations."""
@@ -536,6 +544,19 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
         "search_patients_with_imaging",
         "get_encounter_imaging",
         "list_radiology_queries"
+    }
+
+    # Tools that depend on GraphRAG tables (Entities, EntityRelationships)
+    GRAPHRAG_DEPENDENT_TOOLS = {
+        "search_knowledge_graph",
+        "hybrid_search",
+        "get_entity_relationships",
+        "get_entity_statistics",
+        "plot_entity_distribution",
+        "plot_patient_timeline",
+        "plot_symptom_frequency",
+        "plot_entity_network",
+        "visualize_graphrag_results"
     }
 
     try:
@@ -2068,10 +2089,24 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
     except Exception as e:
         import traceback
+        error_msg = str(e)
+
+        # Check if this is a GraphRAG table-not-found error
+        if name in GRAPHRAG_DEPENDENT_TOOLS and is_table_not_found_error(error_msg):
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "status": "unavailable",
+                    "message": "Knowledge graph features are not available because the GraphRAG tables have not been created in this database. The medical chat and FHIR document search features are still available.",
+                    "tool": name,
+                    "hint": "To enable GraphRAG features, run the GraphRAG pipeline to populate the Entities and EntityRelationships tables."
+                }, indent=2)
+            )]
+
         return [TextContent(
             type="text",
             text=json.dumps({
-                "error": str(e),
+                "error": error_msg,
                 "traceback": traceback.format_exc()
             })
         )]
