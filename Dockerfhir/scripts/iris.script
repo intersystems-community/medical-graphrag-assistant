@@ -1,8 +1,10 @@
 ; IRIS FHIR Server Setup Script
-; Uses ZPM package manager to install FHIR server (works with Community Edition)
-; Based on https://github.com/intersystems-community/iris-fhir-template
+; Uses HealthShare FHIR classes included in irishealth-community image
+; Based on https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
 
-; Install ZPM (IRIS Package Manager) first
+write "=== Setting up FHIR Server ===",!
+
+; Install ZPM (IRIS Package Manager) for swagger-ui
 zn "USER"
 set r = ##class(%Net.HttpRequest).%New()
 set r.Server = "pm.community.intersystems.com"
@@ -10,34 +12,46 @@ set r.SSLConfiguration = "ISC.FeatureTracker.SSL.Config"
 do r.Get("/packages/zpm/latest/installer")
 do $system.OBJ.LoadStream(r.HttpResponse.Data,"c")
 
-; Install FHIR server package from community registry
-zpm "install fhir-server"
+; Install swagger-ui for API documentation
+zpm "install swagger-ui"
 
-; Configure the FHIR server endpoint at /fhir/r4
-; The FHIR server package creates FHIRSERVER namespace but doesn't configure endpoint
-write "Setting up FHIR server at /fhir/r4...",!
+; Create FHIR Foundation namespace "demo" using HealthShare classes
+write "Creating FHIR Foundation namespace 'demo'...",!
+set $NAMESPACE = "HSLIB"
+if '##class(%SYS.Namespace).Exists("demo") {
+  do ##class(HS.Util.Installer.Foundation).Install("demo")
+  write "Foundation namespace 'demo' created",!
+} else {
+  write "Foundation namespace 'demo' already exists",!
+}
 
-; Switch to FHIRSERVER namespace
-zn "FHIRSERVER"
+; Configure FHIR endpoint
+set $NAMESPACE = "demo"
+set appKey = "/csp/healthshare/demo/fhir/r4"
+set strategyClass = "HS.FHIRServer.Storage.Json.InteractionsStrategy"
+set metadataPackages = $LISTBUILD("hl7.fhir.r4.core@4.0.1","hl7.fhir.us.core@3.1.0")
 
-; Install FHIR namespace elements (required for FHIR server functionality)
 write "Installing FHIR namespace elements...",!
 do ##class(HS.FHIRServer.Installer).InstallNamespace()
-
-; Install FHIR service instance at /fhir/r4
-; Parameters: endpoint, strategy class, metadata packages
-set appKey = "/fhir/r4"
-set strategyClass = "HS.FHIRServer.Storage.Json.InteractionsStrategy"
-set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
 
 write "Installing FHIR instance at ",appKey,"...",!
 do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages)
 
-write "FHIR endpoint configured at /fhir/r4",!
+; Configure service settings
+set strategy = ##class(HS.FHIRServer.API.InteractionsStrategy).GetStrategyForEndpoint(appKey)
+set configData = strategy.GetServiceConfigData()
+set configData.DefaultSearchPageSize = 1000
+set configData.MaxSearchPageSize = 10000
+set configData.MaxSearchResults = 10000
+do strategy.SaveServiceConfigData(configData)
 
-; Install swagger-ui for API documentation
-zn "USER"
-zpm "install swagger-ui"
+; Load sample FHIR data if available
+set sampledir = "/fhirdata/"
+if ##class(%File).DirectoryExists(sampledir) {
+  write "Loading sample FHIR data from ",sampledir,"...",!
+  do ##class(HS.FHIRServer.Tools.DataLoader).SubmitResourceFiles(sampledir, "FHIRServer", appKey, 0, "^fhirlogs")
+}
 
-write "FHIR server installation complete via ZPM",!
+write "=== FHIR Server Setup Complete ===",!
+write "Endpoint: ",appKey,!
 halt
