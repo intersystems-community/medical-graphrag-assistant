@@ -1,0 +1,20 @@
+; IRIS FHIR Server Setup Script
+; Uses ZPM package manager to install FHIR server (works with Community Edition)
+; Based on https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit
+
+; Install ZPM (IRIS Package Manager) first
+zn "USER"
+set r = ##class(%Net.HttpRequest).%New()
+set r.Server = "pm.community.intersystems.com"
+set r.SSLConfiguration = "ISC.FeatureTracker.SSL.Config"
+do r.Get("/packages/zpm/latest/installer")
+do $system.OBJ.LoadStream(r.HttpResponse.Data,"c")
+
+; Install FHIR server package from community registry
+zpm "install fhir-server"
+
+; Install swagger-ui for API documentation
+zpm "install swagger-ui"
+
+write "FHIR server installation complete via ZPM",!
+halt
