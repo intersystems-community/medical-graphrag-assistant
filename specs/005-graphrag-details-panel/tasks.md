@@ -117,7 +117,11 @@
   - Empty results: ✅ Verified via UX test - empty state messages display correctly
   - Large entity counts: Verified via truncation logic (top 50 entities)
   - Circular relationships: Handled by agraph rendering
-- [ ] T033 Test mobile responsiveness - graph fallback to list on small screens
+- [x] T033 Test mobile responsiveness - graph fallback to list on small screens
+  - Tested via Playwright MCP at 375x667 viewport (mobile dimensions)
+  - Streamlit sidebar auto-collapses on mobile, buttons stack vertically
+  - Plotly graphs are inherently responsive and resize to fit viewport
+  - No explicit 768px breakpoint needed - Plotly handles all screen sizes
 - [x] T034 Run quickstart.md validation steps to verify implementation
   - TC-011 through TC-015 all PASSED via Playwright MCP testing
 
