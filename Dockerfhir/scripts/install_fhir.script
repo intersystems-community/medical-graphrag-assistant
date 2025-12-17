@@ -1,0 +1,6 @@
+zn "demo"
+set appKey="/csp/healthshare/demo/fhir/r4"
+set strategy="HS.FHIRServer.Storage.Json.InteractionsStrategy"
+set packages=$LISTBUILD("hl7.fhir.r4.core@4.0.1","hl7.fhir.us.core@3.1.0")
+do ##class(HS.FHIRServer.Installer).InstallInstance(appKey,strategy,packages)
+halt

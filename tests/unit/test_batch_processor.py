@@ -187,9 +187,9 @@ class TestBatchProcessor:
             pending = processor.get_pending_documents("clinical_note")
 
             assert len(pending) == 3
+            assert "doc-000" in pending
             assert "doc-003" in pending
             assert "doc-004" in pending
-            assert "doc-005" in pending
             assert "doc-001" not in pending
             assert "doc-002" not in pending
 
@@ -472,7 +472,7 @@ class TestBatchProcessor:
 
             assert stats["completed"]["count"] == 2
             assert stats["failed"]["count"] == 2
-            assert stats["failed"]["retries"] == 2  # One document retried
+            assert stats["failed"]["retries"] == 3  # doc-002: 1 retry, doc-003: 2 retries
             assert stats["pending"]["count"] == 6
 
     def test_reset_failed_documents(self, processor):

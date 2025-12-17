@@ -301,7 +301,7 @@ class TestNVIDIAEmbeddingsClient:
         """Test batch embedding propagates failures."""
         import requests
 
-        # First batch succeeds, second fails
+        # First batch succeeds, second fails (with retries)
         success_response = Mock()
         success_response.status_code = 200
         success_response.json.return_value = {
@@ -310,9 +310,16 @@ class TestNVIDIAEmbeddingsClient:
 
         error_response = Mock()
         error_response.status_code = 500
+        error_response.text = "Internal Server Error"
         error_response.raise_for_status.side_effect = requests.exceptions.HTTPError()
 
-        mock_post.side_effect = [success_response, error_response]
+        # Need enough responses for: 1 success + 3 retries of failure
+        mock_post.side_effect = [
+            success_response,
+            error_response,
+            error_response,
+            error_response,
+        ]
 
         client.batch_size = 3
         texts = [f"Text {i}" for i in range(6)]  # 2 batches

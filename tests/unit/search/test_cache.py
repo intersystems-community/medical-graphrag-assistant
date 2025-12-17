@@ -18,62 +18,82 @@ from src.search.cache import (
 
 class TestEmbeddingCache:
     """Test the EmbeddingCache class."""
-    
+
     def setup_method(self):
         """Clear cache before each test."""
         clear_cache()
-    
-    def test_cache_hit_for_identical_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_cache_hit_for_identical_query(self, mock_get_embedder):
         """Same query text should return cached result on second call."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = "chest X-ray showing pneumonia"
-        
+
         # First call - cache miss
         embedding1 = get_cached_embedding(query)
-        
+
         # Second call - should be cache hit
         embedding2 = get_cached_embedding(query)
-        
+
         # Results should be identical (same object)
         assert embedding1 == embedding2
         assert embedding1 is embedding2  # Same object in memory
-    
-    def test_cache_miss_for_different_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_cache_miss_for_different_query(self, mock_get_embedder):
         """Different query text should miss cache."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.side_effect = lambda x: [hash(x) % 100 / 100.0, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query1 = "chest X-ray showing pneumonia"
         query2 = "bilateral lung infiltrates"
-        
+
         embedding1 = get_cached_embedding(query1)
         embedding2 = get_cached_embedding(query2)
-        
+
         # Results should be different
         assert embedding1 != embedding2
-    
-    def test_returns_tuple_not_list(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_returns_tuple_not_list(self, mock_get_embedder):
         """Cache should return tuple (hashable) not list."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = "chest X-ray"
-        
+
         embedding = get_cached_embedding(query)
-        
+
         assert isinstance(embedding, tuple)
         assert not isinstance(embedding, list)
-    
-    def test_cache_statistics_track_hits_and_misses(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_cache_statistics_track_hits_and_misses(self, mock_get_embedder):
         """Cache info should track hits and misses correctly."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         clear_cache()
-        
+
         query1 = "pneumonia"
         query2 = "cardiomegaly"
-        
+
         # First calls - 2 misses
         get_cached_embedding(query1)
         get_cached_embedding(query2)
-        
+
         # Repeat calls - 2 hits
         get_cached_embedding(query1)
         get_cached_embedding(query2)
-        
+
         info = cache_info()
-        
+
         assert info.hits == 2
         assert info.misses == 2
         assert info.currsize == 2  # 2 unique queries cached
@@ -93,69 +113,89 @@ class TestEmbeddingCache:
         info = cache_info()
         assert info.maxsize == 1000
     
-    def test_lru_eviction_when_maxsize_exceeded(self):
+    @patch('src.search.cache.get_embedder')
+    def test_lru_eviction_when_maxsize_exceeded(self, mock_get_embedder):
         """Least recently used items should be evicted when cache is full."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         clear_cache()
-        
+
         # Fill cache to maxsize (1000)
         for i in range(1000):
             get_cached_embedding(f"query_{i}")
-        
+
         info = cache_info()
         assert info.currsize == 1000
-        
+
         # Add one more - should evict oldest
         get_cached_embedding("query_1000")
-        
+
         info = cache_info()
         assert info.currsize == 1000  # Still at maxsize
-        
+
         # Oldest query (query_0) should have been evicted
         # Accessing it should be a cache miss
         initial_misses = cache_info().misses
         get_cached_embedding("query_0")
         assert cache_info().misses == initial_misses + 1  # New miss
-    
-    def test_clear_cache_resets_all_stats(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_clear_cache_resets_all_stats(self, mock_get_embedder):
         """clear_cache() should reset all cached items and statistics."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         # Populate cache
         get_cached_embedding("query1")
         get_cached_embedding("query2")
         get_cached_embedding("query1")  # Hit
-        
+
         # Verify cache has items
         assert cache_info().currsize > 0
         assert cache_info().hits > 0
-        
+
         # Clear cache
         clear_cache()
-        
+
         # Verify reset
         info = cache_info()
         assert info.hits == 0
         assert info.misses == 0
         assert info.currsize == 0
-    
-    def test_case_sensitive_caching(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_case_sensitive_caching(self, mock_get_embedder):
         """Cache should be case-sensitive (different cases = different cache entries)."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query_lower = "chest x-ray"
         query_upper = "Chest X-Ray"
-        
+
         embedding1 = get_cached_embedding(query_lower)
         embedding2 = get_cached_embedding(query_upper)
-        
+
         # Should be different cache entries
         info = cache_info()
         assert info.currsize == 2  # Two separate entries
-    
-    def test_whitespace_matters_for_caching(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_whitespace_matters_for_caching(self, mock_get_embedder):
         """Cache should treat different whitespace as different queries."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query1 = "chest X-ray"
         query2 = "chest  X-ray"  # Extra space
-        
+
         embedding1 = get_cached_embedding(query1)
         embedding2 = get_cached_embedding(query2)
-        
+
         info = cache_info()
         assert info.currsize == 2  # Two separate entries
 
@@ -311,46 +351,66 @@ class TestCachePerformance:
 
 class TestCacheEdgeCases:
     """Test edge cases and error handling."""
-    
+
     def setup_method(self):
         """Clear cache before each test."""
         clear_cache()
-    
-    def test_empty_string_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_empty_string_query(self, mock_get_embedder):
         """Should cache empty string queries."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = ""
-        
+
         embedding1 = get_cached_embedding(query)
         embedding2 = get_cached_embedding(query)
-        
+
         assert embedding1 == embedding2
         assert cache_info().currsize >= 1
-    
-    def test_very_long_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_very_long_query(self, mock_get_embedder):
         """Should cache very long queries."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = "chest X-ray " * 100  # 1300+ characters
-        
+
         embedding1 = get_cached_embedding(query)
         embedding2 = get_cached_embedding(query)
-        
+
         assert embedding1 == embedding2
-    
-    def test_unicode_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_unicode_query(self, mock_get_embedder):
         """Should handle Unicode characters in queries."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = "chest X-ray with résumé café naïve"
-        
+
         embedding1 = get_cached_embedding(query)
         embedding2 = get_cached_embedding(query)
-        
+
         assert embedding1 == embedding2
-    
-    def test_special_characters_query(self):
+
+    @patch('src.search.cache.get_embedder')
+    def test_special_characters_query(self, mock_get_embedder):
         """Should handle special characters."""
+        mock_embedder = Mock()
+        mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+        mock_get_embedder.return_value = mock_embedder
+
         query = "chest X-ray: findings! (positive) - 50% opacity?"
-        
+
         embedding1 = get_cached_embedding(query)
         embedding2 = get_cached_embedding(query)
-        
+
         assert embedding1 == embedding2
     
     @patch('src.search.cache.get_embedder')
@@ -396,25 +456,35 @@ def mock_embedder_1024():
     "",  # Empty query
     "résumé café",  # Unicode
 ])
-def test_cache_roundtrip(query):
+@patch('src.search.cache.get_embedder')
+def test_cache_roundtrip(mock_get_embedder, query):
     """Test cache roundtrip for various query types."""
+    mock_embedder = Mock()
+    mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+    mock_get_embedder.return_value = mock_embedder
+
     clear_cache()
-    
+
     embedding1 = get_cached_embedding(query)
     embedding2 = get_cached_embedding(query)
-    
+
     assert embedding1 == embedding2
     assert isinstance(embedding1, tuple)
 
 
 @pytest.mark.parametrize("n_queries", [1, 10, 100, 500])
-def test_cache_size_tracking(n_queries):
+@patch('src.search.cache.get_embedder')
+def test_cache_size_tracking(mock_get_embedder, n_queries):
     """Test cache size tracking for different volumes."""
+    mock_embedder = Mock()
+    mock_embedder.embed_text.return_value = [0.1, 0.2, 0.3]
+    mock_get_embedder.return_value = mock_embedder
+
     clear_cache()
-    
+
     for i in range(n_queries):
         get_cached_embedding(f"query_{i}")
-    
+
     info = cache_info()
     assert info.currsize == n_queries
     assert info.misses == n_queries

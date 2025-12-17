@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "get_radiology_reports",
+  "description": "Retrieve DiagnosticReport resources for radiology studies. Returns clinical findings and interpretations.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "study_id": {
+        "type": "string",
+        "description": "ImagingStudy resource ID to find associated reports"
+      },
+      "patient_id": {
+        "type": "string",
+        "description": "Patient ID to find all radiology reports for a patient"
+      },
+      "date_from": {
+        "type": "string",
+        "format": "date",
+        "description": "Optional start date filter"
+      },
+      "date_to": {
+        "type": "string",
+        "format": "date",
+        "description": "Optional end date filter"
+      },
+      "include_full_text": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to include full report text (base64 decoded)"
+      }
+    },
+    "oneOf": [
+      { "required": ["study_id"] },
+      { "required": ["patient_id"] }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "reports": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "DiagnosticReport resource ID" },
+            "status": { "type": "string", "enum": ["registered", "preliminary", "final", "amended"] },
+            "code": {
+              "type": "object",
+              "properties": {
+                "coding": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "system": { "type": "string" },
+                      "code": { "type": "string" },
+                      "display": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "subject_ref": { "type": "string" },
+            "encounter_ref": { "type": "string" },
+            "effective_datetime": { "type": "string", "format": "date-time" },
+            "issued": { "type": "string", "format": "date-time" },
+            "imaging_study_ref": { "type": "string" },
+            "conclusion": { "type": "string", "description": "Summary/impression from the report" },
+            "conclusion_code": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "system": { "type": "string" },
+                  "code": { "type": "string" },
+                  "display": { "type": "string" }
+                }
+              }
+            },
+            "full_text": {
+              "type": "string",
+              "description": "Full report text (decoded from presentedForm)"
+            }
+          }
+        }
+      },
+      "total_count": { "type": "integer" }
+    }
+  },
+  "examples": [
+    {
+      "input": { "study_id": "study-s50414267", "include_full_text": true },
+      "output": {
+        "reports": [
+          {
+            "id": "report-s50414267",
+            "status": "final",
+            "code": {
+              "coding": [{ "system": "http://loinc.org", "code": "18748-4", "display": "Diagnostic imaging study" }]
+            },
+            "subject_ref": "Patient/p10002428",
+            "encounter_ref": "Encounter/enc-123",
+            "effective_datetime": "2024-01-15T11:00:00Z",
+            "imaging_study_ref": "ImagingStudy/study-s50414267",
+            "conclusion": "No acute cardiopulmonary process.",
+            "conclusion_code": [{ "system": "http://snomed.info/sct", "code": "373067005", "display": "No abnormality detected" }],
+            "full_text": "FINDINGS: The lungs are clear. No focal consolidation, pleural effusion, or pneumothorax. Heart size is normal. IMPRESSION: No acute cardiopulmonary process."
+          }
+        ],
+        "total_count": 1
+      }
+    }
+  ]
+}

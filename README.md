@@ -48,48 +48,461 @@ python mcp-server/fhir_graphrag_mcp_server.py
 
 ## Architecture
 
+### System Overview
+
+```mermaid
+flowchart TB
+    subgraph UI["🖥️ Presentation Layer"]
+        ST[Streamlit Chat UI<br/>v2.15.0]
+    end
+
+    subgraph LLM["🧠 AI/LLM Layer"]
+        direction LR
+        NIM[NVIDIA NIM<br/>Llama 3.1 8B]
+        OAI[OpenAI<br/>GPT-4o]
+        BED[AWS Bedrock<br/>Claude Sonnet 4.5]
+    end
+
+    subgraph MCP["⚡ MCP Server Layer"]
+        MCPS[FHIR + GraphRAG MCP Server<br/>14+ Medical Tools]
+    end
+
+    subgraph DATA["🗄️ Data Layer"]
+        direction LR
+        IRIS[(InterSystems IRIS<br/>Vector Database)]
+        FHIR[FHIR Documents<br/>51 Clinical Notes]
+        GRAPH[Knowledge Graph<br/>83 Entities • 540 Relations]
+        IMG[Medical Images<br/>50 Chest X-rays]
+        MEM[Agent Memory<br/>Semantic Store]
+    end
+
+    subgraph EMB["🔢 Embedding Layer"]
+        NVCLIP[NVIDIA NV-CLIP<br/>1024-dim Multimodal]
+    end
+
+    ST <-->|Multi-LLM Support| LLM
+    LLM <-->|MCP Protocol| MCPS
+    MCPS <-->|IRIS Native API| IRIS
+    IRIS --- FHIR
+    IRIS --- GRAPH
+    IRIS --- IMG
+    IRIS --- MEM
+    MCPS <-->|Embedding API| NVCLIP
 ```
-┌─────────────────────────────────────┐
-│  Streamlit Chat UI (v2.13.0)       │
-│  - Conversation history             │
-│  - Chart visualization              │
-│  - Agent memory editor              │
-│  - Medical image display            │
-└──────────────┬──────────────────────┘
-               │ Multi-LLM Support
-┌──────────────▼──────────────────────┐
-│  LLM Provider (priority order):     │
-│  1. NIM (local Llama 3.1 8B)        │
-│  2. OpenAI (GPT-4o)                 │
-│  3. AWS Bedrock (Claude Sonnet 4.5) │
-│  - Agentic tool calling             │
-│  - Multi-iteration reasoning        │
-└──────────────┬──────────────────────┘
-               │ MCP Protocol (stdio)
-┌──────────────▼──────────────────────┐
-│  FHIR + GraphRAG MCP Server         │
-│  - 10+ medical search tools         │
-│  - FHIR document search             │
-│  - GraphRAG entity/relationship     │
-│  - Medical image search             │
-│  - Agent memory (semantic recall)   │
-│  - Hybrid search with RRF           │
-└──────────────┬──────────────────────┘
-               │ IRIS Native API (TCP)
-┌──────────────▼──────────────────────┐
-│  AWS IRIS Database (g5.xlarge)      │
-│  - 50 medical images (NV-CLIP)      │
-│  - 51 FHIR documents (1024-dim)     │
-│  - GraphRAG entities (83)           │
-│  - Relationships (540)              │
-│  - Agent memories (semantic)        │
-└──────────────────────────────────────┘
-               │ NVIDIA NIM API
-┌──────────────▼──────────────────────┐
-│  NVIDIA NV-CLIP (8002)              │
-│  - 1024-dim multimodal embeddings   │
-│  - Text + image shared space        │
-└──────────────────────────────────────┘
+
+### GraphRAG Data Flow
+
+```mermaid
+flowchart LR
+    subgraph INPUT["📥 Input"]
+        Q[User Query]
+    end
+
+    subgraph RECALL["🔄 Auto-Recall"]
+        MR[Memory Recall<br/>Past Corrections]
+    end
+
+    subgraph SEARCH["🔍 Multi-Modal Search"]
+        direction TB
+        VS[Vector Search<br/>FHIR Documents]
+        GS[Graph Search<br/>Entities & Relations]
+        IS[Image Search<br/>NV-CLIP Similarity]
+    end
+
+    subgraph FUSION["⚗️ Fusion"]
+        RRF[Reciprocal Rank Fusion<br/>RRF Algorithm]
+    end
+
+    subgraph OUTPUT["📤 Output"]
+        R[Ranked Results +<br/>Knowledge Graph Viz]
+    end
+
+    Q --> MR
+    MR --> VS
+    MR --> GS
+    MR --> IS
+    VS --> RRF
+    GS --> RRF
+    IS --> RRF
+    RRF --> R
+```
+
+### Component Interaction
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Streamlit UI
+    participant L as LLM (Claude/GPT/NIM)
+    participant M as MCP Server
+    participant I as IRIS DB
+    participant N as NV-CLIP
+
+    U->>S: "Find pneumonia X-rays"
+    S->>L: Query + Tools
+    L->>M: search_medical_images()
+    M->>N: embed_text(query)
+    N-->>M: 1024-dim vector
+    M->>I: VECTOR_COSINE search
+    I-->>M: Top-K results
+    M-->>L: Images + metadata
+    L->>M: search_knowledge_graph()
+    M->>I: Entity/relation query
+    I-->>M: Graph data
+    M-->>L: Entities + relations
+    L-->>S: Response + visualizations
+    S-->>U: Display results
+```
+
+### IRIS Vector Package Architecture
+
+This project uses the **InterSystems IRIS Vector** ecosystem:
+
+```mermaid
+flowchart TB
+    subgraph APP["🏥 Medical GraphRAG Assistant"]
+        MCP[MCP Server<br/>14+ Medical Tools]
+        CFG[YAML Config<br/>CloudConfiguration API]
+    end
+
+    subgraph IRIS_PKG["📦 InterSystems IRIS Vector Packages"]
+        direction TB
+        RAG["<a href='https://pypi.org/project/iris-vector-rag/'>iris-vector-rag</a><br/>RAG Framework"]
+        GRAPH["<a href='https://pypi.org/project/iris-vector-graph/'>iris-vector-graph</a><br/>Graph Toolkit"]
+
+        subgraph RAG_DETAIL["iris-vector-rag Features"]
+            BYOT[BYOT Storage<br/>Bring Your Own Tables]
+            PIPE[RAG Pipelines<br/>basic • graphrag • crag]
+            SCHEMA[SchemaManager<br/>Table Validation]
+        end
+
+        subgraph GRAPH_DETAIL["iris-vector-graph Features"]
+            ENT[Entity Storage<br/>Type-Tagged Nodes]
+            REL[Relationship Store<br/>Typed Edges]
+            TRAV[Graph Traversal<br/>Path Queries]
+        end
+    end
+
+    subgraph IRIS_DB["🗄️ InterSystems IRIS"]
+        VEC[(VECTOR Column<br/>DOUBLE, 1024)]
+        SQL[(SQL Tables<br/>ClinicalNoteVectors)]
+        KG[(Knowledge Graph<br/>Entities • Relations)]
+    end
+
+    MCP --> RAG
+    MCP --> GRAPH
+    CFG --> RAG
+    RAG --> BYOT
+    RAG --> PIPE
+    RAG --> SCHEMA
+    GRAPH --> ENT
+    GRAPH --> REL
+    GRAPH --> TRAV
+    BYOT --> VEC
+    SCHEMA --> SQL
+    ENT --> KG
+    REL --> KG
+```
+
+**Package Links:**
+- [`iris-vector-rag`](https://pypi.org/project/iris-vector-rag/) - Production RAG framework with multiple pipelines (basic, graphrag, crag, multi_query_rrf)
+- [`iris-vector-graph`](https://pypi.org/project/iris-vector-graph/) - Graph-oriented vector toolkit for GraphRAG workloads
+
+### NVIDIA NIM Architecture
+
+This project uses **[NVIDIA NIM](https://developer.nvidia.com/nim)** (Inference Microservices) for GPU-accelerated AI inference, deployed on AWS EC2 with NVIDIA A10G GPUs.
+
+```mermaid
+flowchart TB
+    subgraph AWS["☁️ AWS EC2 g5.xlarge"]
+        subgraph GPU["🎮 NVIDIA A10G GPU (24GB)"]
+            direction TB
+            NIM_LLM["<a href='https://build.nvidia.com'>NIM Container</a><br/>Port 8001<br/>meta/llama-3.1-8b-instruct"]
+            NIM_CLIP["<a href='https://build.nvidia.com/nvidia/nvclip'>NV-CLIP Container</a><br/>Port 8002<br/>nvidia/nvclip"]
+        end
+
+        subgraph SERVICES["🔧 Application Services"]
+            MCP[MCP Server<br/>Medical Tools]
+            ST[Streamlit UI<br/>Port 8501]
+            IRIS[(IRIS DB<br/>Port 1972)]
+        end
+    end
+
+    subgraph CLIENT["💻 Client"]
+        TUNNEL[SSH Tunnel<br/>localhost:8002 → AWS:8002]
+        APP[Local Development]
+    end
+
+    APP --> |NVCLIP_BASE_URL| TUNNEL
+    TUNNEL --> NIM_CLIP
+    ST --> MCP
+    MCP --> |Text Embeddings| NIM_LLM
+    MCP --> |Image Embeddings| NIM_CLIP
+    MCP --> |Vector Search| IRIS
+    NIM_LLM --> GPU
+    NIM_CLIP --> GPU
+```
+
+**NIM Services:**
+
+| Service | Model | Port | Purpose | Dimension |
+|---------|-------|------|---------|-----------|
+| **NIM LLM** | `meta/llama-3.1-8b-instruct` | 8001 | Text generation, entity extraction | N/A |
+| **NV-CLIP** | `nvidia/nvclip` | 8002 | Multimodal embeddings (text + images) | 1024-dim |
+| **NV-EmbedQA** | `nvidia/nv-embedqa-e5-v5` | Cloud API | Text embeddings for RAG | 1024-dim |
+
+**Deployment Options:**
+- **Self-hosted NIM** (Production): Docker containers on GPU instances with HIPAA compliance
+- **NVIDIA Cloud API** (Development): `https://integrate.api.nvidia.com/v1` with API key
+
+### Knowledge Graph: Entity & Relationship Extraction
+
+The knowledge graph is built from FHIR DocumentReference resources using **regex-based entity extraction** with confidence scoring. No external medical ontology is currently used - entities are extracted using curated regex patterns.
+
+```mermaid
+flowchart LR
+    subgraph FHIR["📄 FHIR Repository"]
+        DOC[DocumentReference<br/>Clinical Notes]
+    end
+
+    subgraph EXTRACT["🔬 Entity Extraction"]
+        direction TB
+        REGEX[Regex Patterns<br/>Confidence-Scored]
+        TYPES[Entity Types:<br/>SYMPTOM • CONDITION<br/>MEDICATION • PROCEDURE<br/>BODY_PART • TEMPORAL]
+    end
+
+    subgraph RELATE["🔗 Relationship Inference"]
+        direction TB
+        HEUR[Heuristic Rules:<br/>Proximity + Context]
+        REL_TYPES[Relationship Types:<br/>TREATS • CAUSES<br/>LOCATED_IN • CO_OCCURS]
+    end
+
+    subgraph STORE["🗄️ Knowledge Graph Tables"]
+        ENT_TBL[(RAG.Entities<br/>83 entities)]
+        REL_TBL[(RAG.EntityRelationships<br/>540 relationships)]
+    end
+
+    DOC --> REGEX
+    REGEX --> TYPES
+    TYPES --> HEUR
+    HEUR --> REL_TYPES
+    REL_TYPES --> ENT_TBL
+    REL_TYPES --> REL_TBL
+```
+
+**Entity Types Extracted:**
+
+| Type | Examples | Confidence Range |
+|------|----------|-----------------|
+| `SYMPTOM` | chest pain, shortness of breath, fever | 0.80 - 0.95 |
+| `CONDITION` | hypertension, diabetes, pneumonia | 0.75 - 0.95 |
+| `MEDICATION` | aspirin, metformin, insulin | 0.85 - 0.95 |
+| `PROCEDURE` | CT scan, MRI, blood test | 0.85 - 0.92 |
+| `BODY_PART` | chest, abdomen, heart | 0.75 - 0.90 |
+| `TEMPORAL` | 3 days ago, last week | 0.75 - 0.95 |
+
+**Relationship Types:**
+
+| Relationship | Pattern | Example |
+|-------------|---------|---------|
+| `TREATS` | MEDICATION → CONDITION/SYMPTOM | aspirin → chest pain |
+| `CAUSES` | CONDITION → SYMPTOM | hypertension → headache |
+| `LOCATED_IN` | SYMPTOM → BODY_PART | pain → chest |
+| `CO_OCCURS` | SYMPTOM ↔ SYMPTOM (within window) | fever ↔ cough |
+
+**Current Limitations & Future Work:**
+- **No medical ontology** (SNOMED-CT, ICD-10, RxNorm) - extraction is pattern-based
+- **No FHIR native queries** - clinical notes are hex-decoded from DocumentReference.content
+- Future: LLM-based entity extraction for improved coverage and ontology mapping
+
+### MCP Tools Architecture
+
+The MCP server exposes **14+ tools** that Claude (or other LLMs) can autonomously call to search medical data.
+
+```mermaid
+flowchart TB
+    subgraph LLM["🧠 LLM (Claude/GPT/NIM)"]
+        AGENT[Agentic Chat]
+    end
+
+    subgraph MCP["⚡ MCP Server Tools"]
+        direction TB
+        subgraph SEARCH["🔍 Search Tools"]
+            T1[search_fhir_documents<br/>Full-text clinical notes]
+            T2[search_knowledge_graph<br/>Entity-based search]
+            T3[hybrid_search<br/>RRF fusion of all sources]
+            T4[search_medical_images<br/>NV-CLIP similarity]
+        end
+
+        subgraph DETAIL["📋 Detail Tools"]
+            T5[get_document_details<br/>Full document content]
+            T6[get_entity_relationships<br/>Graph traversal]
+            T7[get_entity_statistics<br/>Graph stats]
+        end
+
+        subgraph MEMORY["💾 Memory Tools"]
+            T8[remember_information<br/>Store corrections/prefs]
+            T9[recall_information<br/>Semantic memory search]
+            T10[get_memory_stats<br/>Memory statistics]
+        end
+
+        subgraph VIZ["📊 Visualization Tools"]
+            T11[plot_symptom_frequency]
+            T12[plot_entity_distribution]
+            T13[plot_patient_timeline]
+            T14[plot_entity_network]
+        end
+    end
+
+    subgraph DATA["🗄️ Data Sources"]
+        FHIR[(FHIR Documents)]
+        KG[(Knowledge Graph)]
+        IMG[(Medical Images)]
+        MEM[(Agent Memory)]
+    end
+
+    AGENT -->|MCP Protocol| MCP
+    T1 --> FHIR
+    T2 --> KG
+    T3 --> FHIR
+    T3 --> KG
+    T3 --> IMG
+    T4 --> IMG
+    T8 --> MEM
+    T9 --> MEM
+```
+
+**Tool Categories:**
+
+| Category | Tools | Data Source | Query Type |
+|----------|-------|-------------|------------|
+| **FHIR Search** | `search_fhir_documents`, `get_document_details` | ClinicalNoteVectors | Full-text SQL LIKE |
+| **GraphRAG** | `search_knowledge_graph`, `get_entity_relationships`, `hybrid_search` | Entities, EntityRelationships | Entity + Vector + RRF |
+| **Medical Images** | `search_medical_images` | MIMICCXRImages | VECTOR_COSINE (NV-CLIP) |
+| **Agent Memory** | `remember_information`, `recall_information` | AgentMemoryVectors | VECTOR_COSINE (NV-CLIP) |
+| **Visualization** | `plot_*` tools | All sources | Plotly/NetworkX charts |
+
+**Note:** FHIR queries are performed via SQL on pre-ingested data in IRIS tables. The system does **not** make live FHIR REST API calls - documents are batch-loaded during setup and stored with their embeddings in IRIS vector columns.
+
+### Data Pipeline: Ingestion → Storage → Query
+
+> **Note:** Current implementation uses **batch vectorization** on initial data load. Vectors are stored in standard VECTOR columns and require manual re-vectorization when source documents change. See [Future Enhancements](#future-enhancements) for planned automatic sync capabilities.
+
+```mermaid
+flowchart LR
+    subgraph INGEST["📥 Data Ingestion (Batch)"]
+        direction TB
+        FHIR_SRC[FHIR Bundles<br/>JSON Resources]
+        CXR[MIMIC-CXR<br/>Chest X-rays]
+        PARSE[fhirpy Parser<br/>Resource Extraction]
+    end
+
+    subgraph EMBED["🔢 Vectorization"]
+        direction TB
+        NIM_EMB[NVIDIA NIM<br/>NV-EmbedQA-E5-v5]
+        NVCLIP_EMB[NV-CLIP<br/>Multimodal 1024-dim]
+        NER[Entity Extraction<br/>Symptoms • Conditions]
+    end
+
+    subgraph STORE["🗄️ IRIS FHIR Repository"]
+        direction TB
+        subgraph FHIR_TABLES["FHIR Tables"]
+            DOC[(ClinicalNoteVectors<br/>51 Documents)]
+            IMG[(MIMICCXRImages<br/>50 X-rays)]
+        end
+        subgraph GRAPH_TABLES["Knowledge Graph"]
+            ENT_TBL[(Entities<br/>83 Nodes)]
+            REL_TBL[(EntityRelationships<br/>540 Edges)]
+        end
+        subgraph MEM_TABLES["Agent Memory"]
+            MEM_TBL[(AgentMemoryVectors<br/>Semantic Store)]
+        end
+    end
+
+    subgraph QUERY["🔍 Query Processing"]
+        direction TB
+        VEC_SEARCH[Vector Search<br/>VECTOR_COSINE]
+        GRAPH_TRAV[Graph Traversal<br/>Entity → Relations]
+        RRF_FUSE[RRF Fusion<br/>Rank Combination]
+    end
+
+    subgraph OUTPUT["📤 Results"]
+        RANKED[Ranked Documents<br/>+ Knowledge Graph]
+    end
+
+    FHIR_SRC --> PARSE
+    CXR --> NVCLIP_EMB
+    PARSE --> NIM_EMB
+    PARSE --> NER
+    NIM_EMB --> DOC
+    NVCLIP_EMB --> IMG
+    NER --> ENT_TBL
+    NER --> REL_TBL
+    DOC --> VEC_SEARCH
+    IMG --> VEC_SEARCH
+    ENT_TBL --> GRAPH_TRAV
+    REL_TBL --> GRAPH_TRAV
+    MEM_TBL --> VEC_SEARCH
+    VEC_SEARCH --> RRF_FUSE
+    GRAPH_TRAV --> RRF_FUSE
+    RRF_FUSE --> RANKED
+```
+
+### IRIS Database Schema
+
+```mermaid
+erDiagram
+    ClinicalNoteVectors {
+        int ID PK
+        string ResourceID UK
+        string PatientID
+        string DocumentType
+        text TextContent
+        vector Embedding "VECTOR(DOUBLE,1024)"
+        string EmbeddingModel
+        string SourceBundle
+    }
+
+    MIMICCXRImages {
+        int ID PK
+        string DicomID UK
+        string PatientID
+        string StudyID
+        string ViewPosition
+        text Findings
+        vector Embedding "VECTOR(DOUBLE,1024)"
+        string ImagePath
+    }
+
+    Entities {
+        int ID PK
+        string EntityText
+        string EntityType
+        float Confidence
+        string SourceDocID FK
+    }
+
+    EntityRelationships {
+        int ID PK
+        int SourceEntityID FK
+        int TargetEntityID FK
+        string RelationType
+        float Confidence
+        string SourceText
+        string TargetText
+    }
+
+    AgentMemoryVectors {
+        int ID PK
+        string MemoryType
+        text Content
+        vector Embedding "VECTOR(DOUBLE,1024)"
+        datetime CreatedAt
+    }
+
+    ClinicalNoteVectors ||--o{ Entities : "extracts"
+    Entities ||--o{ EntityRelationships : "source"
+    Entities ||--o{ EntityRelationships : "target"
 ```
 
 ## Features
@@ -210,11 +623,16 @@ medical-graphrag-assistant/
 - NVIDIA NIM (Inference Microservices)
 - Model Context Protocol (MCP)
 
-**Database:**
+**Database & Vector Storage:**
 - InterSystems IRIS Community Edition (AWS EC2)
 - Native VECTOR(DOUBLE, 1024) support
 - VECTOR_COSINE similarity search
 - Tables: ClinicalNoteVectors, MIMICCXRImages, Entities, EntityRelationships, AgentMemoryVectors
+
+**InterSystems IRIS Vector Packages:**
+- [`iris-vector-rag`](https://pypi.org/project/iris-vector-rag/) - Production RAG framework with BYOT storage, GraphRAG pipelines, and CloudConfiguration API
+- [`iris-vector-graph`](https://pypi.org/project/iris-vector-graph/) - Graph-oriented vector toolkit for entity storage and relationship traversal
+- `intersystems-irispython` - Native IRIS database driver
 
 **Infrastructure:**
 - AWS EC2 g5.xlarge (NVIDIA A10G GPU)
@@ -223,12 +641,13 @@ medical-graphrag-assistant/
 - Docker for containerization
 
 **Key Libraries:**
-- `intersystems-irispython` - IRIS native client
+- `fhirpy` - FHIR resource parsing and handling
 - `boto3` - AWS SDK
 - `streamlit` - Chat UI
+- `streamlit-agraph` - Interactive graph visualization
 - `mcp` - Model Context Protocol SDK
 - `pydicom` - DICOM medical image processing
-- `PIL` - Image handling
+- `networkx` - Graph algorithms and layout
 
 ## Example Queries
 
@@ -335,6 +754,36 @@ See [docs/troubleshooting.md](docs/troubleshooting.md) for common issues.
 
 ### Historical Documentation
 - [archive/](archive/) - Old implementations, scripts, and session docs
+
+## Future Enhancements
+
+### Automatic Vector Synchronization
+
+**Current State:** Vectors are generated via batch processing during initial data load. When FHIR documents are updated in the repository, embeddings must be manually re-generated.
+
+**Planned Enhancement:** Leverage IRIS EMBEDDING column type for automatic vector synchronization:
+
+```sql
+-- Future: Auto-computed embeddings on INSERT/UPDATE
+CREATE TABLE ClinicalNoteVectors (
+    ID INT PRIMARY KEY,
+    TextContent TEXT,
+    Embedding EMBEDDING[MODEL='NV-EmbedQA-E5-v5'](TextContent)  -- Auto-computed
+);
+```
+
+**Benefits:**
+- Automatic re-vectorization when `TextContent` changes
+- No manual batch re-processing required
+- Real-time sync between FHIR repository and vector store
+
+### Additional Planned Features
+
+- **FHIR Subscription Hooks** - Trigger vectorization on resource create/update events
+- **Incremental Knowledge Graph Updates** - Update entities/relationships without full rebuild
+- **IRIS HealthShare Integration** - Direct FHIR R4 repository connection
+- **Vector Index Optimization** - HNSW index tuning for larger datasets
+- **Multi-tenant Support** - Namespace isolation for multiple healthcare organizations
 
 ## Contributing
 

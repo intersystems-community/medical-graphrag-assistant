@@ -53,6 +53,789 @@ if parent_dir not in sys.path:
 
 from fhir_graphrag_mcp_server import call_tool
 
+# ============================================================================
+# Data Models for GraphRAG Details Panel (Feature 005)
+# ============================================================================
+from dataclasses import dataclass, field
+from typing import List, Optional, Any
+from enum import Enum
+from datetime import datetime
+
+
+class EntityType(Enum):
+    """Category of medical entity."""
+    SYMPTOM = "symptom"
+    CONDITION = "condition"
+    MEDICATION = "medication"
+    PROCEDURE = "procedure"
+    ANATOMY = "anatomy"
+    LAB_RESULT = "lab_result"
+    VITAL_SIGN = "vital_sign"
+    OTHER = "other"
+
+
+class ExecutionStatus(Enum):
+    """Status of tool execution."""
+    SUCCESS = "success"
+    FAILED = "failed"
+    TIMEOUT = "timeout"
+    SKIPPED = "skipped"
+
+
+@dataclass
+class SourceReference:
+    """Reference to source document for an entity."""
+    document_id: str
+    document_type: str = ""
+    excerpt: str = ""
+
+
+@dataclass
+class DisplayEntity:
+    """Represents a medical entity extracted from GraphRAG results for display."""
+    id: str
+    name: str
+    type: EntityType
+    score: float = 0.0
+    sources: List[SourceReference] = field(default_factory=list)
+    context: str = ""
+
+
+@dataclass
+class DisplayRelationship:
+    """Represents a connection between two entities."""
+    id: str
+    source_id: str
+    target_id: str
+    relationship_type: str
+    strength: float = 0.5
+
+
+@dataclass
+class ToolExecution:
+    """Record of a tool invocation during response generation."""
+    id: str
+    tool_name: str
+    start_time: datetime
+    duration_ms: int
+    status: ExecutionStatus
+    parameters: dict = field(default_factory=dict)
+    result_summary: str = ""
+    error_message: str = ""
+
+
+@dataclass
+class DetailsPanel:
+    """Aggregate structure containing all details panel data."""
+    entities: List[DisplayEntity] = field(default_factory=list)
+    relationships: List[DisplayRelationship] = field(default_factory=list)
+    tool_executions: List[ToolExecution] = field(default_factory=list)
+    total_entity_count: int = 0
+    is_truncated: bool = False
+    query_text: str = ""
+    response_time_ms: int = 0
+
+
+# ============================================================================
+# Data Extraction Functions for Details Panel
+# ============================================================================
+
+def _map_entity_type(type_str: str) -> EntityType:
+    """Map a string entity type to EntityType enum."""
+    type_lower = type_str.lower() if type_str else "other"
+    type_mapping = {
+        "symptom": EntityType.SYMPTOM,
+        "condition": EntityType.CONDITION,
+        "medication": EntityType.MEDICATION,
+        "drug": EntityType.MEDICATION,
+        "procedure": EntityType.PROCEDURE,
+        "anatomy": EntityType.ANATOMY,
+        "body_part": EntityType.ANATOMY,
+        "lab_result": EntityType.LAB_RESULT,
+        "lab": EntityType.LAB_RESULT,
+        "vital_sign": EntityType.VITAL_SIGN,
+        "vital": EntityType.VITAL_SIGN,
+    }
+    return type_mapping.get(type_lower, EntityType.OTHER)
+
+
+def extract_entities_from_results(tool_results: List[dict]) -> List[DisplayEntity]:
+    """
+    Extract entities from tool results for display.
+
+    Parses entities from search_knowledge_graph, hybrid_search, and
+    visualize_graphrag_results tool outputs.
+
+    NOTE: As of v2.16.0, the backend search_knowledge_graph tool now returns
+    complete entity objects (including entities discovered via relationships).
+    This function still handles legacy responses and other tools.
+
+    Args:
+        tool_results: List of tool call results from the AI response
+
+    Returns:
+        List of DisplayEntity objects sorted by score descending
+    """
+    entities = []
+    seen_ids = set()
+
+    for result in tool_results:
+        tool_name = result.get("tool_name", "")
+        result_data = result.get("result", {})
+
+        # Handle string result data (JSON)
+        if isinstance(result_data, str):
+            try:
+                result_data = json.loads(result_data)
+            except json.JSONDecodeError:
+                continue
+
+        # Extract from search_knowledge_graph
+        if tool_name == "search_knowledge_graph":
+            for entity_data in result_data.get("entities", []):
+                # Handle both 'name' and 'text' field names
+                entity_name = entity_data.get("name") or entity_data.get("text", "Unknown")
+                entity_id = str(entity_data.get("id", hash(entity_name)))
+                if entity_id in seen_ids:
+                    continue
+                seen_ids.add(entity_id)
+
+                # Handle both 'score', 'relevance', and 'confidence' field names
+                score = entity_data.get("score") or entity_data.get("confidence") or entity_data.get("relevance", 0.0)
+
+                # Check if this is a direct match or discovered via relationship (v2.16.0+)
+                entity_source = entity_data.get("source", "direct_match")
+
+                entities.append(DisplayEntity(
+                    id=entity_id,
+                    name=entity_name,
+                    type=_map_entity_type(entity_data.get("type", "other")),
+                    score=float(score) if score else 0.0,
+                    context=entity_data.get("context", "")[:500] if entity_data.get("context") else entity_source,
+                    sources=[SourceReference(
+                        document_id=src.get("doc_id", ""),
+                        document_type=src.get("doc_type", ""),
+                        excerpt=src.get("excerpt", "")[:200]
+                    ) for src in entity_data.get("sources", [])[:10]]
+                ))
+
+            # LEGACY FALLBACK: Extract entities from relationships if backend doesn't include them
+            # This handles older backend versions that don't include related entities in the entities list
+            for rel_data in result_data.get("relationships", []):
+                # Extract source entity from relationship
+                src_id = str(rel_data.get("source_id", ""))
+                src_text = rel_data.get("source_text", "")
+                if src_id and src_text and src_id not in seen_ids:
+                    seen_ids.add(src_id)
+                    entities.append(DisplayEntity(
+                        id=src_id,
+                        name=src_text,
+                        type=EntityType.OTHER,  # Type not available in legacy relationship data
+                        score=0.4  # Lower score since it's a related entity, not a direct match
+                    ))
+
+                # Extract target entity from relationship
+                tgt_id = str(rel_data.get("target_id", ""))
+                tgt_text = rel_data.get("target_text", "")
+                if tgt_id and tgt_text and tgt_id not in seen_ids:
+                    seen_ids.add(tgt_id)
+                    entities.append(DisplayEntity(
+                        id=tgt_id,
+                        name=tgt_text,
+                        type=EntityType.OTHER,
+                        score=0.4
+                    ))
+
+        # Extract from hybrid_search
+        elif tool_name == "hybrid_search":
+            # Hybrid search may include entity matches
+            for entity_data in result_data.get("entity_matches", []):
+                entity_id = str(entity_data.get("id", hash(entity_data.get("name", ""))))
+                if entity_id in seen_ids:
+                    continue
+                seen_ids.add(entity_id)
+
+                entities.append(DisplayEntity(
+                    id=entity_id,
+                    name=entity_data.get("name", "Unknown"),
+                    type=_map_entity_type(entity_data.get("type", "other")),
+                    score=float(entity_data.get("score", 0.0)),
+                    context=entity_data.get("context", "")[:500]
+                ))
+
+        # Extract from visualize_graphrag_results or plot_entity_network
+        elif tool_name in ["visualize_graphrag_results", "plot_entity_network"]:
+            nodes = result_data.get("data", {}).get("nodes", [])
+            for idx, node in enumerate(nodes):
+                node_type = node.get("type", "other")
+                if node_type == "QUERY":
+                    continue  # Skip query node
+
+                entity_id = str(node.get("id", idx))
+                if entity_id in seen_ids:
+                    continue
+                seen_ids.add(entity_id)
+
+                entities.append(DisplayEntity(
+                    id=entity_id,
+                    name=node.get("name", "Unknown"),
+                    type=_map_entity_type(node_type),
+                    score=float(node.get("score", 0.5))
+                ))
+
+    # Sort by score descending
+    entities.sort(key=lambda e: e.score, reverse=True)
+    return entities
+
+
+def extract_relationships_from_results(tool_results: List[dict], entities: List[DisplayEntity] = None) -> List[DisplayRelationship]:
+    """
+    Extract relationships from tool results for graph display.
+
+    Parses relationships from plot_entity_network and visualize_graphrag_results outputs.
+    Also generates co-occurrence relationships from entities when no explicit relationships exist.
+
+    Args:
+        tool_results: List of tool call results from the AI response
+        entities: Optional list of extracted entities for co-occurrence relationships
+
+    Returns:
+        List of DisplayRelationship objects
+    """
+    relationships = []
+    seen_ids = set()
+
+    for result in tool_results:
+        tool_name = result.get("tool_name", "")
+        result_data = result.get("result", {})
+
+        # Handle string result data (JSON)
+        if isinstance(result_data, str):
+            try:
+                result_data = json.loads(result_data)
+            except json.JSONDecodeError:
+                continue
+
+        # Extract from plot_entity_network or visualize_graphrag_results
+        if tool_name in ["plot_entity_network", "visualize_graphrag_results"]:
+            nodes = result_data.get("data", {}).get("nodes", [])
+            edges = result_data.get("data", {}).get("edges", [])
+
+            # Build index-to-entityID mapping (edges use array indices, but we need entity IDs)
+            idx_to_entity_id = {}
+            for idx, node in enumerate(nodes):
+                # Use database entity ID if available, otherwise use index
+                entity_id = str(node.get("id", idx))
+                idx_to_entity_id[idx] = entity_id
+
+            for idx, edge in enumerate(edges):
+                # Convert array indices to entity IDs
+                source_idx = edge.get("source", idx)
+                target_idx = edge.get("target", idx)
+                source_id = idx_to_entity_id.get(source_idx, str(source_idx))
+                target_id = idx_to_entity_id.get(target_idx, str(target_idx))
+
+                rel_id = f"{min(source_id, target_id)}_{max(source_id, target_id)}"
+                if rel_id in seen_ids:
+                    continue
+                seen_ids.add(rel_id)
+
+                relationships.append(DisplayRelationship(
+                    id=rel_id,
+                    source_id=source_id,
+                    target_id=target_id,
+                    relationship_type=edge.get("type", edge.get("label", "related")),
+                    strength=float(edge.get("weight", edge.get("strength", 0.5)))
+                ))
+
+        # Extract from search_knowledge_graph - use real relationships from EntityRelationships table
+        elif tool_name == "search_knowledge_graph":
+            # Extract real relationships returned by the tool
+            for rel_data in result_data.get("relationships", []):
+                src_id = str(rel_data.get("source_id", ""))
+                tgt_id = str(rel_data.get("target_id", ""))
+                rel_id = f"{min(src_id, tgt_id)}_{max(src_id, tgt_id)}"
+                if rel_id in seen_ids:
+                    continue
+                seen_ids.add(rel_id)
+
+                relationships.append(DisplayRelationship(
+                    id=rel_id,
+                    source_id=src_id,
+                    target_id=tgt_id,
+                    relationship_type=rel_data.get("type", "related"),
+                    strength=0.7
+                ))
+
+    # If still no relationships but we have entities, create relationships between them
+    if len(relationships) == 0 and entities and len(entities) >= 2:
+        # Create star graph from highest scored entity to others
+        center = entities[0]
+        for other in entities[1:min(8, len(entities))]:
+            rel_id = f"{min(center.id, other.id)}_{max(center.id, other.id)}"
+            if rel_id in seen_ids:
+                continue
+            seen_ids.add(rel_id)
+
+            relationships.append(DisplayRelationship(
+                id=rel_id,
+                source_id=center.id,
+                target_id=other.id,
+                relationship_type="query-related",
+                strength=0.3
+            ))
+
+    return relationships
+
+
+def extract_tool_executions(execution_log: List[dict]) -> List[ToolExecution]:
+    """
+    Extract tool execution records from the execution log.
+
+    Args:
+        execution_log: List of execution log entries from chat_with_tools
+
+    Returns:
+        List of ToolExecution objects in chronological order
+    """
+    executions = []
+
+    for idx, log_entry in enumerate(execution_log):
+        # Skip non-tool entries (thinking, memory_recall)
+        if log_entry.get("type") in ["thinking", "memory_recall"]:
+            continue
+
+        tool_name = log_entry.get("tool_name")
+        if not tool_name:
+            continue
+
+        # Determine status from result
+        result_summary = log_entry.get("result_summary", "")
+        status = ExecutionStatus.SUCCESS
+        error_message = ""
+
+        if "error" in result_summary.lower():
+            status = ExecutionStatus.FAILED
+            error_message = result_summary
+        elif "timeout" in result_summary.lower():
+            status = ExecutionStatus.TIMEOUT
+            error_message = result_summary
+
+        # Use iteration number for ordering; estimate timing
+        iteration = log_entry.get("iteration", idx)
+
+        executions.append(ToolExecution(
+            id=f"tool_{idx}_{tool_name}",
+            tool_name=tool_name,
+            start_time=datetime.now(),  # Placeholder - could enhance with actual timing
+            duration_ms=log_entry.get("duration_ms", 0),
+            status=status,
+            parameters=log_entry.get("tool_input", {}),
+            result_summary=result_summary[:200],
+            error_message=error_message
+        ))
+
+    return executions
+
+
+# ============================================================================
+# Details Panel Render Components (Feature 005)
+# ============================================================================
+
+# Session state keys for panel collapse/expand states
+DETAILS_SESSION_KEYS = {
+    "details_selected_entity": None,
+    "details_entities_expanded": True,
+    "details_graph_expanded": True,
+    "details_tools_expanded": True,
+    "details_show_all_entities": False,
+}
+
+# App Settings session state keys
+APP_SETTINGS_KEYS = {
+    "show_tool_prompts": False,  # Show full tool input/prompts in execution details
+    "auto_expand_tool_details": False,  # Auto-expand tool details in execution panel
+}
+
+MAX_DISPLAY_ENTITIES = 50
+
+
+def _init_details_session_state():
+    """Initialize session state keys for details panel if not present."""
+    for key, default in DETAILS_SESSION_KEYS.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
+
+
+def _init_app_settings():
+    """Initialize app settings session state keys if not present."""
+    for key, default in APP_SETTINGS_KEYS.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
+
+
+def _get_entity_type_emoji(entity_type: EntityType) -> str:
+    """Return emoji for entity type."""
+    emoji_map = {
+        EntityType.SYMPTOM: "🤒",
+        EntityType.CONDITION: "🩺",
+        EntityType.MEDICATION: "💊",
+        EntityType.PROCEDURE: "🔧",
+        EntityType.ANATOMY: "🫀",
+        EntityType.LAB_RESULT: "🔬",
+        EntityType.VITAL_SIGN: "📊",
+        EntityType.OTHER: "📋",
+    }
+    return emoji_map.get(entity_type, "📋")
+
+
+def render_entity_section(entities: List[DisplayEntity], total_count: int, msg_idx: int) -> Optional[str]:
+    """
+    Render the entity list with tooltips and truncation.
+
+    Args:
+        entities: List of entities to display
+        total_count: Total entity count before truncation
+        msg_idx: Message index for unique keys
+
+    Returns:
+        Selected entity ID or None
+    """
+    _init_details_session_state()
+
+    with st.expander(f"📋 Entities Found ({total_count})", expanded=st.session_state.details_entities_expanded):
+        if not entities:
+            st.info("No entities found in this query")
+            return None
+
+        # Group entities by type
+        by_type = {}
+        for entity in entities:
+            type_key = entity.type.value
+            if type_key not in by_type:
+                by_type[type_key] = []
+            by_type[type_key].append(entity)
+
+        # Determine display limit
+        show_all = st.session_state.details_show_all_entities
+        display_entities = entities if show_all else entities[:MAX_DISPLAY_ENTITIES]
+
+        # Render entities grouped by type
+        selected_entity_id = None
+        for entity_type, type_entities in by_type.items():
+            emoji = _get_entity_type_emoji(EntityType(entity_type))
+            st.markdown(f"**{emoji} {entity_type.replace('_', ' ').title()}** ({len(type_entities)})")
+
+            # Limit per type for better UX
+            display_type_entities = type_entities[:15] if not show_all else type_entities
+
+            for entity in display_type_entities:
+                # Create clickable entity button
+                btn_key = f"entity_{msg_idx}_{entity.id}"
+                score_display = f" ({entity.score:.2f})" if entity.score > 0 else ""
+
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    if st.button(f"{entity.name}{score_display}", key=btn_key, use_container_width=True):
+                        st.session_state.details_selected_entity = entity.id
+                        selected_entity_id = entity.id
+
+                # Show tooltip/details for selected entity
+                if st.session_state.details_selected_entity == entity.id:
+                    with st.container():
+                        st.info(f"**{entity.name}** ({entity.type.value})")
+                        if entity.context:
+                            st.caption(f"Context: {entity.context[:200]}...")
+                        if entity.sources:
+                            st.markdown("**Source Documents:**")
+                            for src in entity.sources[:3]:
+                                st.caption(f"• {src.document_type}: {src.document_id}")
+                                if src.excerpt:
+                                    st.caption(f"  \"{src.excerpt[:100]}...\"")
+
+        # Show "Show all" button if truncated
+        if total_count > MAX_DISPLAY_ENTITIES and not show_all:
+            if st.button(f"Show all {total_count} entities", key=f"show_all_{msg_idx}"):
+                st.session_state.details_show_all_entities = True
+                st.rerun()
+
+        return selected_entity_id
+
+
+def render_graph_section(
+    entities: List[DisplayEntity],
+    relationships: List[DisplayRelationship],
+    selected_entity_id: Optional[str],
+    msg_idx: int
+) -> Optional[str]:
+    """
+    Render a static relationship graph using Plotly (works in nested expanders).
+
+    Args:
+        entities: List of entities as nodes
+        relationships: List of relationships as edges
+        selected_entity_id: Currently selected entity to highlight
+        msg_idx: Message index for unique keys
+
+    Returns:
+        None (static graph, no click handling)
+    """
+    _init_details_session_state()
+
+    with st.expander("🕸️ Entity Relationships", expanded=st.session_state.details_graph_expanded):
+        # Minimum threshold check
+        if len(relationships) < 1 or len(entities) < 2:
+            st.info("Not enough relationships to display graph (need at least 2 entities with relationships)")
+            return None
+
+        # Build entity lookup and limit nodes for readability
+        max_nodes = 25
+        display_entities = entities[:max_nodes]
+        entity_ids = {e.id for e in display_entities}
+        entity_names = {e.id: e.name for e in display_entities}
+        entity_types = {e.id: e.type for e in display_entities}
+
+        # Filter relationships to only include displayed entities
+        display_rels = [r for r in relationships
+                       if r.source_id in entity_ids and r.target_id in entity_ids]
+
+        if len(display_rels) < 1:
+            st.info("No relationships between displayed entities")
+            return None
+
+        # Create circular layout for nodes
+        import math
+        n = len(display_entities)
+        node_positions = {}
+        for i, entity in enumerate(display_entities):
+            angle = 2 * math.pi * i / n
+            node_positions[entity.id] = (math.cos(angle), math.sin(angle))
+
+        # Color mapping for entity types
+        type_colors = {
+            EntityType.SYMPTOM: "#FF6B6B",      # Red
+            EntityType.CONDITION: "#4ECDC4",    # Teal
+            EntityType.MEDICATION: "#45B7D1",   # Blue
+            EntityType.PROCEDURE: "#96CEB4",    # Green
+            EntityType.ANATOMY: "#FFEAA7",      # Yellow
+            EntityType.LAB_RESULT: "#DDA0DD",   # Plum
+            EntityType.VITAL_SIGN: "#98D8C8",   # Mint
+            EntityType.OTHER: "#C0C0C0",        # Gray
+        }
+
+        # Build edge traces
+        edge_x = []
+        edge_y = []
+        for rel in display_rels:
+            if rel.source_id in node_positions and rel.target_id in node_positions:
+                x0, y0 = node_positions[rel.source_id]
+                x1, y1 = node_positions[rel.target_id]
+                edge_x.extend([x0, x1, None])
+                edge_y.extend([y0, y1, None])
+
+        edge_trace = go.Scatter(
+            x=edge_x, y=edge_y,
+            mode='lines',
+            line=dict(width=1, color='#888888'),
+            hoverinfo='none'
+        )
+
+        # Build node traces (one per type for legend)
+        node_traces = []
+        for entity_type in EntityType:
+            type_entities = [e for e in display_entities if e.type == entity_type]
+            if not type_entities:
+                continue
+
+            node_x = [node_positions[e.id][0] for e in type_entities]
+            node_y = [node_positions[e.id][1] for e in type_entities]
+            node_text = [e.name for e in type_entities]
+            hover_text = [f"{e.name}<br>Type: {e.type.value}<br>Score: {e.score:.2f}" for e in type_entities]
+
+            node_traces.append(go.Scatter(
+                x=node_x, y=node_y,
+                mode='markers+text',
+                name=entity_type.value.replace('_', ' ').title(),
+                text=node_text,
+                textposition="top center",
+                textfont=dict(size=8),
+                hovertext=hover_text,
+                hoverinfo='text',
+                marker=dict(
+                    size=12,
+                    color=type_colors.get(entity_type, '#C0C0C0'),
+                    line=dict(width=1, color='white')
+                )
+            ))
+
+        # Create figure
+        fig = go.Figure(
+            data=[edge_trace] + node_traces,
+            layout=go.Layout(
+                title=dict(
+                    text=f"{len(display_rels)} relationships between {len(display_entities)} entities",
+                    font=dict(size=12)
+                ),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.2,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=9)
+                ),
+                hovermode='closest',
+                margin=dict(b=60, l=5, r=5, t=30),
+                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                height=350,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)'
+            )
+        )
+
+        # Render static Plotly chart
+        st.plotly_chart(fig, key=f"details_graph_{msg_idx}", use_container_width=True)
+
+        if len(entities) > max_nodes:
+            st.caption(f"Showing top {max_nodes} of {len(entities)} entities. Full graph in main response area.")
+
+    return None
+
+
+def render_tools_section(tool_executions: List[ToolExecution], msg_idx: int) -> None:
+    """
+    Render the tool execution timeline.
+
+    Args:
+        tool_executions: List of tool executions in chronological order
+        msg_idx: Message index for unique keys
+    """
+    _init_details_session_state()
+    _init_app_settings()
+
+    # Calculate total duration
+    total_duration_ms = sum(t.duration_ms for t in tool_executions)
+    total_duration_s = total_duration_ms / 1000 if total_duration_ms > 0 else 0
+
+    header = f"⚙️ Tool Execution ({len(tool_executions)} tools"
+    if total_duration_s > 0:
+        header += f", {total_duration_s:.1f}s total"
+    header += ")"
+
+    with st.expander(header, expanded=st.session_state.details_tools_expanded):
+        if not tool_executions:
+            st.info("No tool executions recorded")
+            return
+
+        # Check if tool prompts should be shown (from app settings)
+        show_prompts = st.session_state.get("show_tool_prompts", False)
+        auto_expand = st.session_state.get("auto_expand_tool_details", False)
+
+        for idx, tool in enumerate(tool_executions):
+            # Status icon
+            status_icons = {
+                ExecutionStatus.SUCCESS: "✅",
+                ExecutionStatus.FAILED: "❌",
+                ExecutionStatus.TIMEOUT: "⏱️",
+                ExecutionStatus.SKIPPED: "⏭️",
+            }
+            status_icon = status_icons.get(tool.status, "❓")
+
+            # Duration badge
+            duration_str = f"{tool.duration_ms}ms" if tool.duration_ms > 0 else ""
+            if tool.duration_ms >= 1000:
+                duration_str = f"{tool.duration_ms/1000:.1f}s"
+
+            # Tool header
+            st.markdown(f"{status_icon} **{tool.tool_name}** `{duration_str}`")
+
+            # If show_prompts is enabled, show parameters inline (not in expander)
+            if show_prompts and tool.parameters:
+                st.markdown("**Tool Input/Prompt:**")
+                st.code(json.dumps(tool.parameters, indent=2), language="json")
+
+            # Expandable details for each tool (auto-expand if setting enabled)
+            with st.expander(f"Details", expanded=auto_expand):
+                if tool.parameters and not show_prompts:
+                    # Only show in expander if not already shown inline
+                    st.markdown("**Parameters:**")
+                    st.code(json.dumps(tool.parameters, indent=2), language="json")
+                if tool.result_summary:
+                    st.markdown("**Result:**")
+                    st.caption(tool.result_summary)
+                if tool.error_message and tool.status != ExecutionStatus.SUCCESS:
+                    st.error(tool.error_message)
+
+
+def render_details_panel(
+    tool_results: List[dict],
+    thinking_blocks: List[str],
+    memory_recalls: List[str],
+    execution_log: List[dict],
+    response_time_ms: int,
+    msg_idx: int
+) -> None:
+    """
+    Render the enhanced execution details panel with entities, graph, and tools.
+
+    Args:
+        tool_results: List of tool call results from the AI response
+        thinking_blocks: List of thinking/reasoning text blocks
+        memory_recalls: List of recalled memory items
+        execution_log: Raw execution log from chat_with_tools
+        response_time_ms: Total response generation time
+        msg_idx: Message index for unique keys
+
+    Returns:
+        None (renders directly to Streamlit)
+
+    Side Effects:
+        - Updates st.session_state for collapse/selection state
+        - Renders UI components to current Streamlit container
+    """
+    _init_details_session_state()
+
+    with st.expander("🔍 **Show Execution Details**", expanded=False):
+        st.caption("Click sections below to expand/collapse")
+
+        # Extract data for display
+        entities = extract_entities_from_results(tool_results)
+        relationships = extract_relationships_from_results(tool_results, entities)
+        tool_executions = extract_tool_executions(execution_log)
+
+        # Entity Section (User Story 1)
+        selected_entity_id = render_entity_section(
+            entities=entities,
+            total_count=len(entities),
+            msg_idx=msg_idx
+        )
+
+        # Graph Section (User Story 2)
+        render_graph_section(
+            entities=entities,
+            relationships=relationships,
+            selected_entity_id=selected_entity_id,
+            msg_idx=msg_idx
+        )
+
+        # Tools Section (User Story 3)
+        render_tools_section(tool_executions, msg_idx)
+
+        # Legacy: Show thinking blocks if present
+        if thinking_blocks:
+            with st.expander("💭 Thinking", expanded=False):
+                for block in thinking_blocks:
+                    st.info(block)
+
+        # Legacy: Show memory recalls if present
+        if memory_recalls:
+            with st.expander("🧠 Memory Recall", expanded=False):
+                for recall in memory_recalls:
+                    st.success(recall)
+
+
 # Import memory system for UI
 try:
     from src.memory import VectorMemory
@@ -370,26 +1153,39 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     agraph_edges.append(Edge(
                         source=str(edge["source"]),
                         target=str(edge["target"]),
-                        label=edge.get("type", ""),
+                        # No label on main graph to reduce clutter (hover shows relationship)
                         color="#888888"
                     ))
 
+                st.subheader("Entity Relationship Network (Interactive)")
+
+                # Physics controls - initialize session state
+                if "graph_physics_enabled" not in st.session_state:
+                    st.session_state.graph_physics_enabled = True
+
+                # Control panel for graph settings
+                ctrl_cols = st.columns([2, 3, 2])
+                with ctrl_cols[0]:
+                    physics_enabled = st.checkbox(
+                        "Physics Animation",
+                        value=st.session_state.graph_physics_enabled,
+                        key=f"physics_toggle_{unique_id}",
+                        help="Toggle force-directed layout animation"
+                    )
+                    st.session_state.graph_physics_enabled = physics_enabled
+                with ctrl_cols[1]:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+
                 # Configure the graph - physics enables force-directed animation
+                # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
-                    physics=True,  # Enable force-directed physics
-                    hierarchical=False,
-                    nodeHighlightBehavior=True,
-                    highlightColor="#F7A7A6",
-                    collapsible=False,
-                    node={'labelProperty': 'label'},
-                    link={'labelProperty': 'label', 'renderLabel': True}
+                    physics=physics_enabled,
+                    hierarchical=False
                 )
 
-                st.subheader("Entity Relationship Network (Interactive)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -454,27 +1250,40 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     agraph_edges.append(Edge(
                         source=str(edge["source"]),
                         target=str(edge["target"]),
-                        label=edge.get("type", ""),
+                        # No label to reduce clutter (hover shows relationship)
                         color=color,
                         width=width
                     ))
 
+                st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
+
+                # Physics controls - initialize session state
+                if "graph_physics_enabled" not in st.session_state:
+                    st.session_state.graph_physics_enabled = True
+
+                # Control panel for graph settings
+                ctrl_cols = st.columns([2, 3, 2])
+                with ctrl_cols[0]:
+                    physics_enabled = st.checkbox(
+                        "Physics Animation",
+                        value=st.session_state.graph_physics_enabled,
+                        key=f"physics_toggle_{unique_id}",
+                        help="Toggle force-directed layout animation"
+                    )
+                    st.session_state.graph_physics_enabled = physics_enabled
+                with ctrl_cols[1]:
+                    st.caption("Drag nodes to rearrange. Scroll to zoom.")
+
                 # Configure the graph with physics for animation
+                # Using vis.js-compatible options only
                 config = Config(
                     width=800,
                     height=600,
                     directed=False,
-                    physics=True,
-                    hierarchical=False,
-                    nodeHighlightBehavior=True,
-                    highlightColor="#F7A7A6",
-                    collapsible=False,
-                    node={'labelProperty': 'label'},
-                    link={'labelProperty': 'label', 'renderLabel': True}
+                    physics=physics_enabled,
+                    hierarchical=False
                 )
 
-                st.subheader(f"GraphRAG Results: {data.get('query', '')} ({data.get('entities_found', 0)} entities)")
-                st.caption("Drag nodes to rearrange. Scroll to zoom. Click and drag background to pan.")
                 agraph(nodes=agraph_nodes, edges=agraph_edges, config=config)
                 return True
             else:
@@ -582,14 +1391,18 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                     # Use image path if available, or placeholder
                     img_path = img.get("image_path")
                     study_type = img.get('study_type', 'Unknown Study')
-                    patient_id = img.get('patient_id', 'Unknown Patient')
                     image_id = img.get('image_id', 'Unknown ID')
 
-                    # Build caption with score badge
+                    # T017: Use patient_display from radiology integration (linked patient name or unlinked fallback)
+                    patient_display = img.get('patient_display', img.get('patient_name', 'Unknown Patient'))
+                    patient_linked = img.get('patient_linked', False)
+
+                    # Build caption with score badge - style patient differently if linked vs unlinked
+                    patient_style = "color: #28a745;" if patient_linked else "color: #dc3545; font-style: italic;"
                     caption_html = f"""
                     <div style='text-align: center; margin-bottom: 8px;'>
                         <strong>{study_type}</strong><br/>
-                        <small>Patient: {patient_id}</small><br/>
+                        <small style='{patient_style}'>{patient_display}</small><br/>
                         <small style='color: #666;'>ID: {image_id[:8]}...</small>
                     </div>
                     """
@@ -628,7 +1441,7 @@ def render_chart(tool_name: str, data, unique_id: str = None):
                                     st.image(dicom_img, use_container_width=True)
                                 else:
                                     st.warning(f"Could not load DICOM: {os.path.basename(img_path)}")
-                                    st.info(f"{study_type} - Patient {patient_id}")
+                                    st.info(f"{study_type} - {patient_display}")
                             else:
                                 # Regular image file (PNG, JPG, etc.)
                                 st.image(img_path, use_container_width=True)
@@ -1084,7 +1897,8 @@ def chat_with_tools(user_message: str):
                             "iteration": iteration,
                             "tool_name": tool_name,
                             "tool_input": tool_input,
-                            "result_summary": str(result)[:200] + "..." if len(str(result)) > 200 else str(result)
+                            "result_summary": str(result)[:200] + "..." if len(str(result)) > 200 else str(result),
+                            "full_result": result  # Store full result for entity extraction
                         })
 
                         # Render chart if applicable and track it (only for visualization tools)
@@ -1187,7 +2001,7 @@ def chat_with_tools(user_message: str):
 # UI
 st.title("🤖 Agentic Medical Chat")
 st.caption("Claude autonomously calls MCP tools to answer your questions")
-st.caption("🔧 **Build: v2.14.0** - Auto memory recall, interactive graph viz, force-directed layouts")
+st.caption("🔧 **Build: v2.16.0** - Backend returns complete entity objects (best practice)")
 
 # Sidebar
 with st.sidebar:
@@ -1274,6 +2088,30 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Memory system error: {e}")
 
+    # App Settings UI
+    st.divider()
+    st.header("Settings")
+    _init_app_settings()
+
+    with st.expander("Debug & Transparency", expanded=False):
+        show_tool_prompts = st.checkbox(
+            "Show tool prompts/inputs",
+            value=st.session_state.get("show_tool_prompts", False),
+            key="show_tool_prompts_toggle",
+            help="Display the full input/prompt sent to each tool in the execution details"
+        )
+        st.session_state.show_tool_prompts = show_tool_prompts
+
+        auto_expand = st.checkbox(
+            "Auto-expand tool details",
+            value=st.session_state.get("auto_expand_tool_details", False),
+            key="auto_expand_toggle",
+            help="Automatically expand the Details section for each tool execution"
+        )
+        st.session_state.auto_expand_tool_details = auto_expand
+
+        st.caption("These settings affect the 'Tool Execution' section in response details.")
+
 # Display chat
 for idx, msg in enumerate(st.session_state.messages):
     # Debug logging
@@ -1306,25 +2144,70 @@ for idx, msg in enumerate(st.session_state.messages):
             if "text" in content:
                 st.write(content["text"])
 
-            # Show execution log in expandable section if present
+            # Show execution details using new enhanced panel
             if "execution_log" in content:
-                with st.expander("🔍 **Show Execution Details** (Tools & Thinking)", expanded=False):
-                    st.caption("Click to see what tools Claude used and how it reasoned through your question")
-                    execution_log = content["execution_log"]
+                execution_log = content.get("execution_log", [])
 
-                    for i, log_entry in enumerate(execution_log):
-                        if log_entry.get("type") == "memory_recall":
-                            st.markdown(f"**🧠 Memory Recall (Pre-processing):**")
-                            st.success(log_entry["content"])
-                        elif log_entry.get("type") == "thinking":
-                            st.markdown(f"**💭 Iteration {log_entry['iteration']} - Thinking:**")
-                            st.info(log_entry["content"])
-                        else:
-                            st.markdown(f"**⚙️ Iteration {log_entry['iteration']} - Tool Call:**")
-                            st.markdown(f"**Tool:** `{log_entry['tool_name']}`")
-                            st.markdown(f"**Input:** `{json.dumps(log_entry['tool_input'], indent=2)}`")
-                            with st.expander(f"Result preview (first 200 chars)", expanded=False):
-                                st.code(log_entry['result_summary'], language='json')
+                # Extract tool results for entity/relationship extraction
+                tool_results = []
+                thinking_blocks = []
+                memory_recalls = []
+
+                for log_entry in execution_log:
+                    if log_entry.get("type") == "memory_recall":
+                        memory_recalls.append(log_entry.get("content", ""))
+                    elif log_entry.get("type") == "thinking":
+                        thinking_blocks.append(log_entry.get("content", ""))
+                    elif log_entry.get("tool_name"):
+                        # Convert log entry to tool result format for extraction
+                        # Use full_result if available, otherwise fall back to result_summary
+                        tool_results.append({
+                            "tool_name": log_entry.get("tool_name", ""),
+                            "result": log_entry.get("full_result", log_entry.get("result_summary", ""))
+                        })
+
+                # Render enhanced details panel
+                render_details_panel(
+                    tool_results=tool_results,
+                    thinking_blocks=thinking_blocks,
+                    memory_recalls=memory_recalls,
+                    execution_log=execution_log,
+                    response_time_ms=0,
+                    msg_idx=idx
+                )
+        elif isinstance(content, dict) and "execution_log" in content:
+            # Handle responses with execution_log but no chart_data
+            # Display text content first
+            if "text" in content:
+                st.write(content["text"])
+
+            # Extract and render execution details
+            execution_log = content.get("execution_log", [])
+            tool_results = []
+            thinking_blocks = []
+            memory_recalls = []
+
+            for log_entry in execution_log:
+                if log_entry.get("type") == "memory_recall":
+                    memory_recalls.append(log_entry.get("content", ""))
+                elif log_entry.get("type") == "thinking":
+                    thinking_blocks.append(log_entry.get("content", ""))
+                elif log_entry.get("tool_name"):
+                    # Use full_result if available, otherwise fall back to result_summary
+                    tool_results.append({
+                        "tool_name": log_entry.get("tool_name", ""),
+                        "result": log_entry.get("full_result", log_entry.get("result_summary", ""))
+                    })
+
+            # Render enhanced details panel
+            render_details_panel(
+                tool_results=tool_results,
+                thinking_blocks=thinking_blocks,
+                memory_recalls=memory_recalls,
+                execution_log=execution_log,
+                response_time_ms=0,
+                msg_idx=idx
+            )
         else:
             # Display content safely - it might be a string or None
             if content is not None:
