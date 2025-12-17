@@ -1,16 +1,15 @@
-# FHIR Server using pre-built FHIR-enabled image
-# Uses intersystemsdc/irishealth-community-fhir which has FHIR server pre-configured
-# Reference: https://hub.docker.com/r/intersystemsdc/irishealth-community-fhir
+# FHIR Server using Dockerfile build
+# Based on FHIR-AI-Hackathon-Kit approach with ZPM package manager
 services:
   iris-fhir:
-    image: intersystemsdc/irishealth-community-fhir:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: iris-fhir
     restart: unless-stopped
     ports:
       - "32783:52773"  # IRIS Web/FHIR API port (external:internal)
       - "32782:1972"   # IRIS SuperServer port
-    environment:
-      - ISC_DATA_DIRECTORY=/durable
     volumes:
       - fhir-data:/durable
     healthcheck:
@@ -18,7 +17,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s
+      start_period: 180s
 
 volumes:
   fhir-data:
