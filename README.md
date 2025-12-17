@@ -1,10 +1,14 @@
 # Medical GraphRAG Assistant
 
+[![GitHub](https://img.shields.io/badge/GitHub-isc--tdyar%2Fmedical--graphrag--assistant-blue?logo=github)](https://github.com/isc-tdyar/medical-graphrag-assistant)
+
 A production-ready medical AI assistant platform built on Model Context Protocol (MCP), featuring GraphRAG multi-modal search, FHIR integration, NVIDIA NIM embeddings, and AWS Bedrock Claude Sonnet 4.5.
+
+**GitHub Repository**: [https://github.com/isc-tdyar/medical-graphrag-assistant](https://github.com/isc-tdyar/medical-graphrag-assistant)
 
 **Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
-**Current Version**: v2.14.0 (Auto Memory Recall & Interactive Graphs)
+**Current Version**: v2.15.0 (GraphRAG Details Panel)
 
 ## What This Is
 
@@ -566,12 +570,12 @@ erDiagram
 # AWS Credentials
 export AWS_PROFILE=your-profile  # or set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 
-# IRIS Database (AWS Production)
-export IRIS_HOST=3.84.250.46  # Your AWS EC2 IP
-export IRIS_PORT=1972
-export IRIS_NAMESPACE=%SYS  # Use %SYS for AWS deployment
+# IRIS Database (defaults to local Docker container)
+export IRIS_HOST=localhost    # Default; set to your EC2 IP for remote
+export IRIS_PORT=32782        # Docker port (1972 for native IRIS)
+export IRIS_NAMESPACE=%SYS
 export IRIS_USERNAME=_SYSTEM
-export IRIS_PASSWORD=your-password
+export IRIS_PASSWORD=SYS      # Default Docker password
 
 # NVIDIA NV-CLIP (for medical images and memory)
 export NVCLIP_BASE_URL="http://localhost:8002/v1"  # Local NIM via SSH tunnel

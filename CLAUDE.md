@@ -1,6 +1,25 @@
 # medical-graphrag-assistant Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2025-12-10
+Auto-generated from all feature plans. Last updated: 2025-12-17
+
+## ABSOLUTE RULE: NO AI ATTRIBUTION
+
+**CRITICAL**: All commits in this project are authored by Thomas Dyar ONLY.
+
+**NEVER include in commit messages:**
+- `Co-Authored-By: Claude` or any AI name
+- `Generated with [Claude Code]` or similar
+- Emoji markers suggesting AI involvement
+- Links to AI tools
+
+**Commit message format:**
+```
+Brief description of change
+
+Optional extended description.
+```
+
+This rule is non-negotiable. See `.specify/memory/constitution.md` Section I for full policy.
 
 ## Active Technologies
 - Python 3.11 + Streamlit, streamlit-agraph, Plotly (fallback) (005-graphrag-details-panel)
