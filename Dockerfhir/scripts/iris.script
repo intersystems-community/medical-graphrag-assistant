@@ -13,7 +13,15 @@ do $system.OBJ.LoadStream(r.HttpResponse.Data,"c")
 ; Install FHIR server package from community registry
 zpm "install fhir-server"
 
+; Configure the FHIR endpoint at /fhir/r4
+; The fhir-server package includes fhirtemplate.Setup class
+zn "FHIRSERVER"
+write "Configuring FHIR endpoint...",!
+do ##class(fhirtemplate.Setup).SetupFHIR()
+write "FHIR endpoint configured at /fhir/r4",!
+
 ; Install swagger-ui for API documentation
+zn "USER"
 zpm "install swagger-ui"
 
 write "FHIR server installation complete via ZPM",!

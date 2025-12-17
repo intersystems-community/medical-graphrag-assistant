@@ -4,8 +4,10 @@ import json
 import urllib.request
 import urllib.error
 import base64
+import os
 
-BASE_URL = "http://localhost:52773/csp/healthshare/demo/fhir/r4"
+# FHIR server configuration - uses ZPM fhir-server default endpoint
+BASE_URL = os.getenv('FHIR_BASE_URL', "http://localhost:52773/fhir/r4")
 # IRIS credentials - base64 encoded for Basic auth
 AUTH_HEADER = "Basic " + base64.b64encode(b"_SYSTEM:sys").decode()
 
