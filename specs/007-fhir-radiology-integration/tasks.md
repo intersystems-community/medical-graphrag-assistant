@@ -144,16 +144,22 @@
 
 ---
 
-## Phase 7: Production Data Import ⏳ PENDING
+## Phase 7: Production Data Import ⚠️ BLOCKED
 
 **Purpose**: Import MIMIC-CXR data into FHIR repository for production use
 
-- [ ] T043 [Production] Create VectorSearch.PatientImageMapping table in IRIS database
-- [ ] T044 [Production] Run `src/setup/import_radiology_fhir.py --mode=link-patients` to populate mappings
-- [ ] T045 [Production] Create FHIR ImagingStudy resources from MIMIC-CXR metadata
-- [ ] T046 [Production] Create FHIR DiagnosticReport resources from MIMIC-CXR reports
-- [ ] T047 [Production] Verify 80%+ of images show valid patient names (SC-001)
-- [ ] T048 [Production] Re-run E2E tests with live FHIR server to validate end-to-end flow
+**Blocker**: iris-fhir Docker container is unhealthy - CSPServer configuration issues prevent FHIR PUT operations. Container logs show `Error displaying login page $ZE= ns=DEMO rtn=%SYS.cspServer`.
+
+**Workaround**: Demo mode fallback in FHIRRadiologyAdapter provides working functionality for all 6 radiology MCP tools while FHIR server is unavailable.
+
+- [ ] T043 [Production] **BLOCKED** - Create VectorSearch.PatientImageMapping table in IRIS database
+- [ ] T044 [Production] **BLOCKED** - Run `src/setup/import_radiology_fhir.py --mode=link-patients` to populate mappings
+- [ ] T045 [Production] **BLOCKED** - Create FHIR ImagingStudy resources from MIMIC-CXR metadata
+- [ ] T046 [Production] **BLOCKED** - Create FHIR DiagnosticReport resources from MIMIC-CXR reports
+- [ ] T047 [Production] **BLOCKED** - Verify 80%+ of images show valid patient names (SC-001)
+- [ ] T048 [Production] **BLOCKED** - Re-run E2E tests with live FHIR server to validate end-to-end flow
+
+**Resolution Required**: FHIR server CSP application needs configuration in IRIS to enable /csp/healthshare/demo/fhir/r4 endpoint
 
 ---
 
@@ -204,13 +210,22 @@
 |-----------|--------|-------|
 | Contract Tests | ✅ PASSED | 20/20 |
 | UX Tests (Playwright) | ✅ PASSED | 21/21 |
-| E2E Tests | ⚠️ PARTIAL | 13/21 PASSED, 8 skipped (no ImagingStudy data in FHIR) |
+| E2E Tests | ⏭️ SKIPPED | 21/21 skipped (FHIR server unavailable) |
 
-**E2E Test Details** (tested 2025-12-16 against http://13.218.19.254:52773/csp/healthshare/demo/fhir/r4):
-- FHIR `/metadata` returns 200 ✅ (server is accessible)
-- FHIR `/ImagingStudy` and `/Patient` endpoints work but return 0 resources
-- 13 tests passed: list_radiology_queries, error handling, invalid IDs
-- 8 tests skipped: require actual ImagingStudy data in FHIR repository
+**E2E Test Details** (tested 2025-12-17 against http://13.218.19.254:52773/csp/healthshare/demo/fhir/r4):
+- FHIR `/metadata` returns 404 (FHIR endpoint not configured in IRIS Community Edition)
+- All 21 E2E tests SKIPPED (FHIR server unavailable)
+- Tests skip gracefully using availability check in test fixtures
+- Demo mode fallback provides working functionality for development/testing
+
+**FHIR Server Status** (as of 2025-12-17):
+- iris-fhir Docker container on EC2 shows "healthy" status after rebuild
+- CORS configuration script runs during container build
+- FHIR endpoint `/csp/healthshare/demo/fhir/r4` still returns 404
+- IRIS Management Portal (CSP) is accessible, but FHIR endpoint not routing
+- **Root Cause**: IRIS Community Edition doesn't include HealthShare FHIR Server components pre-installed
+- **Mitigation**: Demo mode fallback in FHIRRadiologyAdapter provides working functionality for all 6 radiology MCP tools
+- **Alternative**: Consider using HAPI FHIR server image instead of IRIS for FHIR R4 endpoint
 
 ---
 
@@ -244,9 +259,10 @@ Task: T039 - Create DiagnosticReport resources
 - [Story] label maps task to specific user story for traceability
 - **Feature 007 core implementation is COMPLETE** (US1, US2, US4)
 - **US3 (P3)** is lower priority and can be deferred
-- **Next milestone**: Production data import (Phase 7) - create ImagingStudy resources in FHIR
+- **Phase 7 BLOCKED**: iris-fhir Docker container unhealthy with CSPServer configuration issues
+- **Mitigation**: Demo mode fallback in FHIRRadiologyAdapter provides working functionality
 - E2E tests: 13 passed against live FHIR server, 8 require ImagingStudy data to pass
-- **Blocker**: FHIR server has no ImagingStudy or DiagnosticReport resources - need to run `scripts/create_imaging_studies.py` or data import
+- **Scripts available**: `scripts/populate_fhir_radiology_data.py` ready to run once FHIR server is healthy
 
 ---
 
