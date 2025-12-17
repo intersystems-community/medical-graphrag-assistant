@@ -12,7 +12,7 @@ export default defineConfig({
     timeout: 10000,
   },
   use: {
-    baseURL: process.env.TARGET_URL || 'http://54.209.84.148:8501',
+    baseURL: process.env.TARGET_URL || 'http://13.218.19.254:8501',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
