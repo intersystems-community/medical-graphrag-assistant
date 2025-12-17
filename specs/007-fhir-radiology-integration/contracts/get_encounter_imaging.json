@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "get_encounter_imaging",
+  "description": "Retrieve imaging studies associated with a specific patient encounter. Useful for viewing all radiology performed during a hospital visit.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "encounter_id": {
+        "type": "string",
+        "description": "FHIR Encounter resource ID (e.g., 'enc-123' or 'Encounter/enc-123')"
+      },
+      "include_reports": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to include associated DiagnosticReport resources"
+      },
+      "_include": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["ImagingStudy:subject", "ImagingStudy:encounter"]
+        },
+        "description": "Optional FHIR _include parameters"
+      }
+    },
+    "required": ["encounter_id"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "encounter": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string" },
+          "class": { "type": "string", "description": "e.g., 'inpatient', 'outpatient', 'emergency'" },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": { "type": "string", "format": "date-time" },
+              "end": { "type": "string", "format": "date-time" }
+            }
+          },
+          "patient_ref": { "type": "string" }
+        }
+      },
+      "imaging_studies": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "study_id": { "type": "string" },
+            "status": { "type": "string" },
+            "started": { "type": "string", "format": "date-time" },
+            "modality": { "type": "string" },
+            "number_of_instances": { "type": "integer" },
+            "report": {
+              "type": "object",
+              "description": "Associated DiagnosticReport if include_reports=true",
+              "properties": {
+                "id": { "type": "string" },
+                "conclusion": { "type": "string" },
+                "status": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "total_studies": { "type": "integer" }
+    }
+  },
+  "examples": [
+    {
+      "input": { "encounter_id": "enc-123", "include_reports": true },
+      "output": {
+        "encounter": {
+          "id": "enc-123",
+          "status": "finished",
+          "class": "inpatient",
+          "period": {
+            "start": "2024-01-14T08:00:00Z",
+            "end": "2024-01-17T12:00:00Z"
+          },
+          "patient_ref": "Patient/p10002428"
+        },
+        "imaging_studies": [
+          {
+            "id": "study-s50414267",
+            "study_id": "s50414267",
+            "status": "available",
+            "started": "2024-01-15T10:30:00Z",
+            "modality": "CR",
+            "number_of_instances": 1,
+            "report": {
+              "id": "report-s50414267",
+              "conclusion": "No acute cardiopulmonary process.",
+              "status": "final"
+            }
+          }
+        ],
+        "total_studies": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "list_radiology_queries",
+  "description": "List available pre-defined radiology query templates. Returns a catalog of supported FHIR queries for radiology data with example parameters.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "category": {
+        "type": "string",
+        "enum": ["patient", "study", "report", "encounter", "all"],
+        "default": "all",
+        "description": "Filter queries by category"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "queries": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "description": "Query template name" },
+            "description": { "type": "string", "description": "Human-readable description" },
+            "category": { "type": "string" },
+            "fhir_resource": { "type": "string", "description": "Primary FHIR resource type" },
+            "required_params": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "optional_params": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "example_usage": { "type": "string" },
+            "mcp_tool": { "type": "string", "description": "Corresponding MCP tool name" }
+          }
+        }
+      },
+      "total_count": { "type": "integer" }
+    }
+  },
+  "examples": [
+    {
+      "input": { "category": "all" },
+      "output": {
+        "queries": [
+          {
+            "name": "patient_imaging_history",
+            "description": "Get all imaging studies for a specific patient",
+            "category": "patient",
+            "fhir_resource": "ImagingStudy",
+            "required_params": ["patient_id"],
+            "optional_params": ["date_from", "date_to", "modality"],
+            "example_usage": "Show me all X-rays for patient John Smith",
+            "mcp_tool": "get_patient_imaging_studies"
+          },
+          {
+            "name": "study_details",
+            "description": "Get detailed information for a specific imaging study",
+            "category": "study",
+            "fhir_resource": "ImagingStudy",
+            "required_params": ["study_id"],
+            "optional_params": ["_include"],
+            "example_usage": "Show me the details of study s50414267",
+            "mcp_tool": "get_imaging_study_details"
+          },
+          {
+            "name": "radiology_report",
+            "description": "Get radiology report for an imaging study",
+            "category": "report",
+            "fhir_resource": "DiagnosticReport",
+            "required_params": ["study_id OR patient_id"],
+            "optional_params": ["date_from", "date_to", "include_full_text"],
+            "example_usage": "Show me the radiology report for this chest X-ray",
+            "mcp_tool": "get_radiology_reports"
+          },
+          {
+            "name": "patients_by_finding",
+            "description": "Find patients with specific imaging findings",
+            "category": "patient",
+            "fhir_resource": "ImagingStudy + DiagnosticReport",
+            "required_params": [],
+            "optional_params": ["modality", "finding_text", "conclusion_code", "date_from", "date_to"],
+            "example_usage": "Find patients with pneumonia findings on chest X-ray",
+            "mcp_tool": "search_patients_with_imaging"
+          },
+          {
+            "name": "encounter_imaging",
+            "description": "Get all imaging performed during a specific encounter",
+            "category": "encounter",
+            "fhir_resource": "ImagingStudy",
+            "required_params": ["encounter_id"],
+            "optional_params": ["include_reports"],
+            "example_usage": "What imaging was done during this hospital visit?",
+            "mcp_tool": "get_encounter_imaging"
+          }
+        ],
+        "total_count": 5
+      }
+    }
+  ]
+}

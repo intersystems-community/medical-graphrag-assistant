@@ -1,16 +1,23 @@
-
-
+# FHIR Server using Dockerfile build
+# Based on FHIR-AI-Hackathon-Kit approach with ZPM package manager
 services:
   iris-fhir:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: iris-fhir
     restart: unless-stopped
     ports:
-      - "32783:52773"  # Map local port 8080 to IRIS web port 52773
-      - "32782:1972"  # Map local port 1972 to iris for health superserver port 1972
+      - "32783:52773"  # IRIS Web/FHIR API port (external:internal)
+      - "32782:1972"   # IRIS SuperServer port
     volumes:
-      - ./data:/data  # Map local 'data' directory to '/data' inside container
-    environment:
-      ISC_DATA_DIRECTORY: /data/ifconfig
-      ISC_CPF_MERGE_FILE: /merge/CMF.cpf
-    entrypoint: ["/iris-main"]
+      - fhir-data:/durable
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:52773/fhir/r4/metadata | head -1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+
+volumes:
+  fhir-data:

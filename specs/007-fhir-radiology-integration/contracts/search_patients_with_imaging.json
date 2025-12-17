@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "search_patients_with_imaging",
+  "description": "Search for patients who have imaging studies, with optional filters for modality, date range, and clinical findings.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "modality": {
+        "type": "string",
+        "enum": ["CR", "DX", "CT", "MR", "US", "NM", "PT"],
+        "description": "Filter by imaging modality"
+      },
+      "date_from": {
+        "type": "string",
+        "format": "date",
+        "description": "Studies performed on or after this date"
+      },
+      "date_to": {
+        "type": "string",
+        "format": "date",
+        "description": "Studies performed on or before this date"
+      },
+      "finding_text": {
+        "type": "string",
+        "description": "Search for specific finding in report conclusions (e.g., 'pneumonia', 'cardiomegaly')"
+      },
+      "conclusion_code": {
+        "type": "string",
+        "description": "SNOMED CT code for specific findings"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 20,
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Maximum number of patients to return"
+      },
+      "_include": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["ImagingStudy:subject", "Patient:*"]
+        },
+        "description": "Include related resources"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "patients": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "patient_id": { "type": "string" },
+            "patient_name": { "type": "string" },
+            "mrn": { "type": "string" },
+            "gender": { "type": "string" },
+            "birth_date": { "type": "string", "format": "date" },
+            "study_count": { "type": "integer", "description": "Number of imaging studies for this patient" },
+            "latest_study_date": { "type": "string", "format": "date-time" },
+            "modalities": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "List of modalities in patient's imaging history"
+            }
+          }
+        }
+      },
+      "total_count": { "type": "integer" },
+      "query_filters": {
+        "type": "object",
+        "description": "Echo of applied filters"
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": { "modality": "CR", "finding_text": "pneumonia", "limit": 10 },
+      "output": {
+        "patients": [
+          {
+            "patient_id": "p10002428",
+            "patient_name": "John Smith",
+            "mrn": "MRN-12345",
+            "gender": "male",
+            "birth_date": "1965-03-15",
+            "study_count": 3,
+            "latest_study_date": "2024-01-15T10:30:00Z",
+            "modalities": ["CR"]
+          }
+        ],
+        "total_count": 1,
+        "query_filters": { "modality": "CR", "finding_text": "pneumonia" }
+      }
+    }
+  ]
+}

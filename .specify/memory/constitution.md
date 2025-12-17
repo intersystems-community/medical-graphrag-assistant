@@ -1,15 +1,15 @@
 <!--
 Sync Impact Report
 ==================
-Version change: (new) → 1.0.0
+Version change: 1.0.0 → 1.1.0
 Added sections:
-  - Core Principles (5 principles)
-  - Technology Constraints
-  - Development Workflow
-  - Governance
-Modified principles: N/A (initial version)
-Removed sections: N/A (initial version)
-Templates requiring updates: N/A (initial setup)
+  - Principle VI: Test-Driven Development & UX Testing
+Modified principles: None
+Removed sections: None
+Templates requiring updates:
+  - .specify/templates/tasks-template.md: ✅ Already supports test tasks (verified)
+  - .specify/templates/spec-template.md: ✅ Already has User Scenarios & Testing section
+  - .specify/templates/plan-template.md: ✅ Already has Testing in Technical Context
 Follow-up TODOs: None
 -->
 
@@ -19,6 +19,12 @@ Follow-up TODOs: None
 
 ### I. Authorship & Attribution
 All artifacts, code, documentation, and intellectual property in this project are authored and owned exclusively by **Thomas Dyar (thomas.dyar@intersystems.com)**.
+
+**Git Configuration Requirement**: All commits MUST be authored by Thomas Dyar. Configure git locally:
+```bash
+git config user.name "Thomas Dyar"
+git config user.email "thomas.dyar@intersystems.com"
+```
 
 **ABSOLUTE PROHIBITION**: Attribution to AI coding assistants (Claude Code, Copilot, GitHub Copilot, ChatGPT, or any other AI tool) MUST NEVER appear anywhere in this project including:
 - README files or any documentation
@@ -66,6 +72,35 @@ System components MUST fail gracefully when dependencies are unavailable.
 
 Rationale: Production medical systems require resilience; partial functionality is preferable to complete failure.
 
+### VI. Test-Driven Development & UX Testing
+All feature specifications MUST include robust test implementations following TDD principles. UX components MUST have automated Playwright tests.
+
+**Test Requirements**:
+- Specifications MUST define testable acceptance criteria for each user story
+- Implementation plans MUST include test tasks written BEFORE implementation tasks
+- Tests MUST be written and verified to FAIL before implementation begins
+- Contract tests MUST verify API specifications
+- Integration tests MUST cover user journeys end-to-end
+
+**UX Testing Requirements**:
+- Features with user interface components MUST include Playwright test implementations
+- Playwright tests MUST be executed via the Playwright MCP server for consistency
+- UX tests MUST be stored in `tests/ux/playwright/` directory
+- Each user story with UI components MUST have corresponding Playwright test cases
+- Test cases MUST verify:
+  - Page load and accessibility
+  - User interactions (clicks, inputs, navigation)
+  - Component visibility and state changes
+  - Error handling and edge cases
+
+**Test Location Convention**:
+- Contract tests: `tests/contract/`
+- Integration tests: `tests/integration/`
+- Unit tests: `tests/unit/`
+- UX/Playwright tests: `tests/ux/playwright/`
+
+Rationale: Test-first development catches defects early, ensures specifications are implementable, and provides regression safety. Automated UX testing via Playwright ensures consistent user experience across releases.
+
 ## Technology Constraints
 
 **Required Stack:**
@@ -74,6 +109,7 @@ Rationale: Production medical systems require resilience; partial functionality 
 - Embeddings: NVIDIA NV-CLIP (1024-dim multimodal) via NIM
 - Protocol: Model Context Protocol (MCP) for tool exposure
 - UI: Streamlit for interactive interfaces
+- UX Testing: Playwright via Playwright MCP server
 - Deployment: AWS EC2 with NVIDIA GPU (g5.xlarge minimum)
 
 **Prohibited:**
@@ -81,6 +117,7 @@ Rationale: Production medical systems require resilience; partial functionality 
 - Non-MCP tool integrations for user features
 - Hardcoded credentials in source files
 - Synchronous blocking calls without timeouts
+- Feature releases without corresponding test coverage
 
 ## Development Workflow
 
@@ -98,6 +135,8 @@ Rationale: Production medical systems require resilience; partial functionality 
 1. Integration tests MUST verify IRIS connectivity
 2. MCP tools MUST have stdio transport tests
 3. Embeddings MUST be validated for non-zero magnitude
+4. UX features MUST have Playwright tests before release
+5. All tests MUST pass before merging to main branch
 
 ## Governance
 
@@ -111,4 +150,4 @@ This constitution supersedes all other development practices for this project. A
 
 All code reviews MUST verify compliance with these principles.
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-09
+**Version**: 1.1.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-10

@@ -447,6 +447,7 @@ class TestEndToEndPipeline:
         assert pipeline.vision_client == mock_nim_vision_client
         assert pipeline.db_client == mock_iris_client
 
+    @pytest.mark.skipif(not SAMPLE_DICOM_FILES, reason="No sample DICOM files found in fixtures directory")
     def test_discover_images(
         self,
         mock_nim_vision_client,
@@ -469,6 +470,7 @@ class TestEndToEndPipeline:
         assert len(discovered) >= 5
         assert all(path.suffix.lower() == '.dcm' for path in discovered)
 
+    @pytest.mark.skipif(not SAMPLE_DICOM_FILES, reason="No sample DICOM files found in fixtures directory")
     def test_validate_images_pipeline(
         self,
         mock_nim_vision_client,
@@ -493,6 +495,7 @@ class TestEndToEndPipeline:
         assert all(isinstance(meta, ImageMetadata) for meta, _ in valid_images)
 
     @pytest.mark.slow
+    @pytest.mark.skipif(not SAMPLE_DICOM_FILES, reason="No sample DICOM files found in fixtures directory")
     def test_process_batch(
         self,
         mock_nim_vision_client,
@@ -546,6 +549,7 @@ class TestPerformanceValidation:
         assert throughput >= 0.5, f"Throughput {throughput:.2f} imgs/sec < 0.5 imgs/sec target"
 
     @pytest.mark.slow
+    @pytest.mark.skipif(not SAMPLE_DICOM_FILES, reason="No sample DICOM files found in fixtures directory")
     def test_batch_processing_performance(
         self,
         mock_nim_vision_client,

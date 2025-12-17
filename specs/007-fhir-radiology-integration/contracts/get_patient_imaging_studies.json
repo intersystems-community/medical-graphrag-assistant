@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "get_patient_imaging_studies",
+  "description": "Retrieve all ImagingStudy resources for a given patient. Returns a list of imaging studies with study dates, modalities, and associated report references.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "patient_id": {
+        "type": "string",
+        "description": "FHIR Patient resource ID (e.g., 'p10002428' or full reference 'Patient/p10002428')"
+      },
+      "date_from": {
+        "type": "string",
+        "format": "date",
+        "description": "Optional start date filter (ISO 8601 format: YYYY-MM-DD)"
+      },
+      "date_to": {
+        "type": "string",
+        "format": "date",
+        "description": "Optional end date filter (ISO 8601 format: YYYY-MM-DD)"
+      },
+      "modality": {
+        "type": "string",
+        "enum": ["CR", "DX", "CT", "MR", "US", "NM", "PT"],
+        "description": "Optional modality filter (CR=Computed Radiography, DX=Digital X-ray, etc.)"
+      },
+      "_include": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["ImagingStudy:subject", "ImagingStudy:encounter"]
+        },
+        "description": "Optional FHIR _include parameters to fetch related resources"
+      }
+    },
+    "required": ["patient_id"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "studies": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "ImagingStudy resource ID" },
+            "study_id": { "type": "string", "description": "Original MIMIC study identifier" },
+            "status": { "type": "string", "enum": ["registered", "available", "cancelled"] },
+            "started": { "type": "string", "format": "date-time" },
+            "modality": { "type": "string" },
+            "number_of_series": { "type": "integer" },
+            "number_of_instances": { "type": "integer" },
+            "encounter_ref": { "type": "string", "description": "Reference to associated Encounter" },
+            "report_ref": { "type": "string", "description": "Reference to associated DiagnosticReport" }
+          }
+        }
+      },
+      "total_count": { "type": "integer" },
+      "patient": {
+        "type": "object",
+        "description": "Patient resource if _include specified",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "mrn": { "type": "string" }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": { "patient_id": "p10002428" },
+      "output": {
+        "studies": [
+          {
+            "id": "study-s50414267",
+            "study_id": "s50414267",
+            "status": "available",
+            "started": "2024-01-15T10:30:00Z",
+            "modality": "CR",
+            "number_of_series": 1,
+            "number_of_instances": 1,
+            "encounter_ref": "Encounter/enc-123",
+            "report_ref": "DiagnosticReport/report-s50414267"
+          }
+        ],
+        "total_count": 1
+      }
+    }
+  ]
+}
