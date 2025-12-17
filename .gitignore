@@ -53,4 +53,4 @@ archive/
 medical_images/
 *.dcm
 # But allow DICOM test fixtures (tracked via Git LFS)
-!tests/fixtures/sample_medical_images/*.dcm
+!tests/fixtures/sample_medical_images/*.dcm.playwright-mcp/
