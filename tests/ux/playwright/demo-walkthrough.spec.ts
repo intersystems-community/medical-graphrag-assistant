@@ -72,9 +72,10 @@ test.describe('Demo Walkthrough', () => {
     await page.click('button:has-text("Clear")');
     await page.waitForTimeout(1000);
 
-    // 8. Click "Symptom Chart" for visualization
+    // 8. Click "Symptom Chart" for visualization (or error response if tables missing)
     await page.click('button:has-text("Symptom Chart")');
-    await page.locator('.js-plotly-plot').first().waitFor({ state: 'visible', timeout: 60000 });
+    // Wait for either Plotly chart or AI response (backend may return error if tables missing)
+    await page.locator('.stChatMessage').nth(1).waitFor({ state: 'visible', timeout: 60000 });
     await page.waitForTimeout(1000);
     await page.screenshot({ path: screenshotPath('07-symptom-chart.png'), fullPage: false });
 

@@ -1093,6 +1093,18 @@ def render_chart(tool_name: str, data, unique_id: str = None):
             print(f"ERROR: Data is not dict: {type(data)}", file=sys.stderr)
             return False
 
+        # Handle graceful error responses from backend (e.g., GraphRAG tables unavailable)
+        if data.get("status") == "unavailable":
+            st.info(f"📊 {data.get('message', 'Feature not available')}")
+            if data.get("hint"):
+                st.caption(f"💡 {data['hint']}")
+            return True  # Handled gracefully, not an error
+
+        # Handle error responses
+        if "error" in data and "traceback" in data:
+            st.error(f"Backend error: {data['error']}")
+            return False
+
         if tool_name == "plot_symptom_frequency":
             fig = go.Figure(data=[go.Bar(
                 x=data["data"]["symptoms"],
