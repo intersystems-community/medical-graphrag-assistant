@@ -23,7 +23,7 @@
 #   FHIR_PORT=32783      FHIR web port
 #   IRIS_PORT=32782      IRIS SuperServer port
 #   FHIR_USER=_SYSTEM    FHIR username
-#   FHIR_PASS=SYS        FHIR password (note: lowercase)
+#   FHIR_PASS=SYS        FHIR password (UPPERCASE required)
 #
 # ============================================================================
 
@@ -271,13 +271,27 @@ create_fhir_patients() {
         return
     fi
 
-    # Create patients
+    # Create patients (IDEMPOTENT - checks for existing before creating)
     SUCCESS=0
+    SKIPPED=0
     FAILED=0
     COUNTER=0
 
     while IFS= read -r SUBJECT_ID; do
         COUNTER=$((COUNTER + 1))
+
+        # Check if patient already exists (IDEMPOTENCY CHECK)
+        SEARCH_URL="${FHIR_URL}?identifier=urn:mimic-cxr:subject|${SUBJECT_ID}"
+        EXISTING=$(curl -s -u "${FHIR_USER}:${FHIR_PASS}" "$SEARCH_URL" 2>/dev/null | grep -o '"total":[0-9]*' | grep -o '[0-9]*' || echo "0")
+
+        if [[ "$EXISTING" -gt 0 ]]; then
+            SKIPPED=$((SKIPPED + 1))
+            # Progress report every 100 (including skipped)
+            if [[ $((COUNTER % 100)) -eq 0 ]]; then
+                log_info "Progress: $COUNTER/$TOTAL (Created: $SUCCESS, Skipped: $SKIPPED, Failed: $FAILED)"
+            fi
+            continue
+        fi
 
         # Create patient JSON
         PATIENT_JSON=$(cat <<EOF
@@ -314,14 +328,14 @@ EOF
 
         # Progress report every 100
         if [[ $((COUNTER % 100)) -eq 0 ]]; then
-            log_info "Progress: $COUNTER/$TOTAL (Success: $SUCCESS, Failed: $FAILED)"
+            log_info "Progress: $COUNTER/$TOTAL (Created: $SUCCESS, Skipped: $SKIPPED, Failed: $FAILED)"
         fi
 
     done < "$SUBJECTS_FILE"
 
     rm -f "$SUBJECTS_FILE"
 
-    log_success "FHIR Patient creation complete: $SUCCESS created, $FAILED failed"
+    log_success "FHIR Patient creation complete: $SUCCESS created, $SKIPPED skipped (already exist), $FAILED failed"
 }
 
 # Step 5: Verify setup
