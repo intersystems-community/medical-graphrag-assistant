@@ -1,0 +1,37 @@
+; Enable unauthenticated access to FHIR endpoint
+; This script modifies the CSP application to allow unauthenticated access
+
+write "Enabling unauthenticated access to FHIR endpoint...",!
+
+; Switch to the correct namespace
+set $NAMESPACE = "%SYS"
+
+; Get the FHIR application and modify security settings
+set appName = "/csp/healthshare/demo/fhir/r4"
+set props("AutheEnabled") = 64  ; 64 = Unauthenticated access
+set props("DispatchClass") = "HS.FHIRServer.RestHandler"
+
+; Update the application
+set status = ##class(Security.Applications).Modify(appName, .props)
+if $$$ISOK(status) {
+    write "SUCCESS: Unauthenticated access enabled for ", appName, !
+} else {
+    write "ERROR: ", $system.Status.GetErrorText(status), !
+    ; Try alternative approach
+    write "Trying alternative configuration...", !
+
+    ; Grant %All role to unauthenticated users
+    set status = ##class(Security.Applications).Get(appName, .appProps)
+    if $$$ISOK(status) {
+        set appProps("MatchRoles") = ":%All"
+        set status = ##class(Security.Applications).Modify(appName, .appProps)
+        if $$$ISOK(status) {
+            write "SUCCESS: MatchRoles set to %All", !
+        } else {
+            write "ERROR: ", $system.Status.GetErrorText(status), !
+        }
+    }
+}
+
+write "Configuration complete.",!
+halt

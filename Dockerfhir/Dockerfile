@@ -17,17 +17,19 @@ COPY --chown=${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} ./merge/merge.cpf /
 COPY --chown=${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} ./scripts/iris.script /home/irisowner/irisdev/iris.script
 COPY --chown=${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} ./scripts/enablecors.script /home/irisowner/irisdev/enablecors.script
 COPY --chown=${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} ./scripts/disable_password_expiry.script /home/irisowner/irisdev/disable_password_expiry.script
+COPY --chown=${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} ./scripts/enable_unauthenticated_fhir.script /home/irisowner/irisdev/enable_unauthenticated_fhir.script
 
 # Switch to IRIS user for build
 USER ${ISC_PACKAGE_MGRUSER}
 
-# Build: merge config, run setup script, disable password expiration, stop IRIS
+# Build: merge config, run setup script, disable password expiration, enable unauthenticated FHIR access, stop IRIS
 RUN --mount=type=bind,src=.,dst=/home/irisowner/irisdev/src \
     iris start IRIS && \
     iris merge IRIS /home/irisowner/irisdev/merge.cpf && \
     iris session IRIS < /home/irisowner/irisdev/iris.script && \
     iris session IRIS < /home/irisowner/irisdev/enablecors.script && \
     iris session IRIS < /home/irisowner/irisdev/disable_password_expiry.script && \
+    iris session IRIS < /home/irisowner/irisdev/enable_unauthenticated_fhir.script && \
     iris stop IRIS quietly
 
 # Final image - copy the configured IRIS instance
