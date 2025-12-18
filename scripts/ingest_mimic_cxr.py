@@ -432,6 +432,83 @@ def update_fhir_resource_id(cursor, conn, image_id: str, fhir_resource_id: str):
         print(f"Warning: Failed to update FHIRResourceID for {image_id}: {e}", file=sys.stderr)
 
 
+def ensure_vectorsearch_table_exists(cursor, conn):
+    """
+    Ensure VectorSearch.MIMICCXRImages table exists.
+    Creates schema and table if they don't exist.
+    This makes the ingestion script self-contained and repeatable.
+    """
+    try:
+        # Check if table exists by querying it
+        cursor.execute("""
+            SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = 'VectorSearch' AND TABLE_NAME = 'MIMICCXRImages'
+        """)
+        if cursor.fetchone()[0] > 0:
+            return  # Table already exists
+
+        print("Creating VectorSearch schema and MIMICCXRImages table...")
+
+        # Create schema
+        try:
+            cursor.execute("CREATE SCHEMA IF NOT EXISTS VectorSearch")
+            conn.commit()
+        except Exception:
+            pass  # Schema may already exist
+
+        # Create table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS VectorSearch.MIMICCXRImages (
+                ImageID VARCHAR(128) NOT NULL PRIMARY KEY,
+                SubjectID VARCHAR(20) NOT NULL,
+                StudyID VARCHAR(20) NOT NULL,
+                DicomID VARCHAR(128),
+                ImagePath VARCHAR(500) NOT NULL,
+                ViewPosition VARCHAR(20),
+                Vector VECTOR(DOUBLE, 1024) NOT NULL,
+                EmbeddingModel VARCHAR(50) DEFAULT 'nvidia/nvclip',
+                Provider VARCHAR(50) DEFAULT 'nvclip',
+                FHIRResourceID VARCHAR(100),
+                CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.commit()
+
+        # Create indexes (ignore errors if they already exist)
+        index_statements = [
+            "CREATE INDEX idx_mimiccxr_subject ON VectorSearch.MIMICCXRImages(SubjectID)",
+            "CREATE INDEX idx_mimiccxr_study ON VectorSearch.MIMICCXRImages(StudyID)",
+            "CREATE INDEX idx_mimiccxr_view ON VectorSearch.MIMICCXRImages(ViewPosition)",
+            "CREATE INDEX idx_mimiccxr_fhir ON VectorSearch.MIMICCXRImages(FHIRResourceID)"
+        ]
+        for stmt in index_statements:
+            try:
+                cursor.execute(stmt)
+                conn.commit()
+            except Exception:
+                pass  # Index may already exist
+
+        # Create HNSW vector index for efficient similarity search
+        try:
+            cursor.execute("""
+                CREATE VECTOR INDEX idx_mimiccxr_hnsw
+                ON VectorSearch.MIMICCXRImages(Vector)
+                AS HNSW
+                WITH (METRIC = COSINE, M = 16, efConstruction = 100)
+            """)
+            conn.commit()
+            print("✅ HNSW vector index created")
+        except Exception as e:
+            print(f"Note: HNSW index creation: {e}", file=sys.stderr)
+
+        print("✅ VectorSearch.MIMICCXRImages table created successfully")
+
+    except Exception as e:
+        print(f"Warning: Could not ensure table exists: {e}", file=sys.stderr)
+        # Don't fail - the table might already exist
+
+
 def load_checkpoint(checkpoint_path: Path) -> set:
     """Load checkpoint of processed image IDs (T037)."""
     if checkpoint_path.exists():
@@ -574,6 +651,10 @@ def ingest_mimic_cxr(
     conn = get_connection_with_retry()
     cursor = conn.cursor()
     print("✅ Connected to IRIS")
+    print()
+
+    # Ensure VectorSearch table exists (auto-create if needed)
+    ensure_vectorsearch_table_exists(cursor, conn)
     print()
 
     # Setup checkpoint (T037)
