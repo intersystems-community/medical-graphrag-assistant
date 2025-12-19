@@ -1457,15 +1457,14 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                     if where_conditions:
                         where_clause = "WHERE " + " AND ".join(where_conditions)
 
-                    # Updated SQL: Include similarity score and patient info via LEFT JOIN (T013-T016)
+                    # Updated SQL: Include similarity score from MIMICCXRImages table (T013-T016)
+                    # Note: PatientImageMapping table removed - SubjectID links directly to FHIR Patient
                     sql = f"""
                         SELECT TOP ?
                             i.ImageID, i.StudyID, i.SubjectID, i.ViewPosition, i.ImagePath,
                             VECTOR_COSINE(i.Vector, TO_VECTOR(?, double)) AS Similarity,
-                            m.FHIRPatientID, m.FHIRPatientName
+                            i.FHIRResourceID
                         FROM VectorSearch.MIMICCXRImages i
-                        LEFT JOIN VectorSearch.PatientImageMapping m
-                            ON i.SubjectID = m.MIMICSubjectID
                         {where_clause}
                         ORDER BY Similarity DESC
                     """
@@ -1504,8 +1503,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             scores = []
             for row in cursor.fetchall():
                 if search_mode == "semantic":
-                    # Semantic search returns 8 columns (including similarity + patient info)
-                    image_id, study_id, subject_id, view_pos, image_path, similarity, fhir_patient_id, fhir_patient_name = row
+                    # Semantic search returns 7 columns (similarity + FHIRResourceID from MIMICCXRImages)
+                    image_id, study_id, subject_id, view_pos, image_path, similarity, fhir_resource_id = row
                     similarity_score = float(similarity) if similarity is not None else 0.0
 
                     # Filter by min_score if specified
@@ -1514,13 +1513,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
                     scores.append(similarity_score)
 
-                    # Build patient display name - use linked name or show as unlinked (T016)
-                    if fhir_patient_name:
-                        patient_display = fhir_patient_name
-                        patient_linked = True
-                    else:
-                        patient_display = f"Unlinked - Source ID: {subject_id}"
-                        patient_linked = False
+                    # Build patient display name from SubjectID (T016)
+                    # Note: FHIR Patient lookup by SubjectID can be done via separate query
+                    patient_display = f"MIMIC Subject: {subject_id}"
+                    patient_linked = fhir_resource_id is not None
 
                     results.append({
                         "image_id": image_id,
@@ -1534,8 +1530,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                         "description": f"Chest X-ray ({view_pos}) - {patient_display}",
                         "embedding_model": "nvidia/nvclip",
                         # Patient info fields (T014)
-                        "patient_name": fhir_patient_name,
-                        "fhir_patient_id": fhir_patient_id,
+                        "fhir_resource_id": fhir_resource_id,
                         "patient_linked": patient_linked,
                         "patient_display": patient_display
                     })
