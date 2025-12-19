@@ -40,6 +40,7 @@ NC='\033[0m' # No Color
 SKIP_REBUILD=false
 SKIP_INGEST=false
 SKIP_PATIENTS=false
+SKIP_GRAPHRAG=false
 DRY_RUN=false
 LIMIT=""
 MIMIC_PATH="${HOME}/mimic-cxr-data"
@@ -65,6 +66,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-patients)
             SKIP_PATIENTS=true
+            shift
+            ;;
+        --skip-graphrag)
+            SKIP_GRAPHRAG=true
             shift
             ;;
         --limit)
@@ -338,9 +343,39 @@ EOF
     log_success "FHIR Patient creation complete: $SUCCESS created, $SKIPPED skipped (already exist), $FAILED failed"
 }
 
-# Step 5: Verify setup
+# Step 5: Populate GraphRAG tables
+populate_graphrag_tables() {
+    log_step "Step 5: Populating GraphRAG Knowledge Graph Tables"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_info "[DRY RUN] Would populate GraphRAG tables"
+        return
+    fi
+
+    cd "$PROJECT_ROOT"
+
+    # Activate venv if available
+    if [[ -f "${HOME}/medical-graphrag/venv/bin/activate" ]]; then
+        source "${HOME}/medical-graphrag/venv/bin/activate"
+    fi
+
+    # Set environment variables
+    export IRIS_HOST="${IRIS_HOST:-localhost}"
+    export IRIS_PORT="${IRIS_PORT:-32782}"
+
+    log_info "Running GraphRAG population script..."
+    python scripts/populate_graphrag_tables.py
+
+    if [[ $? -eq 0 ]]; then
+        log_success "GraphRAG tables populated successfully"
+    else
+        log_warn "GraphRAG population completed with warnings (may already exist)"
+    fi
+}
+
+# Step 6: Verify setup
 verify_setup() {
-    log_step "Step 5: Verifying Setup"
+    log_step "Step 6: Verifying Setup"
 
     if [[ "$DRY_RUN" == "true" ]]; then
         log_info "[DRY RUN] Would verify setup"
@@ -402,6 +437,7 @@ main() {
     echo "  Skip Rebuild:   $SKIP_REBUILD"
     echo "  Skip Ingest:    $SKIP_INGEST"
     echo "  Skip Patients:  $SKIP_PATIENTS"
+    echo "  Skip GraphRAG:  $SKIP_GRAPHRAG"
     echo "  Limit:          ${LIMIT:-None}"
     echo "  Dry Run:        $DRY_RUN"
     echo ""
@@ -426,6 +462,12 @@ main() {
         create_fhir_patients
     else
         log_info "Skipping FHIR Patient creation (--skip-patients)"
+    fi
+
+    if [[ "$SKIP_GRAPHRAG" != "true" ]]; then
+        populate_graphrag_tables
+    else
+        log_info "Skipping GraphRAG population (--skip-graphrag)"
     fi
 
     verify_setup
