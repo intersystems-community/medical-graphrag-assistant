@@ -1,11 +1,11 @@
 # Medical GraphRAG Assistant - System Status
 
-**Last Updated**: November 22, 2025
-**Version**: v2.12.0
+**Last Updated**: January 02, 2026
+**Version**: v2.13.0
 
 ## System Health: ✅ OPERATIONAL
 
-All core systems are functioning and deployed to production.
+All core systems are functioning and verified on the target EC2 environment.
 
 ---
 
@@ -14,7 +14,7 @@ All core systems are functioning and deployed to production.
 ### Infrastructure
 - **Status**: ✅ Running
 - **Instance**: EC2 g5.xlarge (i-0432eba10b98c4949)
-- **Public IP**: 3.84.250.46
+- **Public IP**: 13.218.19.254 (Verified 2026-01-02)
 - **Region**: us-east-1
 - **GPU**: NVIDIA A10G (available)
 - **OS**: Ubuntu 24.04 LTS
@@ -62,7 +62,7 @@ All core systems are functioning and deployed to production.
 ### SSH Tunnel
 - **Status**: ✅ Active
 - **Purpose**: Local access to AWS NIM (port 8002)
-- **Command**: `ssh -f -N -L 8002:localhost:8002 -i ~/.ssh/medical-graphrag-key.pem ubuntu@3.84.250.46`
+- **Command**: `ssh -f -N -L 8002:localhost:8002 -i ~/.ssh/fhir-ai-key-recovery.pem ubuntu@13.218.19.254`
 - **Note**: Required for local NV-CLIP embeddings
 
 ### Python Environment
@@ -117,14 +117,14 @@ All core systems are functioning and deployed to production.
 export AWS_PROFILE=122293094970_PowerUserPlusAccess
 
 # IRIS Database
-export IRIS_HOST=3.84.250.46
+export IRIS_HOST=13.218.19.254
 export IRIS_PORT=1972
 export IRIS_NAMESPACE=%SYS
 export IRIS_USERNAME=_SYSTEM
 export IRIS_PASSWORD=***
 
 # NV-CLIP
-export NVCLIP_BASE_URL=http://localhost:8002/v1  # via SSH tunnel
+export NVCLIP_BASE_URL=http://localhost:8002/v1  # via SSH tunnel (IP: 13.218.19.254)
 ```
 
 ---

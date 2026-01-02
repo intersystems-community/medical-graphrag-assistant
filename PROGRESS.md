@@ -1400,3 +1400,16 @@ Move caching to instance level for testability.
 **Test Suite**: `scripts/aws/test-iris-vector-rag-aws.py`
 
 ---
+
+## 2026-01-02: Comprehensive UX Verification - IN PROGRESS 🏗️
+
+### Breakthroughs
+- ✅ **Verified Production IP**: Correct EC2 Public IP is `13.218.19.254` (Instance `i-0432eba10b98c4949`).
+- ✅ **AWS SSO Authentication**: Successfully authenticated using profile `PowerUserPlusAccess-122293094970`.
+- ✅ **App Reachability**: Verified Streamlit UI is active at `http://13.218.19.254:8501`.
+- ✅ **Infrastructure Verification**: Confirmed IRIS and NIM services are operational on the target instance.
+
+### Progress
+- ✅ **Phase 1: Setup** - Project structure and pytest-playwright configuration complete.
+- ✅ **Phase 2: Foundational** - Conditional login fixture and Streamlit utilities implemented.
+- 🏗️ **Phase 3: User Story 1** - Search verification tests in development.
