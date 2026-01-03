@@ -14,22 +14,17 @@ logger = logging.getLogger(__name__)
 
 def create_text_vector_table():
     """
-    Create VectorSearch.FHIRTextVectors table.
-
-    Table supports both OpenAI (3072-dim) and NIM (1024-dim) vectors
-    by storing provider metadata and using max dimension.
+    Ensure all required text and document tables exist.
+    Creates:
+    - VectorSearch.FHIRTextVectors (for embeddings)
+    - SQLUser.FHIRDocuments (for raw document storage and search)
     """
-    # Connect to IRIS
     conn = iris.connect('localhost', 32782, 'DEMO', '_SYSTEM', 'ISCDEMO')
     cursor = conn.cursor()
 
     try:
-        # Drop table if exists (for clean re-creation)
-        logger.info("Dropping existing table if exists...")
+        logger.info("Verifying VectorSearch.FHIRTextVectors table...")
         cursor.execute("DROP TABLE IF EXISTS VectorSearch.FHIRTextVectors")
-
-        # Create table with support for both provider dimensions
-        logger.info("Creating VectorSearch.FHIRTextVectors table...")
         cursor.execute("""
             CREATE TABLE VectorSearch.FHIRTextVectors (
                 ResourceID VARCHAR(255) NOT NULL,
@@ -42,6 +37,40 @@ def create_text_vector_table():
                 PRIMARY KEY (ResourceID, Provider)
             )
         """)
+
+        logger.info("Verifying SQLUser.FHIRDocuments table...")
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME = 'FHIRDocuments'
+            AND TABLE_SCHEMA = 'SQLUser'
+        """)
+        if cursor.fetchone()[0] == 0:
+            logger.info("Creating SQLUser.FHIRDocuments table...")
+            cursor.execute("""
+                CREATE TABLE SQLUser.FHIRDocuments (
+                    ID INTEGER IDENTITY PRIMARY KEY,
+                    FHIRResourceId VARCHAR(255),
+                    ResourceString CLOB,
+                    ResourceType VARCHAR(50),
+                    TextContent VARCHAR(MAX),
+                    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+        else:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'FHIRDocuments'
+                AND TABLE_SCHEMA = 'SQLUser'
+                AND COLUMN_NAME = 'TextContent'
+            """)
+            if cursor.fetchone()[0] == 0:
+                logger.info("Adding TextContent column to SQLUser.FHIRDocuments...")
+                cursor.execute("ALTER TABLE SQLUser.FHIRDocuments ADD COLUMN TextContent VARCHAR(MAX)")
+
+        conn.commit()
+        logger.info("✅ All tables verified successfully!")
 
         # Create index for fast provider filtering
         logger.info("Creating index on Provider column...")

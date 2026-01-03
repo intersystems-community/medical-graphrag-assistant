@@ -226,7 +226,29 @@ POST https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/...
 
 **Use Case:** Vectorize MIMIC-CXR radiology images for multi-modal search
 
-### 4. Data Processing Layer
+### 4. Search Service Layer (Decoupled)
+
+The core business logic for searching and fusion is decoupled from the MCP protocol and UI layers into a dedicated service layer in `src/search/`.
+
+**Service Modules:**
+- `FHIRSearchService`: Handles full-text search over clinical documents in `SQLUser.FHIRDocuments`.
+- `KGSearchService`: Handles medical entity search and relationship traversal in the knowledge graph.
+- `HybridSearchService`: Implements multi-modal search combining text and graph results using Reciprocal Rank Fusion (RRF).
+- `BaseSearchService`: Provides shared infrastructure for configuration and database connection management.
+
+**Benefits:**
+- **Testability**: Services can be unit tested in isolation without spawning a browser or server.
+- **Maintainability**: Reduced complexity in the MCP server file.
+- **Reusability**: Search logic can be called from CLI, MCP, or future API layers.
+
+### 5. Data Processing Layer
+
+#### System Management CLI
+
+A unified Command Line Interface (`python -m src.cli`) provides administrative tools:
+- `check-health`: Comprehensive validation of GPU, Docker, IRIS, and Schema status.
+- `fix-environment`: Automated repair of missing tables or environment discrepancies.
+- `smoke-test`: End-to-end verification of the search pipeline.
 
 #### Vectorization Pipeline
 

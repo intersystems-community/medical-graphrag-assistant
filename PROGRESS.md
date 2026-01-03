@@ -1400,3 +1400,27 @@ Move caching to instance level for testability.
 **Test Suite**: `scripts/aws/test-iris-vector-rag-aws.py`
 
 ---
+
+## 2026-01-02: Comprehensive UX Verification - IN PROGRESS 🏗️
+
+### Breakthroughs
+- ✅ **Verified Production IP**: Correct EC2 Public IP is `13.218.19.254` (Instance `i-0432eba10b98c4949`).
+- ✅ **AWS SSO Authentication**: Successfully authenticated using profile `PowerUserPlusAccess-122293094970`.
+- ✅ **App Reachability**: Verified Streamlit UI is active at `http://13.218.19.254:8501`.
+- ✅ **Infrastructure Verification**: Confirmed IRIS and NIM services are operational on the target instance.
+
+### Progress
+- ✅ **Phase 1: Setup** - Project structure and pytest-playwright configuration complete.
+- ✅ **Phase 2: Foundational** - Conditional login fixture and Streamlit utilities implemented.
+- ✅ **Phase 3: User Story 1** - Search verification tests complete.
+- ✅ **Phase 4: User Story 2** - Visualization verification tests complete.
+- ✅ **Phase 5: User Story 3** - Agent memory verification tests complete.
+- ✅ **Phase 6: User Story 4** - Radiology verification tests complete (identified missing tables).
+
+### 2026-01-02: Pragmatic Refactor & Health CLI - COMPLETE ✅
+- **Logic Decoupling**: Extracted core search and fusion logic from `fhir_graphrag_mcp_server.py` into `src/search/` service layer (FHIR, KG, Hybrid).
+- **System Health CLI**: Implemented `python -m src.cli check-health` to verify database connectivity, schema integrity, and GPU status.
+- **Environment Fix**: Added `fix-environment` command to CLI to automatically ensure required tables like `SQLUser.FHIRDocuments` exist.
+- **Testability**: Achieved direct Python-level verification of search logic without needing the MCP server or browser.
+- **Radiology Fix**: Updated setup scripts to ensure `SQLUser.FHIRDocuments` is correctly initialized with `TextContent` column for clinical note search.
+

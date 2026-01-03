@@ -1,0 +1,95 @@
+import pytest
+from playwright.sync_api import expect
+from tests.ux.playwright.locators import StreamlitLocators
+from tests.ux.utils.streamlit_helper import wait_for_streamlit
+
+def test_ui_elements_presence(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    expect(page.locator(StreamlitLocators.SIDEBAR)).to_be_visible()
+    expect(page.locator(StreamlitLocators.CHAT_INPUT)).to_be_visible()
+
+def test_fhir_search_decoding(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    query = "Search FHIR documents for cough"
+    chat_input = page.locator(StreamlitLocators.CHAT_INPUT)
+    chat_input.fill(query)
+    chat_input.press("Enter")
+    
+    wait_for_streamlit(page)
+    
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    
+    expect(expander).to_contain_text("cough", ignore_case=True)
+    expect(page.locator(StreamlitLocators.CHAT_MESSAGE).last).to_contain_text("cough", ignore_case=True)
+
+def test_kg_search(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    query = "Search knowledge graph for fever"
+    chat_input = page.locator(StreamlitLocators.CHAT_INPUT)
+    chat_input.fill(query)
+    chat_input.press("Enter")
+    
+    wait_for_streamlit(page)
+    
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    expect(expander).to_contain_text("search_knowledge_graph")
+
+def test_hybrid_search(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    query = "Hybrid search for chest pain"
+    chat_input = page.locator(StreamlitLocators.CHAT_INPUT)
+    chat_input.fill(query)
+    chat_input.press("Enter")
+    
+    wait_for_streamlit(page)
+    
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    expect(expander).to_contain_text("hybrid_search")
+
+def test_image_search(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    query = "Find medical images of pneumonia"
+    chat_input = page.locator(StreamlitLocators.CHAT_INPUT)
+    chat_input.fill(query)
+    chat_input.press("Enter")
+    
+    wait_for_streamlit(page)
+    
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    expect(expander).to_contain_text("search_medical_images")
+    
+    expect(page.locator('[data-testid="stImage"]').first).to_be_visible(timeout=30000)
+
+def test_entity_statistics(page, target_url):
+    page.goto(target_url)
+    wait_for_streamlit(page)
+    
+    query = "Show me knowledge graph statistics"
+    chat_input = page.locator(StreamlitLocators.CHAT_INPUT)
+    chat_input.fill(query)
+    chat_input.press("Enter")
+    
+    wait_for_streamlit(page)
+    
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    expect(expander).to_contain_text("get_entity_statistics")

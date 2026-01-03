@@ -1,87 +1,64 @@
-# Medical GraphRAG UX Tests
+# Medical GraphRAG UX Verification Suite (Python)
 
-Playwright-based UX tests for the Medical GraphRAG Assistant Streamlit application.
+Automated end-to-end verification tests for the Medical GraphRAG Assistant using Playwright and pytest.
 
-**IMPORTANT**: Per project constitution (Principle VI), these tests are designed to be executed via the **Playwright MCP server** for consistency.
+## 🚀 Quick Start
 
-## Recommended: Execute via Playwright MCP Server
-
-The preferred method is to run tests through Claude Code with Playwright MCP connected:
-
+### 1. Install Dependencies
 ```bash
-# In Claude Code conversation with Playwright MCP enabled:
-# Copy the execution prompt from medical-graphrag-mcp.spec.ts
+pip install pytest-playwright pytest-html
+playwright install chromium
 ```
 
-### Quick Execution Prompt
-
-```
-Run UX tests for Medical GraphRAG Assistant at http://54.209.84.148:8501
-
-Execute TC-001 through TC-015 in order using:
-- browser_navigate for navigation
-- browser_snapshot for page state
-- browser_click for interactions
-- browser_type for input
-- browser_wait_for for timing
-
-Report PASS/FAIL for each test. Stop on first failure.
-```
-
-## Alternative: Standalone Playwright
-
-If you need to run tests outside of MCP (e.g., CI/CD):
-
+### 2. Configure Environment
 ```bash
-cd tests/ux/playwright
-npm install
-npx playwright install chromium
-npm test
+export TARGET_URL="http://13.218.19.254:8501"  # EC2 Public IP
+export TEST_PASSWORD="your-admin-password"      # Optional
 ```
 
-### Run with browser visible
+### 3. Run Tests
 ```bash
-npm run test:headed
+# Run all tests
+pytest tests/ux/playwright/
+
+# Run specific feature group
+pytest tests/ux/playwright/test_search.py
+pytest tests/ux/playwright/test_memory.py
+pytest tests/ux/playwright/test_viz.py
+pytest tests/ux/playwright/test_radiology.py
 ```
 
-### Run specific test
-```bash
-npx playwright test -g "TC-011"
-```
+## 📊 Test Coverage
 
-## Test Target
+### Core Search ([test_search.py](test_search.py))
+- UI element presence (sidebar, chat input)
+- FHIR document search verification
+- Knowledge graph search verification
+- Hybrid search verification
+- Image search (NV-CLIP) verification
+- Entity statistics retrieval
+- IRIS result decoding and preview
 
-Default target: `http://54.209.84.148:8501`
+### Visualizations ([test_viz.py](test_viz.py))
+- Plotly chart rendering and interactivity (hover)
+- Streamlit-agraph network graph rendering
 
-To test against a different URL:
-```bash
-TARGET_URL=http://localhost:8501 npm test
-```
+### Agent Memory ([test_memory.py](test_memory.py))
+- Manual memory addition via Sidebar Editor
+- Persistence check via "Browse Memories"
+- Semantic recall verification in chat
 
-## Test Cases
+### Radiology ([test_radiology.py](test_radiology.py))
+- Patient imaging studies list
+- Radiology report retrieval
+- Search patients with imaging findings
 
-### Core Application (TC-001 to TC-010)
-- TC-001: Page loads successfully
-- TC-002: Title contains "Agentic Medical Chat"
-- TC-003: Sidebar visible with "Available Tools" header
-- TC-004: Chat input area is present
-- TC-005: Common Symptoms button triggers AI response
-- TC-006: Symptom Chart button renders visualization
-- TC-007: Knowledge Graph button renders network graph
-- TC-008: Manual chat input produces AI response
-- TC-009: Sidebar displays expected MCP tools
-- TC-010: Clear button resets conversation
+## 📈 Reporting
 
-### Feature 005: GraphRAG Details Panel (TC-011 to TC-015)
-- TC-011: Details expander visible after query response
-- TC-012: Entity section visible when details panel expanded
-- TC-013: Graph section visible in details panel
-- TC-014: Tool execution section visible in details panel
-- TC-015: Sub-sections are independently collapsible
+- **HTML Report**: `playwright-report/report.html`
+- **JUnit XML**: `playwright-report/results.xml`
+- **Failures**: Screenshots and videos are saved in `test-results/` on failure.
 
-## View Test Report
+## 🛠️ Configuration
 
-After running tests:
-```bash
-npm run report
-```
+The suite is configured via `pytest.ini` and `conftest.py`. It uses a **Conditional Login Fixture** to handle applications with or without authentication.

@@ -99,7 +99,13 @@ The deployment includes comprehensive validation to ensure all components are wo
 
 **Using Python health checks:**
 ```bash
-# Run all health checks
+# Verify system health and schema integrity (NEW)
+python -m src.cli check-health --smoke-test
+
+# Attempt to auto-fix environment issues
+python -m src.cli fix-environment
+
+# Run legacy health check script
 python src/validation/health_checks.py
 
 # Run pytest validation suite
@@ -110,48 +116,20 @@ pytest src/validation/test_deployment.py -v
 
 Successful validation should show all checks passing:
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║ AWS GPU NIM RAG System Validation
-╚══════════════════════════════════════════════════════════════╝
-
-→ Checking GPU availability...
-✓ GPU detected: NVIDIA A10G
-  Memory: 23028 MB
-  Driver: 535.xxx.xx
-  CUDA: 12.2
-
-→ Checking Docker GPU runtime...
-✓ Docker can access GPU
-
-→ Checking IRIS database connectivity...
-✓ IRIS container running
-→ Checking IRIS database connection (Python)...
-✓ IRIS database connection working
-
-→ Checking Vector tables existence...
-✓ Vector tables validated
-
-→ Checking NIM LLM service health...
-✓ NIM LLM container running
-✓ NIM LLM health endpoint responding
-
-→ Checking NIM LLM inference test...
-✓ NIM LLM inference working
-  Test response: 4
-
-╔══════════════════════════════════════════════════════════════╗
-║ Validation Summary
-╚══════════════════════════════════════════════════════════════╝
-
-✓ All validation checks passed
-
-System is ready for use!
-
-Next steps:
-  1. Vectorize clinical notes: python src/vectorization/vectorize_documents.py
-  2. Test vector search: python src/query/test_vector_search.py
-  3. Run RAG query: python src/query/rag_query.py --query 'your question'
+```json
+{
+  "status": "pass",
+  "duration_ms": 1250,
+  "checks": [
+    { "component": "GPU", "status": "pass", ... },
+    { "component": "IRIS Connection", "status": "pass", ... },
+    { "component": "IRIS Schema", "status": "pass", ... }
+  ],
+  "smoke_test": {
+    "status": "pass",
+    "results_count": 5
+  }
+}
 ```
 
 #### Understanding Health Check Results

@@ -4,23 +4,34 @@ A production-ready medical AI assistant platform built on Model Context Protocol
 
 **Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
-**Current Version**: v2.14.0 (Auto Memory Recall & Interactive Graphs)
+**Current Version**: v2.16.0 (Decoupled Services & Health CLI)
 
 ## What This Is
 
 An **agentic medical chat platform** with advanced capabilities:
 - 🤖 **Model Context Protocol (MCP)** - Claude autonomously calls medical search tools
-- 🧠 **GraphRAG** - Knowledge graph-based retrieval with entity and relationship extraction
+- 🧠 **GraphRAG** - Knowledge graph-based retrieval with decoupled service logic
 - 🖼️ **Medical Image Search** - Semantic search over chest X-rays using NV-CLIP embeddings
 - 💾 **Agent Memory System** - Persistent semantic memory with vector search
 - 🏥 **FHIR Integration** - Full-text search of clinical documents
+- 🛠️ **System Health CLI** - Comprehensive environment validation and auto-fixing
 - ☁️ **AWS Deployment** - Production deployment on AWS EC2 with NVIDIA A10G GPU
 - 📊 **Interactive UI** - Streamlit interface with execution transparency
 - 🗄️ **InterSystems IRIS** - Vector database with native VECTOR(DOUBLE, 1024) support
 
 ## Quick Start
 
-### 1. Run the Streamlit Chat Interface
+### 1. Verify Environment
+
+```bash
+# Verify database, GPU, and schema integrity
+python -m src.cli check-health --smoke-test
+
+# If tables are missing (e.g., SQLUser.FHIRDocuments):
+python -m src.cli fix-environment
+```
+
+### 2. Run the Streamlit Chat Interface
 
 ```bash
 # Install dependencies
@@ -543,9 +554,12 @@ erDiagram
 - ✅ **Error Handling** - Graceful handling of API issues with detailed logs
 - ✅ **Max Iterations Control** - Prevents infinite loops (10 iteration limit)
 
-### Current Version: v2.14.0
+**Recent Features (v2.16.0):**
+- ✅ **Decoupled Search Services**: Search logic extracted from MCP server into `src/search/` for testability.
+- ✅ **System Health CLI**: New `python -m src.cli` tool for environment validation and fixing.
+- ✅ **Radiology Fix**: Ensured `SQLUser.FHIRDocuments` table is correctly initialized on EC2.
 
-**Recent Features (v2.14.0):**
+**Previous Updates (v2.14.0):**
 - ✅ **Auto Memory Recall**: Memories automatically recalled before each query to guide tool selection
 - ✅ **Interactive Graph Viz**: Force-directed, draggable graphs with `streamlit-agraph`
 - ✅ **Memory in Execution Log**: See recalled memories in "Show Execution Details" pane
@@ -591,18 +605,20 @@ export NVCLIP_BASE_URL="http://localhost:8002/v1"  # Local NIM via SSH tunnel
 ```
 medical-graphrag-assistant/
 ├── mcp-server/                      # MCP server and Streamlit app
-│   ├── fhir_graphrag_mcp_server.py  # MCP server with 10+ tools
+│   ├── fhir_graphrag_mcp_server.py  # MCP server (Tool Wrappers)
 │   ├── streamlit_app.py             # Chat UI v2.12.0 with memory editor
 │   └── test_*.py                    # Integration tests
 ├── src/
+│   ├── cli/                         # System Management CLI
 │   ├── db/                          # IRIS database clients
 │   ├── embeddings/                  # NVIDIA NIM integration
-│   │   └── nvclip_embeddings.py     # NV-CLIP multimodal embeddings
 │   ├── memory/                      # Agent memory system
-│   │   └── vector_memory.py         # Semantic memory with IRIS vectors
-│   ├── search/                      # Search implementations
+│   ├── search/                      # Decoupled Search Services (Business Logic)
+│   │   ├── fhir_search.py           # Document search
+│   │   ├── kg_search.py             # Knowledge graph search
+│   │   └── hybrid_search.py         # Multi-modal fusion
 │   ├── vectorization/               # Document vectorization
-│   └── validation/                  # Data validation
+│   └── validation/                  # Data validation & Health checks
 ├── config/                          # Configuration files
 │   └── fhir_graphrag_config.aws.yaml  # Active AWS config
 ├── docs/                            # Documentation
