@@ -577,6 +577,76 @@ def nim_llm_inference_test(host: str = "localhost", port: int = 8001) -> HealthC
         )
 
 
+def iris_schema_check(host: str = "localhost", port: int = 1972,
+                      namespace: str = "USER", username: str = "_SYSTEM",
+                      password: str = "SYS") -> HealthCheckResult:
+    """
+    Comprehensive check of IRIS database schema for all required tables.
+    
+    Verifies existence of:
+    - SQLUser.FHIRDocuments
+    - SQLUser.Entities
+    - SQLUser.EntityRelationships
+    - VectorSearch.MIMICCXRImages
+    
+    Returns:
+        HealthCheckResult with schema validation status
+    """
+    try:
+        import iris
+        conn = iris.connect(host, port, namespace, username, password)
+        cursor = conn.cursor()
+        
+        required_tables = [
+            ("SQLUser", "FHIRDocuments"),
+            ("SQLUser", "Entities"),
+            ("SQLUser", "EntityRelationships"),
+            ("VectorSearch", "MIMICCXRImages")
+        ]
+        
+        found = []
+        missing = []
+        
+        for schema, table in required_tables:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA=? AND TABLE_NAME=?
+            """, (schema, table))
+            
+            if cursor.fetchone()[0] > 0:
+                found.append(f"{schema}.{table}")
+            else:
+                missing.append(f"{schema}.{table}")
+                
+        conn.close()
+        
+        if not missing:
+            return HealthCheckResult(
+                component="IRIS Schema",
+                status="pass",
+                message="All required tables exist",
+                details={"tables": found}
+            )
+        else:
+            return HealthCheckResult(
+                component="IRIS Schema",
+                status="fail",
+                message=f"Missing tables: {', '.join(missing)}",
+                details={
+                    "found": found,
+                    "missing": missing,
+                    "suggestion": "Run setup scripts or recreate missing tables"
+                }
+            )
+            
+    except Exception as e:
+        return HealthCheckResult(
+            component="IRIS Schema",
+            status="fail",
+            message=f"Schema check failed: {str(e)}"
+        )
+
 def run_all_checks(iris_host: str = "localhost", iris_port: int = 1972,
                   nim_host: str = "localhost", nim_port: int = 8001,
                   skip_gpu: bool = False, skip_docker: bool = False,
@@ -608,7 +678,7 @@ def run_all_checks(iris_host: str = "localhost", iris_port: int = 1972,
 
     if not skip_iris:
         results.append(iris_connection_check(iris_host, iris_port))
-        results.append(iris_tables_check(iris_host, iris_port))
+        results.append(iris_schema_check(iris_host, iris_port))
 
     if not skip_nim:
         results.append(nim_llm_health_check(nim_host, nim_port))

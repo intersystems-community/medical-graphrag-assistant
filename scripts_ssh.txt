@@ -1,0 +1,95 @@
+scripts/deploy-images-to-aws.sh:SSH_KEY="$HOME/.ssh/medical-graphrag-key.pem"
+scripts/deploy-images-to-aws.sh:rsync -avz -e "ssh -i $SSH_KEY" \
+scripts/deploy-images-to-aws.sh:ssh -i "$SSH_KEY" "$AWS_HOST" "cd $PROJECT_DIR && source venv/bin/activate && python ingest_mimic_images.py $SAMPLE_IMAGES_DIR --limit 50"
+scripts/deploy-images-to-aws.sh:echo "  ssh -i $SSH_KEY $AWS_HOST"
+scripts/populate_graphrag_only.py:SSH_KEY = "~/.ssh/fhir-ai-key-recovery.pem"
+scripts/populate_graphrag_only.py:    cmd = f"""ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -i {SSH_KEY} ubuntu@{EC2_HOST} "docker exec iris-fhir bash -c 'echo \\"{escaped_sql}\\" | iris sql IRIS -U DEMO 2>/dev/null'" 2>/dev/null"""
+scripts/populate_full_graphrag_data.py:    ssh_cmd = f"""ssh -o StrictHostKeyChecking=no -i ~/.ssh/fhir-ai-key-recovery.pem ubuntu@{host} "docker exec iris-fhir bash -c 'echo \\"{escaped_sql}\\" | iris sql IRIS -U DEMO 2>/dev/null'" """
+scripts/populate_full_graphrag_data.py:            ssh_cmd,
+scripts/aws/launch-fhir-stack.sh:ssh -i "${KEY_NAME}.pem" -o StrictHostKeyChecking=no ubuntu@"$PUBLIC_IP" << 'ENDSSH'
+scripts/aws/launch-fhir-stack.sh:echo "  ssh -i ${KEY_NAME}.pem ubuntu@$PUBLIC_IP"
+scripts/aws/launch-fhir-stack.sh:echo "  ssh -i ${KEY_NAME}.pem ubuntu@$PUBLIC_IP"
+scripts/aws/setup-docker-gpu.sh:#   ./setup-docker-gpu.sh [--remote <host>] [--ssh-key <path>]
+scripts/aws/setup-docker-gpu.sh:#   --ssh-key <path>     Path to SSH key for remote setup
+scripts/aws/setup-docker-gpu.sh:#   SSH_KEY_PATH        Path to SSH key (alternative to --ssh-key)
+scripts/aws/setup-docker-gpu.sh:        --ssh-key)
+scripts/aws/setup-docker-gpu.sh:    local ssh_key="$2"
+scripts/aws/setup-docker-gpu.sh:    if [[ -z "$ssh_key" ]]; then
+scripts/aws/setup-docker-gpu.sh:    if [[ ! -f "$ssh_key" ]]; then
+scripts/aws/setup-docker-gpu.sh:        log_error "SSH key not found: $ssh_key"
+scripts/aws/setup-docker-gpu.sh:    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$ssh_key" "ubuntu@${host}" << 'ENDSSH'
+scripts/aws/launch-nim-ec2.sh:ssh -i "$KEY_NAME.pem" -o StrictHostKeyChecking=no ubuntu@"$PUBLIC_IP" << 'EOF'
+scripts/aws/launch-nim-ec2.sh:echo "  ssh -i $KEY_NAME.pem ubuntu@$PUBLIC_IP"
+scripts/aws/install-gpu-drivers.sh:#   ./install-gpu-drivers.sh [--remote <host>] [--ssh-key <path>]
+scripts/aws/install-gpu-drivers.sh:#   --ssh-key <path>     Path to SSH key for remote installation
+scripts/aws/install-gpu-drivers.sh:#   SSH_KEY_PATH        Path to SSH key (alternative to --ssh-key)
+scripts/aws/install-gpu-drivers.sh:        --ssh-key)
+scripts/aws/install-gpu-drivers.sh:    local ssh_key="$2"
+scripts/aws/install-gpu-drivers.sh:    if [[ -z "$ssh_key" ]]; then
+scripts/aws/install-gpu-drivers.sh:        log_error "Use --ssh-key or set SSH_KEY_PATH environment variable"
+scripts/aws/install-gpu-drivers.sh:    if [[ ! -f "$ssh_key" ]]; then
+scripts/aws/install-gpu-drivers.sh:        log_error "SSH key not found: $ssh_key"
+scripts/aws/install-gpu-drivers.sh:    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$ssh_key" "ubuntu@${host}" << 'ENDSSH'
+scripts/aws/install-gpu-drivers.sh:    local ssh_key="$2"
+scripts/aws/install-gpu-drivers.sh:    ssh -o StrictHostKeyChecking=no -i "$ssh_key" "ubuntu@${host}" 'sudo reboot' || true
+scripts/aws/install-gpu-drivers.sh:        if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i "$ssh_key" "ubuntu@${host}" 'echo ready' &> /dev/null; then
+scripts/aws/install-gpu-drivers.sh:    local ssh_key="$2"
+scripts/aws/install-gpu-drivers.sh:    ssh -o StrictHostKeyChecking=no -i "$ssh_key" "ubuntu@${host}" << 'ENDSSH'
+scripts/aws/provision-instance.sh:    echo "  ssh -i ~/.ssh/$SSH_KEY_NAME.pem ubuntu@$public_ip" >&2
+scripts/aws/deploy-nim-vision.sh:#   ./scripts/aws/deploy-nim-vision.sh [--remote PUBLIC_IP] [--ssh-key SSH_KEY_PATH] [--force-recreate]
+scripts/aws/deploy-nim-vision.sh:#   --ssh-key       Path to SSH private key (required with --remote)
+scripts/aws/deploy-nim-vision.sh:#   ./scripts/aws/deploy-nim-vision.sh --remote 34.xxx.xxx.xxx --ssh-key ~/.ssh/my-key.pem
+scripts/aws/deploy-nim-vision.sh:        --ssh-key)
+scripts/aws/deploy-nim-vision.sh:    echo -e "${RED}Error: --ssh-key required when using --remote${NC}"
+scripts/aws/deploy-nim-vision.sh:        ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no "ubuntu@$REMOTE_HOST" "$@"
+scripts/aws/diagnose-iris-connection.sh:echo "  ssh ubuntu@$AWS_HOST 'docker ps | grep $CONTAINER_NAME'"
+scripts/aws/diagnose-iris-connection.sh:echo "  ssh ubuntu@$AWS_HOST 'docker logs $CONTAINER_NAME --tail 50'"
+scripts/aws/diagnose-iris-connection.sh:    echo "   ssh ubuntu@$AWS_HOST"
+scripts/aws/utils/cleanup.sh:    local ssh_key="${SSH_KEY_PATH:-./fhir-ai-key.pem}"
+scripts/aws/utils/cleanup.sh:    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$ssh_key" "ubuntu@${instance_ip}" << 'EOF' || true
+scripts/aws/validate-deployment.sh:#   ./validate-deployment.sh [--remote <host>] [--ssh-key <path>]
+scripts/aws/validate-deployment.sh:#   --ssh-key <path>     Path to SSH key for remote validation
+scripts/aws/validate-deployment.sh:#   SSH_KEY_PATH        Path to SSH key (alternative to --ssh-key)
+scripts/aws/validate-deployment.sh:        --ssh-key)
+scripts/aws/validate-deployment.sh:    local ssh_key="$2"
+scripts/aws/validate-deployment.sh:    if [[ -z "$ssh_key" ]]; then
+scripts/aws/validate-deployment.sh:    if [[ ! -f "$ssh_key" ]]; then
+scripts/aws/validate-deployment.sh:        log_error "SSH key not found: $ssh_key"
+scripts/aws/validate-deployment.sh:    ssh -o StrictHostKeyChecking=no -i "$ssh_key" "ubuntu@${host}" << 'ENDSSH'
+scripts/aws/deploy.sh:    local ssh_key_path="${SSH_KEY_PATH:-$HOME/.ssh/${SSH_KEY_NAME}.pem}"
+scripts/aws/deploy.sh:    if [[ ! -f "$ssh_key_path" ]]; then
+scripts/aws/deploy.sh:        log_error "SSH key not found: $ssh_key_path"
+scripts/aws/deploy.sh:        log_success "SSH key found: $ssh_key_path"
+scripts/aws/deploy.sh:        export SSH_KEY_PATH="$ssh_key_path"
+scripts/aws/deploy.sh:    if "$SCRIPT_DIR/install-gpu-drivers.sh" --remote "$PUBLIC_IP" --ssh-key "$SSH_KEY_PATH"; then
+scripts/aws/deploy.sh:            ssh -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" "ubuntu@${PUBLIC_IP}" 'sudo reboot' || true
+scripts/aws/deploy.sh:                if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i "$SSH_KEY_PATH" "ubuntu@${PUBLIC_IP}" 'echo ready' &>/dev/null; then
+scripts/aws/deploy.sh:            if ssh -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" "ubuntu@${PUBLIC_IP}" 'nvidia-smi' &>/dev/null; then
+scripts/aws/deploy.sh:    if "$SCRIPT_DIR/setup-docker-gpu.sh" --remote "$PUBLIC_IP" --ssh-key "$SSH_KEY_PATH"; then
+scripts/aws/deploy.sh:    if "$SCRIPT_DIR/deploy-iris.sh" --remote "$PUBLIC_IP" --ssh-key "$SSH_KEY_PATH" $force_flag; then
+scripts/aws/deploy.sh:    if "$SCRIPT_DIR/deploy-nim-llm.sh" --remote "$PUBLIC_IP" --ssh-key "$SSH_KEY_PATH" $force_flag; then
+scripts/aws/deploy.sh:    if "$SCRIPT_DIR/validate-deployment.sh" --remote "$PUBLIC_IP" --ssh-key "$SSH_KEY_PATH"; then
+scripts/aws/deploy.sh:  ssh -i ${SSH_KEY_PATH} ubuntu@${PUBLIC_IP}
+scripts/aws/deploy.sh:  ssh -i ${SSH_KEY_PATH} ubuntu@${PUBLIC_IP} 'docker ps'
+scripts/aws/deploy.sh:  ssh -i ${SSH_KEY_PATH} ubuntu@${PUBLIC_IP} 'docker logs iris-vector-db'
+scripts/aws/deploy.sh:  ssh -i ${SSH_KEY_PATH} ubuntu@${PUBLIC_IP} 'docker logs nim-llm'
+scripts/aws/deploy-iris.sh:#   ./deploy-iris.sh [--remote <host>] [--ssh-key <path>]
+scripts/aws/deploy-iris.sh:#   --ssh-key <path>     Path to SSH key for remote deployment
+scripts/aws/deploy-iris.sh:#   SSH_KEY_PATH        Path to SSH key (alternative to --ssh-key)
+scripts/aws/deploy-iris.sh:        --ssh-key)
+scripts/aws/deploy-iris.sh:    local ssh_key="$2"
+scripts/aws/deploy-iris.sh:    if [[ -z "$ssh_key" ]]; then
+scripts/aws/deploy-iris.sh:    if [[ ! -f "$ssh_key" ]]; then
+scripts/aws/deploy-iris.sh:        log_error "SSH key not found: $ssh_key"
+scripts/aws/deploy-iris.sh:    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$ssh_key" "ubuntu@${host}" << ENDSSH
+scripts/aws/deploy-iris.sh:        ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@${host}" << 'ENDSSH'
+scripts/aws/deploy-nim-llm.sh:#   ./deploy-nim-llm.sh [--remote <host>] [--ssh-key <path>]
+scripts/aws/deploy-nim-llm.sh:#   --ssh-key <path>     Path to SSH key for remote deployment
+scripts/aws/deploy-nim-llm.sh:#   SSH_KEY_PATH        Path to SSH key (alternative to --ssh-key)
+scripts/aws/deploy-nim-llm.sh:        --ssh-key)
+scripts/aws/deploy-nim-llm.sh:    local ssh_key="$2"
+scripts/aws/deploy-nim-llm.sh:    if [[ -z "$ssh_key" ]]; then
+scripts/aws/deploy-nim-llm.sh:    if [[ ! -f "$ssh_key" ]]; then
+scripts/aws/deploy-nim-llm.sh:        log_error "SSH key not found: $ssh_key"
+scripts/aws/deploy-nim-llm.sh:    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$ssh_key" "ubuntu@${host}" << ENDSSH
+scripts/aws/deploy-nim-llm.sh:        ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" "ubuntu@${host}" << 'ENDSSH'

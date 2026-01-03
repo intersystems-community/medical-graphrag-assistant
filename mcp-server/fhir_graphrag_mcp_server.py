@@ -29,13 +29,11 @@ if parent_dir not in sys.path:
 
 import json
 import time  # For execution time tracking
-from typing import Any, Dict, List, Optional
-from datetime import datetime
+from typing import Any, Dict, List
 
 # Import MCP modules
 from mcp.server import Server
-from mcp.types import Resource, Tool,TextContent, ImageContent, EmbeddedResource
-from mcp.server.stdio import stdio_server
+from mcp.types import Tool,TextContent
 
 # Import async tools
 import asyncio
@@ -82,6 +80,10 @@ from src.db.connection import get_connection
 # Import search modules for scoring and caching
 from src.search.scoring import get_score_color, get_confidence_level
 from src.search.cache import get_cached_embedding, cache_info
+
+from src.search.fhir_search import FHIRSearchService
+from src.search.kg_search import KGSearchService
+from src.search.hybrid_search import HybridSearchService
 
 # Import memory system
 from src.memory import VectorMemory
@@ -550,51 +552,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             query = arguments["query"]
             limit = arguments.get("limit", 10)
 
-            # Query FHIR documents
-            sql = """
-                SELECT TOP ?
-                    FHIRResourceId,
-                    ResourceType,
-                    ResourceString
-                FROM SQLUser.FHIRDocuments
-                WHERE ResourceType = 'DocumentReference'
-            """
-
-            cursor.execute(sql, (limit * 3,))
-
-            search_terms = query.lower().split()
-            results = []
-
-            for fhir_id, resource_type, resource_string in cursor.fetchall():
-                try:
-                    resource_json = json.loads(resource_string)
-
-                    # Decode clinical note
-                    clinical_note = None
-                    if 'content' in resource_json:
-                        try:
-                            encoded_data = resource_json['content'][0]['attachment']['data']
-                            clinical_note = bytes.fromhex(encoded_data).decode('utf-8')
-                        except:
-                            pass
-
-                    # Filter by search terms
-                    if clinical_note and search_terms:
-                        clinical_note_lower = clinical_note.lower()
-                        if any(term in clinical_note_lower for term in search_terms):
-                            results.append({
-                                'fhir_id': fhir_id,
-                                'preview': clinical_note[:300],
-                                'relevance': 'matches: ' + ', '.join([t for t in search_terms if t in clinical_note_lower])
-                            })
-
-                            if len(results) >= limit:
-                                break
-                except:
-                    pass
-
-            cursor.close()
-            conn.close()
+            fhir_service = FHIRSearchService()
+            results = fhir_service.search_documents(query, limit=limit)
+            fhir_service.close()
 
             return [TextContent(
                 type="text",
@@ -609,257 +569,26 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             query = arguments["query"]
             limit = arguments.get("limit", 5)
 
-            keywords = [w.strip() for w in query.lower().split() if len(w.strip()) > 2]
-            all_entities = []
-            seen_ids = set()
-
-            for keyword in keywords:
-                sql = """
-                    SELECT EntityID, EntityText, EntityType, Confidence
-                    FROM SQLUser.Entity
-                    WHERE LOWER(EntityText) LIKE ?
-                    ORDER BY Confidence DESC
-                    LIMIT ?
-                """
-
-                cursor.execute(sql, (f'%{keyword}%', 10))
-
-                for entity_id, text, entity_type, confidence in cursor.fetchall():
-                    if entity_id not in seen_ids:
-                        seen_ids.add(entity_id)
-                        all_entities.append({
-                            'id': entity_id,
-                            'text': text,
-                            'type': entity_type,
-                            'confidence': float(confidence) if confidence else 0.0,
-                            'matched_keyword': keyword,
-                            'source': 'direct_match'  # Mark as direct query match
-                        })
-
-            all_entities.sort(key=lambda x: x['confidence'], reverse=True)
-            top_entities = all_entities[:limit]
-
-            documents = []
-            relationships = []
-
-            # Get documents and relationships for these entities
-            if top_entities:
-                entity_ids = [e['id'] for e in top_entities]
-                placeholders = ','.join(['?'] * len(entity_ids))
-
-                # Get documents containing these entities
-                doc_sql = f"""
-                    SELECT DISTINCT e.ResourceID, f.FHIRResourceId,
-                           COUNT(DISTINCT e.EntityID) as EntityCount
-                    FROM SQLUser.Entity e
-                    JOIN SQLUser.FHIRDocuments f ON e.ResourceID = f.FHIRResourceId
-                    WHERE e.EntityID IN ({placeholders})
-                    GROUP BY e.ResourceID, f.FHIRResourceId
-                    ORDER BY EntityCount DESC
-                """
-
-                cursor.execute(doc_sql, entity_ids)
-                for resource_id, fhir_id, entity_count in cursor.fetchall():
-                    documents.append({
-                        'fhir_id': fhir_id,
-                        'entity_count': entity_count
-                    })
-
-                # Get relationships between found entities from EntityRelationships table
-                # Enhanced query: also fetch entity types for related entities
-                rel_sql = f"""
-                    SELECT r.SourceEntityID, r.TargetEntityID, r.RelationshipType,
-                           e1.EntityText as SourceText, e1.EntityType as SourceType, e1.Confidence as SourceConf,
-                           e2.EntityText as TargetText, e2.EntityType as TargetType, e2.Confidence as TargetConf
-                    FROM SQLUser.Relationship r
-                    JOIN SQLUser.Entity e1 ON r.SourceEntityID = e1.EntityID
-                    JOIN SQLUser.Entity e2 ON r.TargetEntityID = e2.EntityID
-                    WHERE r.SourceEntityID IN ({placeholders})
-                    OR r.TargetEntityID IN ({placeholders})
-                """
-                cursor.execute(rel_sql, entity_ids + entity_ids)
-                seen_rels = set()
-
-                # Track entities extracted from relationships (for complete entity list)
-                related_entities = []
-
-                for row in cursor.fetchall():
-                    src_id, tgt_id, rel_type, src_text, src_type, src_conf, tgt_text, tgt_type, tgt_conf = row
-
-                    # Deduplicate relationships
-                    rel_key = f"{min(src_id, tgt_id)}_{max(src_id, tgt_id)}"
-                    if rel_key not in seen_rels:
-                        seen_rels.add(rel_key)
-                        relationships.append({
-                            'source_id': src_id,
-                            'target_id': tgt_id,
-                            'source_text': src_text,
-                            'target_text': tgt_text,
-                            'type': rel_type or 'related'
-                        })
-
-                    # ENHANCEMENT: Extract complete entity objects from relationships
-                    # This ensures all related entities are returned with full metadata
-                    if src_id not in seen_ids:
-                        seen_ids.add(src_id)
-                        related_entities.append({
-                            'id': src_id,
-                            'text': src_text,
-                            'type': src_type,
-                            'confidence': float(src_conf) if src_conf else 0.4,
-                            'source': 'relationship'  # Mark as discovered via relationship
-                        })
-
-                    if tgt_id not in seen_ids:
-                        seen_ids.add(tgt_id)
-                        related_entities.append({
-                            'id': tgt_id,
-                            'text': tgt_text,
-                            'type': tgt_type,
-                            'confidence': float(tgt_conf) if tgt_conf else 0.4,
-                            'source': 'relationship'  # Mark as discovered via relationship
-                        })
-
-                # Combine direct matches with related entities
-                # Direct matches first (higher relevance), then related entities
-                all_result_entities = top_entities + related_entities
-
-            else:
-                all_result_entities = top_entities
-
-            cursor.close()
-            conn.close()
+            kg_service = KGSearchService()
+            results = kg_service.search_entities(query, limit=limit)
+            kg_service.close()
 
             return [TextContent(
                 type="text",
-                text=json.dumps({
-                    "query": query,
-                    "entities_found": len(all_result_entities),
-                    "direct_matches": len(top_entities),
-                    "related_entities": len(all_result_entities) - len(top_entities),
-                    "entities": all_result_entities,
-                    "relationships_found": len(relationships),
-                    "relationships": relationships,
-                    "documents_found": len(documents),
-                    "documents": documents
-                }, indent=2)
+                text=json.dumps(results, indent=2)
             )]
 
         elif name == "hybrid_search":
             query = arguments["query"]
             top_k = arguments.get("top_k", 5)
 
-            # Execute FHIR search (text matching)
-            fhir_sql = """
-                SELECT TOP ?
-                    FHIRResourceId,
-                    ResourceType,
-                    ResourceString
-                FROM SQLUser.FHIRDocuments
-                WHERE ResourceType = 'DocumentReference'
-            """
-
-            cursor.execute(fhir_sql, (top_k * 3,))
-            search_terms = query.lower().split()
-            fhir_results = []
-
-            for fhir_id, resource_type, resource_string in cursor.fetchall():
-                try:
-                    resource_json = json.loads(resource_string)
-                    clinical_note = None
-                    if 'content' in resource_json:
-                        try:
-                            encoded_data = resource_json['content'][0]['attachment']['data']
-                            clinical_note = bytes.fromhex(encoded_data).decode('utf-8')
-                        except:
-                            pass
-
-                    if clinical_note and search_terms:
-                        clinical_note_lower = clinical_note.lower()
-                        if any(term in clinical_note_lower for term in search_terms):
-                            fhir_results.append({'fhir_id': fhir_id})
-                            if len(fhir_results) >= top_k * 2:
-                                break
-                except:
-                    pass
-
-            # Execute GraphRAG search (entity matching)
-            keywords = [w.strip() for w in query.lower().split() if len(w.strip()) > 2]
-            all_entity_ids = set()
-
-            for keyword in keywords[:3]:  # Limit to 3 keywords
-                entity_sql = """
-                    SELECT EntityID FROM SQLUser.Entity
-                    WHERE LOWER(EntityText) LIKE ?
-                    LIMIT 5
-                """
-                cursor.execute(entity_sql, (f'%{keyword}%',))
-                for row in cursor.fetchall():
-                    all_entity_ids.add(row[0])
-
-            graphrag_results = []
-            if all_entity_ids:
-                entity_list = list(all_entity_ids)
-                placeholders = ','.join(['?'] * len(entity_list))
-                doc_sql = f"""
-                    SELECT DISTINCT f.FHIRResourceId
-                    FROM SQLUser.Entity e
-                    JOIN SQLUser.FHIRDocuments f ON e.ResourceID = f.FHIRResourceId
-                    WHERE e.EntityID IN ({placeholders})
-                """
-                cursor.execute(doc_sql, entity_list)
-                graphrag_results = [{'fhir_id': row[0]} for row in cursor.fetchall()]
-
-            # RRF fusion
-            k = 60
-            score_map = {}
-
-            for rank, doc in enumerate(fhir_results, 1):
-                fhir_id = doc['fhir_id']
-                if fhir_id not in score_map:
-                    score_map[fhir_id] = {'fhir_rank': None, 'graph_rank': None}
-                score_map[fhir_id]['fhir_rank'] = rank
-
-            for rank, doc in enumerate(graphrag_results, 1):
-                fhir_id = doc['fhir_id']
-                if fhir_id not in score_map:
-                    score_map[fhir_id] = {'fhir_rank': None, 'graph_rank': None}
-                score_map[fhir_id]['graph_rank'] = rank
-
-            fused = []
-            for fhir_id, data in score_map.items():
-                rrf_score = 0.0
-                if data['fhir_rank']:
-                    rrf_score += 1.0 / (k + data['fhir_rank'])
-                if data['graph_rank']:
-                    rrf_score += 1.0 / (k + data['graph_rank'])
-
-                sources = []
-                if data['fhir_rank']:
-                    sources.append('fhir')
-                if data['graph_rank']:
-                    sources.append('graphrag')
-
-                fused.append({
-                    'fhir_id': fhir_id,
-                    'rrf_score': rrf_score,
-                    'sources': sources
-                })
-
-            fused.sort(key=lambda x: x['rrf_score'], reverse=True)
-
-            cursor.close()
-            conn.close()
+            hybrid_service = HybridSearchService()
+            results = hybrid_service.search(query, top_k=top_k)
+            hybrid_service.close()
 
             return [TextContent(
                 type="text",
-                text=json.dumps({
-                    "query": query,
-                    "fhir_results": len(fhir_results),
-                    "graphrag_results": len(graphrag_results),
-                    "fused_results": len(fused),
-                    "top_documents": fused[:top_k]
-                }, indent=2)
+                text=json.dumps(results, indent=2)
             )]
 
         elif name == "get_entity_relationships":
@@ -1406,7 +1135,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                     search_mode = "semantic"
 
                     # Updated SQL: Include similarity score and patient info via LEFT JOIN (T013-T016)
-                    sql = f"""
+                    sql = """
                         SELECT TOP ?
                             i.ImageID, i.StudyID, i.SubjectID, i.ViewPosition, i.ImagePath,
                             VECTOR_COSINE(i.Vector, TO_VECTOR(?, double)) AS Similarity,
@@ -2080,7 +1809,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
 async def main():
     """Run the MCP server."""
-    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
+    async with stdio_server() as (read_stream, write_stream):
         await server.run(
             read_stream,
             write_stream,

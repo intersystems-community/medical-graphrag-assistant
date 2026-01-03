@@ -2104,7 +2104,16 @@ The deployment includes comprehensive health monitoring tools to validate system
 
 #### Running Health Checks
 
-**Quick validation script (recommended):**
+**System Health CLI (recommended):**
+```bash
+# Verify system health and schema integrity
+python -m src.cli check-health --smoke-test
+
+# Attempt to auto-fix environment issues (missing tables, etc.)
+python -m src.cli fix-environment
+```
+
+**Quick validation script:**
 ```bash
 # Validate all components
 ./scripts/aws/validate-deployment.sh
