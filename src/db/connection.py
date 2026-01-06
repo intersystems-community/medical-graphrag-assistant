@@ -60,27 +60,45 @@ class DatabaseConnection:
         }
     
     @classmethod
-    def get_connection(cls):
+    def get_connection(cls, **kwargs):
         """
         Create IRIS database connection.
+        
+        Args:
+            **kwargs: Optional overrides for connection parameters (hostname, port, etc.)
         
         Returns:
             DBAPI connection object
             
         Raises:
             Exception: If connection fails
-            
-        Example:
-            >>> conn = DatabaseConnection.get_connection()
-            >>> cursor = conn.cursor()
-            >>> cursor.execute("SELECT COUNT(*) FROM VectorSearch.MIMICCXRImages")
-            >>> count = cursor.fetchone()[0]
-            >>> print(f"Images: {count}")
-            >>> conn.close()
         """
         config = cls.get_config()
+        # Only override with non-None kwargs
+        for k, v in kwargs.items():
+            if v is not None:
+                config[k] = v
+        
         try:
-            return iris.connect(**config)
+            import iris
+            # Try standard import first
+            if hasattr(iris, 'connect'):
+                return iris.connect(**config)
+            
+            # Fallback to irissdk if iris.connect is missing
+            # (Common issue with intersystems-irispython on some platforms)
+            import iris.irissdk
+            conn = iris.irissdk.IRISConnection()
+            # Use _connect as connect() is not exposed in some versions
+            conn._connect(
+                config['hostname'], 
+                config['port'], 
+                config['namespace'], 
+                config['username'], 
+                config['password']
+            )
+            return conn
+
         except Exception as e:
             # Add context to error message
             raise ConnectionError(

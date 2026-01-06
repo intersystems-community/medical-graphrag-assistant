@@ -5,8 +5,8 @@ This table stores clinical note embeddings from both OpenAI (3072-dim)
 and NIM (1024-dim) providers.
 """
 
-import iris
 import logging
+from src.db.connection import DatabaseConnection
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def create_text_vector_table():
     - VectorSearch.FHIRTextVectors (for embeddings)
     - SQLUser.FHIRDocuments (for raw document storage and search)
     """
-    conn = iris.connect('localhost', 32782, 'DEMO', '_SYSTEM', 'ISCDEMO')
+    conn = DatabaseConnection.get_connection()
     cursor = conn.cursor()
 
     try:

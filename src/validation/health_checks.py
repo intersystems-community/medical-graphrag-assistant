@@ -263,27 +263,37 @@ def docker_gpu_check() -> HealthCheckResult:
         )
 
 
-def iris_connection_check(host: str = "localhost", port: int = 1972,
-                          namespace: str = "DEMO", username: str = "_SYSTEM",
-                          password: str = "SYS") -> HealthCheckResult:
+from src.db.connection import DatabaseConnection
+
+def iris_connection_check(host: Optional[str] = None, port: Optional[int] = None,
+                          namespace: Optional[str] = None, username: Optional[str] = None,
+                          password: Optional[str] = None) -> HealthCheckResult:
     """
     Check IRIS database connectivity.
 
     Args:
-        host: IRIS host address
-        port: IRIS SuperServer port
-        namespace: IRIS namespace
-        username: Database username
-        password: Database password
+        host: IRIS host address (default: env)
+        port: IRIS SuperServer port (default: env)
+        namespace: IRIS namespace (default: env)
+        username: Database username (default: env)
+        password: Database password (default: env)
 
     Returns:
         HealthCheckResult with connection status
     """
-    try:
-        import iris
+    # Resolve defaults for reporting
+    db_config = DatabaseConnection.get_config()
+    report_host = host or db_config['hostname']
+    report_port = port or db_config['port']
+    report_ns = namespace or db_config['namespace']
 
-        # Attempt connection
-        conn = iris.connect(host, port, namespace, username, password)
+    try:
+        # Attempt connection using centralized logic
+        # get_connection handles None arguments by falling back to env/defaults
+        conn = DatabaseConnection.get_connection(
+            hostname=host, port=port, namespace=namespace,
+            username=username, password=password
+        )
         cursor = conn.cursor()
 
         # Test with simple query
@@ -316,7 +326,7 @@ def iris_connection_check(host: str = "localhost", port: int = 1972,
             component="IRIS Connection",
             status="fail",
             message="iris Python module not installed",
-            details={"suggestion": "pip install intersystems-iris"}
+            details={"suggestion": "pip install intersystems-irispython"}
         )
     except Exception as e:
         return HealthCheckResult(
@@ -577,9 +587,9 @@ def nim_llm_inference_test(host: str = "localhost", port: int = 8001) -> HealthC
         )
 
 
-def iris_schema_check(host: str = "localhost", port: int = 1972,
-                      namespace: str = "USER", username: str = "_SYSTEM",
-                      password: str = "SYS") -> HealthCheckResult:
+def iris_schema_check(host: Optional[str] = None, port: Optional[int] = None,
+                      namespace: Optional[str] = None, username: Optional[str] = None,
+                      password: Optional[str] = None) -> HealthCheckResult:
     """
     Comprehensive check of IRIS database schema for all required tables.
     
@@ -593,8 +603,11 @@ def iris_schema_check(host: str = "localhost", port: int = 1972,
         HealthCheckResult with schema validation status
     """
     try:
-        import iris
-        conn = iris.connect(host, port, namespace, username, password)
+        # Use centralized connection logic
+        conn = DatabaseConnection.get_connection(
+            hostname=host, port=port, namespace=namespace,
+            username=username, password=password
+        )
         cursor = conn.cursor()
         
         required_tables = [
@@ -647,7 +660,7 @@ def iris_schema_check(host: str = "localhost", port: int = 1972,
             message=f"Schema check failed: {str(e)}"
         )
 
-def run_all_checks(iris_host: str = "localhost", iris_port: int = 1972,
+def run_all_checks(iris_host: Optional[str] = None, iris_port: Optional[int] = None,
                   nim_host: str = "localhost", nim_port: int = 8001,
                   skip_gpu: bool = False, skip_docker: bool = False,
                   skip_iris: bool = False, skip_nim: bool = False) -> List[HealthCheckResult]:
@@ -655,8 +668,8 @@ def run_all_checks(iris_host: str = "localhost", iris_port: int = 1972,
     Run all health checks and return results.
 
     Args:
-        iris_host: IRIS database host
-        iris_port: IRIS database port
+        iris_host: IRIS database host (default: env or localhost)
+        iris_port: IRIS database port (default: env or 1972)
         nim_host: NIM service host
         nim_port: NIM service port
         skip_gpu: Skip GPU checks
@@ -667,6 +680,13 @@ def run_all_checks(iris_host: str = "localhost", iris_port: int = 1972,
     Returns:
         List of HealthCheckResult objects
     """
+    # Load defaults from DatabaseConnection if not provided
+    db_config = DatabaseConnection.get_config()
+    if iris_host is None:
+        iris_host = db_config['hostname']
+    if iris_port is None:
+        iris_port = db_config['port']
+
     results = []
 
     if not skip_gpu:
