@@ -24,11 +24,6 @@ import yaml
 import iris
 from datetime import datetime
 
-# Add rag-templates to Python path
-RAG_TEMPLATES_PATH = "/Users/tdyar/ws/rag-templates"
-if RAG_TEMPLATES_PATH not in sys.path:
-    sys.path.insert(0, RAG_TEMPLATES_PATH)
-
 # Add project root to Python path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
