@@ -121,7 +121,7 @@ def load_images(limit=10):
 
         # Check if already loaded
         cursor.execute(
-            "SELECT COUNT(*) FROM SQLUser.MedicalImageVectors WHERE ImageID = ?",
+            "SELECT COUNT(*) FROM VectorSearch.MIMICCXRImages WHERE ImageID = ?",
             (image_id,)
         )
         if cursor.fetchone()[0] > 0:
@@ -131,7 +131,9 @@ def load_images(limit=10):
         # Process DICOM
         image = process_dicom(dicom_file) if DICOM_AVAILABLE else None
 
-        if image is None:
+        if image is None and not DICOM_AVAILABLE:
+            pass
+        elif image is None:
             print(f"  {i}/{len(dicom_files)}: {image_id} - could not process, skipping")
             continue
 
@@ -144,7 +146,7 @@ def load_images(limit=10):
             embedding_str = "[" + ",".join(map(str, embedding)) + "]"
 
             cursor.execute("""
-                INSERT INTO SQLUser.MedicalImageVectors
+                INSERT INTO VectorSearch.MIMICCXRImages
                 (ImageID, PatientID, StudyType, ImagePath, Embedding, CreatedAt, UpdatedAt)
                 VALUES (?, ?, ?, ?, TO_VECTOR(?, DOUBLE), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """, (
