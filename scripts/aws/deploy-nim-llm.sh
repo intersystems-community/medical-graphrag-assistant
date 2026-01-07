@@ -161,7 +161,6 @@ deploy_nim_llm_local() {
         --restart unless-stopped \
         -p ${NIM_PORT}:${LOCAL_CONTAINER_PORT} \
         -e NGC_API_KEY="$NVIDIA_API_KEY" \
-        -e NIM_MODEL_PROFILE=auto \
         --shm-size=16g \
         "$nim_image"
 
