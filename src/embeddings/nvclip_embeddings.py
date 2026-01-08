@@ -197,16 +197,30 @@ class NVCLIPEmbeddings:
         Returns:
             1024-dimensional embedding vector
         """
-        # Call NV-CLIP API using OpenAI client
-        response = self.client.embeddings.create(
-            input=[text],
-            model=self.model,
-            encoding_format="float"
-        )
-
-        embedding = response.data[0].embedding
-
-        return embedding
+        try:
+            # Call NV-CLIP API using OpenAI client
+            response = self.client.embeddings.create(
+                input=[text],
+                model=self.model,
+                encoding_format="float"
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            # Fallback to NVIDIA Cloud API if local NIM fails with 404 or connection error
+            is_local = 'localhost' in self.base_url or '127.0.0.1' in self.base_url or '13.216.2.41' in self.base_url
+            
+            if is_local and self.api_key:
+                print(f"NV-CLIP local error ({e}), falling back to NVIDIA Cloud API...", file=sys.stderr)
+                cloud_url = "https://integrate.api.nvidia.com/v1"
+                from openai import OpenAI
+                cloud_client = OpenAI(api_key=self.api_key, base_url=cloud_url)
+                response = cloud_client.embeddings.create(
+                    input=[text],
+                    model=self.model,
+                    encoding_format="float"
+                )
+                return response.data[0].embedding
+            raise e
 
     def similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
         """
