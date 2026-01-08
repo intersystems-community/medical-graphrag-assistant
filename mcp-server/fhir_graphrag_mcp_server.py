@@ -727,50 +727,19 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
         elif name == "get_document_details":
             fhir_id = arguments["fhir_id"]
 
-            sql = """
-                SELECT FHIRResourceId, ResourceType, ResourceString
-                FROM SQLUser.FHIRDocuments
-                WHERE FHIRResourceId = ?
-            """
+            fhir_service = FHIRSearchService()
+            details = fhir_service.get_document_details(fhir_id)
+            fhir_service.close()
 
-            cursor.execute(sql, (fhir_id,))
-            result = cursor.fetchone()
-
-            if not result:
-                cursor.close()
-                conn.close()
+            if not details:
                 return [TextContent(
                     type="text",
                     text=json.dumps({"error": f"Document '{fhir_id}' not found"})
                 )]
 
-            _, resource_type, resource_string = result
-            resource_json = json.loads(resource_string)
-
-            # Decode clinical note
-            clinical_note = None
-            if 'content' in resource_json:
-                try:
-                    encoded_data = resource_json['content'][0]['attachment']['data']
-                    clinical_note = bytes.fromhex(encoded_data).decode('utf-8')
-                except:
-                    pass
-
-            cursor.close()
-            conn.close()
-
             return [TextContent(
                 type="text",
-                text=json.dumps({
-                    "fhir_id": fhir_id,
-                    "resource_type": resource_type,
-                    "clinical_note": clinical_note,
-                    "metadata": {
-                        "id": resource_json.get('id'),
-                        "status": resource_json.get('status'),
-                        "type": resource_json.get('type', {}).get('coding', [{}])[0].get('display') if resource_json.get('type') else None
-                    }
-                }, indent=2)
+                text=json.dumps(details, indent=2)
             )]
 
         elif name == "get_entity_statistics":

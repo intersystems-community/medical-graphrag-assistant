@@ -408,15 +408,32 @@ def main():
             embedding = generate_mock_embedding()
             embedding_str = ",".join(str(v) for v in embedding)
 
-            # 1. Insert into SQLUser.FHIRDocuments (for full-text search)
+            # Generate dummy FHIR ResourceString
+            resource_json = {
+                "resourceType": "Composition",
+                "id": note["note_id"],
+                "status": "final",
+                "type": {
+                    "coding": [{"display": note["document_type"]}]
+                },
+                "content": [{
+                    "attachment": {
+                        "data": note["text_content"].encode('utf-8').hex()
+                    }
+                }]
+            }
+            resource_string = json.dumps(resource_json)
+
+            # 1. Insert into SQLUser.FHIRDocuments (for full-text search and details)
             sql_doc = """INSERT INTO SQLUser.FHIRDocuments
-                (FHIRResourceId, ResourceType, TextContent, CreatedAt)
-                VALUES (?, ?, ?, NOW())"""
+                (FHIRResourceId, ResourceType, TextContent, ResourceString, CreatedAt)
+                VALUES (?, ?, ?, ?, NOW())"""
             
             params_doc = (
                 note["note_id"],
                 note["document_type"],
-                note["text_content"]
+                note["text_content"],
+                resource_string
             )
             
             success_doc, result_doc = execute_sql(sql_doc, params_doc)

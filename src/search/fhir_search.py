@@ -39,7 +39,7 @@ class FHIRSearchService(BaseSearchService):
         # For pragmatic refactor, we'll follow the pattern in fhir_graphrag_mcp_server.py
         # which performs keyword matching on TextContent.
         
-        sql = "SELECT ID, TextContent FROM SQLUser.FHIRDocuments"
+        sql = "SELECT FHIRResourceId, TextContent FROM SQLUser.FHIRDocuments"
         cursor.execute(sql)
         
         results = []
@@ -65,14 +65,24 @@ class FHIRSearchService(BaseSearchService):
 
     def get_document_details(self, fhir_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve full document details."""
+        import json
         _, cursor = self.connect()
-        sql = "SELECT TextContent FROM SQLUser.FHIRDocuments WHERE ID = ?"
+        sql = "SELECT FHIRResourceId, ResourceType, ResourceString, TextContent FROM SQLUser.FHIRDocuments WHERE FHIRResourceId = ?"
         cursor.execute(sql, [fhir_id])
         row = cursor.fetchone()
         
         if row:
+            fhir_id, resource_type, resource_string, text_content = row
+            resource_json = json.loads(resource_string) if resource_string else {}
+            
             return {
                 "fhir_id": fhir_id,
-                "text_content": row[0]
+                "resource_type": resource_type,
+                "clinical_note": text_content,
+                "metadata": {
+                    "id": resource_json.get('id'),
+                    "status": resource_json.get('status'),
+                    "type": resource_json.get('type', {}).get('coding', [{}])[0].get('display') if resource_json.get('type') else None
+                }
             }
         return None
