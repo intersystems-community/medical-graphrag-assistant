@@ -35,7 +35,7 @@ FHIR_PASSWORD = os.getenv('FHIR_PASSWORD', "sys")
 # IRIS connection - for local Docker
 IRIS_HOST = os.getenv('IRIS_HOST', 'localhost')
 IRIS_PORT = os.getenv('IRIS_PORT', '32782')
-IRIS_NAMESPACE = os.getenv('IRIS_NAMESPACE', 'DEMO')
+IRIS_NAMESPACE = os.getenv('IRIS_NAMESPACE', '%SYS')
 
 # Data generation configuration
 NUM_PATIENTS = 50
@@ -277,7 +277,7 @@ def execute_iris_sql(sql):
     escaped_sql = sql.replace("'", "''")
 
     # Build the command
-    cmd = f"docker exec iris-fhir bash -c 'echo \"{escaped_sql}\" | iris sql IRIS -U {IRIS_NAMESPACE} 2>/dev/null'"
+    cmd = f"docker exec iris-fhir bash -c 'echo \"{escaped_sql}\" | iris sql IRIS -U {IRIS_NAMESPACE}'"
 
     try:
         result = subprocess.run(
