@@ -1478,12 +1478,15 @@ def demo_mode_search(user_message: str):
     
     try:
         # Check for specific tool calls in natural language
-        if "symptom" in query_lower and "chart" in query_lower:
+        if "symptom" in query_lower and ("chart" in query_lower or "plot" in query_lower):
             tool_name = "plot_symptom_frequency"
             result = asyncio.run(call_tool(tool_name, {}))
-        elif "entity" in query_lower and ("distribution" in query_lower or "statistics" in query_lower or "stats" in query_lower):
+        elif ("entity" in query_lower or "statistics" in query_lower) and ("distribution" in query_lower or "plot" in query_lower or "chart" in query_lower):
             tool_name = "plot_entity_distribution"
             result = asyncio.run(call_tool(tool_name, {"chart_type": "bar"}))
+        elif "statistics" in query_lower or "stats" in query_lower:
+            tool_name = "get_entity_statistics"
+            result = asyncio.run(call_tool(tool_name, {}))
         elif "knowledge graph" in query_lower or "entities" in query_lower:
             tool_name = "search_knowledge_graph"
             result = asyncio.run(call_tool(tool_name, {"query": user_message, "limit": 5}))
