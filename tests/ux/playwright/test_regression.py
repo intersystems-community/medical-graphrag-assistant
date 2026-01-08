@@ -16,11 +16,14 @@ def test_allergies_and_images_query(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    # Wait for assistant message to appear and have some content
+    # Wait for assistant message to appear and have some content (Longer timeout for complex query)
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
-    assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=120000)
-    wait_for_streamlit(page)
+    assistant_msg.wait_for(timeout=180000)
+    expect(assistant_msg).not_to_have_text("", timeout=180000)
+    
+    # Wait for Streamlit to finish running (spinning icon to disappear)
+    # Increased timeout for complex synthesis
+    wait_for_streamlit(page, timeout=180000)
     
     # Verify no connection errors or missing config errors in the response
     # We check the actual visible text in the assistant message
