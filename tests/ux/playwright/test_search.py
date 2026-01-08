@@ -22,13 +22,22 @@ def test_fhir_search_decoding(page, target_url):
     # Wait for assistant message to appear and have some content
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
     assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=60000)
+    expect(assistant_msg).not_to_have_text("", timeout=120000)
     wait_for_streamlit(page)
+    
+    # STRICT CHECK: Verify no error indicators in the response text
+    expect(assistant_msg).not_to_contain_text("error", ignore_case=True)
+    expect(assistant_msg).not_to_contain_text("incomplete", ignore_case=True)
+    expect(assistant_msg).not_to_contain_text("connection refused", ignore_case=True)
     
     # Try to find expander by text (case-insensitive partial match)
     expander = page.get_by_text("Execution Details", exact=False).first
     expect(expander).to_be_visible(timeout=60000)
     expander.click()
+    
+    # STRICT CHECK: Verify tool execution was successful
+    expect(expander).not_to_contain_text("❌")
+    expect(expander).to_contain_text("✅")
     
     expect(assistant_msg).to_contain_text("cough", ignore_case=True)
 
@@ -43,12 +52,20 @@ def test_kg_search(page, target_url):
     
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
     assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=60000)
+    expect(assistant_msg).not_to_have_text("", timeout=120000)
     wait_for_streamlit(page)
+    
+    # STRICT CHECK: Verify no error indicators
+    expect(assistant_msg).not_to_contain_text("error", ignore_case=True)
+    expect(assistant_msg).not_to_contain_text("incomplete", ignore_case=True)
     
     expander = page.get_by_text("Execution Details", exact=False).first
     expect(expander).to_be_visible(timeout=60000)
     expander.click()
+    
+    # STRICT CHECK: Verify success icon
+    expect(expander).to_contain_text("✅")
+    expect(expander).not_to_contain_text("❌")
     
     expect(assistant_msg).to_contain_text("fever", ignore_case=True)
 
@@ -63,12 +80,19 @@ def test_hybrid_search(page, target_url):
     
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
     assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=60000)
+    expect(assistant_msg).not_to_have_text("", timeout=120000)
     wait_for_streamlit(page)
+    
+    # STRICT CHECK: Verify no error indicators
+    expect(assistant_msg).not_to_contain_text("error", ignore_case=True)
     
     expander = page.get_by_text("Execution Details", exact=False).first
     expect(expander).to_be_visible(timeout=60000)
     expander.click()
+    
+    # STRICT CHECK: Verify success icon
+    expect(expander).to_contain_text("✅")
+    expect(expander).not_to_contain_text("❌")
     
     expect(assistant_msg).to_contain_text("chest pain", ignore_case=True)
 
@@ -83,11 +107,19 @@ def test_image_search(page, target_url):
     
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
     assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=60000)
+    expect(assistant_msg).not_to_have_text("", timeout=120000)
     wait_for_streamlit(page)
+    
+    # STRICT CHECK: Verify no error indicators
+    expect(assistant_msg).not_to_contain_text("error", ignore_case=True)
     
     expander = page.get_by_text("Execution Details", exact=False).first
     expect(expander).to_be_visible(timeout=60000)
+    expander.click()
+    
+    # STRICT CHECK: Verify success icon
+    expect(expander).to_contain_text("✅")
+    expect(expander).not_to_contain_text("❌")
     
     # Check for image element
     expect(page.locator('img').first).to_be_visible(timeout=30000)
@@ -103,9 +135,16 @@ def test_entity_statistics(page, target_url):
     
     assistant_msg = page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last
     assistant_msg.wait_for()
-    expect(assistant_msg).not_to_have_text("", timeout=60000)
+    expect(assistant_msg).not_to_have_text("", timeout=120000)
     wait_for_streamlit(page)
+    
+    # STRICT CHECK: Verify no error indicators
+    expect(assistant_msg).not_to_contain_text("error", ignore_case=True)
     
     expander = page.get_by_text("Execution Details", exact=False).first
     expect(expander).to_be_visible(timeout=60000)
     expander.click()
+    
+    # STRICT CHECK: Verify success icon
+    expect(expander).to_contain_text("✅")
+    expect(expander).not_to_contain_text("❌")
