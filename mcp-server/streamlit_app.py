@@ -1472,155 +1472,72 @@ def render_chart(tool_name: str, data, unique_id: str = None):
         return False
 
 def demo_mode_search(user_message: str):
-    """Demo mode without Claude - directly execute MCP tools based on keywords"""
+    """Fallback search mode when LLM is unavailable"""
+    status = st.status("🔍 Searching medical database (Demo Mode)...")
     query_lower = user_message.lower()
-
-    status = st.empty()
-    status.write("🔍 Running in demo mode (no Claude) - executing direct search...")
-
+    
     try:
-        # Check for visualization requests
-        if "plot" in query_lower or "chart" in query_lower or "visualize" in query_lower:
-            if "symptom" in query_lower and ("frequency" in query_lower or "common" in query_lower):
-                result = asyncio.run(call_tool("plot_symptom_frequency", {"top_n": 10}))
-                data = json.loads(result[0].text)
-                fig = go.Figure(data=[go.Bar(
-                    x=data["data"]["symptoms"],
-                    y=data["data"]["frequencies"],
-                    marker_color='lightcoral'
-                )])
-                fig.update_layout(title="Most Frequent Symptoms", height=400)
-                st.plotly_chart(fig, use_container_width=True)
-                status.empty()
-                return "Chart displayed above showing top 10 symptoms."
+        # Check for specific tool calls in natural language
+        if "symptom" in query_lower and "chart" in query_lower:
+            tool_name = "plot_symptom_frequency"
+            result = asyncio.run(call_tool(tool_name, {}))
+        elif "entity" in query_lower and ("distribution" in query_lower or "statistics" in query_lower or "stats" in query_lower):
+            tool_name = "plot_entity_distribution"
+            result = asyncio.run(call_tool(tool_name, {"chart_type": "bar"}))
+        elif "knowledge graph" in query_lower or "entities" in query_lower:
+            tool_name = "search_knowledge_graph"
+            result = asyncio.run(call_tool(tool_name, {"query": user_message, "limit": 5}))
+        elif "image" in query_lower or "x-ray" in query_lower or "scan" in query_lower:
+            tool_name = "search_medical_images"
+            result = asyncio.run(call_tool(tool_name, {"query": user_message, "limit": 3}))
+        else:
+            # Default to hybrid search
+            tool_name = "hybrid_search"
+            result = asyncio.run(call_tool(tool_name, {"query": user_message, "top_k": 5}))
 
-            elif "entity" in query_lower or "distribution" in query_lower:
-                result = asyncio.run(call_tool("plot_entity_distribution", {"chart_type": "bar"}))
-                data = json.loads(result[0].text)
-                fig = go.Figure(data=[go.Bar(
-                    x=data["data"]["labels"],
-                    y=data["data"]["values"],
-                    marker_color='steelblue'
-                )])
-                fig.update_layout(title="Entity Type Distribution", height=400)
-                st.plotly_chart(fig, use_container_width=True)
-                status.empty()
-                return "Chart displayed above showing entity distribution."
+        data = json.loads(result[0].text)
 
-        # Check for image search
-        if "image" in query_lower or "x-ray" in query_lower or "scan" in query_lower:
-            result = asyncio.run(call_tool("search_medical_images", {"query": user_message, "limit": 3}))
-            data = json.loads(result[0].text)
-            
-            # Render images manually for demo mode since we return text here
-            # But wait, chat_with_tools expects text return from demo_mode_search
-            # And it doesn't render charts/images from the return value of demo_mode_search
-            # demo_mode_search renders charts directly using st.plotly_chart
-            # So we should render images directly here too
-            
+        # Log tool execution for transparency
+        execution_log = [{
+            "iteration": 1,
+            "tool_name": tool_name,
+            "tool_input": {"query": user_message},
+            "result_summary": f"Execution successful",
+            "full_result": data
+        }]
+
+        status.empty()
+        
+        # Display results summary
+        text_response = f"**Results for '{tool_name}'** (Demo Mode)\n\n"
+        
+        # Render charts directly if applicable
+        if tool_name == "plot_symptom_frequency":
+            st.write("Chart displayed above showing top 10 symptoms.")
+            render_chart(tool_name, data, f"demo_{tool_name}")
+        elif tool_name == "plot_entity_distribution":
+            st.write("Chart displayed above showing entity distribution.")
+            render_chart(tool_name, data, f"demo_{tool_name}")
+        elif tool_name == "search_medical_images":
             images = data.get("images", [])
-            
-            # Log tool execution
-            execution_log = [{
-                "iteration": 1,
-                "tool_name": "search_medical_images",
-                "tool_input": {"query": user_message, "limit": 3},
-                "result_summary": f"Found {len(images)} images",
-                "full_result": data
-            }]
-
             if images:
                 st.subheader(f"Found {len(images)} Images (Demo Mode)")
                 cols = st.columns(3)
                 for idx, img in enumerate(images):
                     with cols[idx % 3]:
                         img_path = img.get("image_path")
-
-                        # Convert relative path to absolute (relative to project root)
                         if img_path and not os.path.isabs(img_path):
                             img_path = os.path.abspath(os.path.join(parent_dir, img_path))
-
-                        study_type = img.get('study_type', 'Unknown Study')
-                        patient_id = img.get('patient_id', 'Unknown Patient')
-                        caption = f"{study_type} - Patient {patient_id}"
-
+                        caption = f"{img.get('study_type', 'Unknown')} - Patient {img.get('patient_id', 'Unknown')}"
                         if img_path and os.path.exists(img_path):
-                            # Check if DICOM file
                             if img_path.lower().endswith('.dcm'):
                                 dicom_img = load_dicom_image(img_path)
-                                if dicom_img:
-                                    st.image(dicom_img, caption=caption, use_container_width=True)
-                                else:
-                                    st.info(f"Image: {caption}")
+                                if dicom_img: st.image(dicom_img, caption=caption, use_container_width=True)
                             else:
-                                # Regular image file
                                 st.image(img_path, caption=caption, use_container_width=True)
-                        else:
-                            st.info(f"Image: {caption}")
-                
-                # Save images for rendering during next rerun
-                # We return a dict with text and execution log, but for images
-                # we also want them to be displayed.
-                # Regular chat_with_tools renders charts into chart_container.
-                # But demo_mode_search doesn't have access to it easily.
-                # We'll just return the info and let the display loop handle it if possible.
-                
-                status.empty()
-                return {
-                    "text": f"Found {len(images)} images for your query (Demo Mode).",
-                    "execution_log": execution_log
-                }
             else:
-                status.empty()
-                return "No images found matching your query."
-
-        # Otherwise do hybrid search
-        result = asyncio.run(call_tool("hybrid_search", {"query": user_message, "top_k": 5}))
-        data = json.loads(result[0].text)
-
-        # Log tool execution for transparency even in demo mode
-        execution_log = [{
-            "iteration": 1,
-            "tool_name": "hybrid_search",
-            "tool_input": {"query": user_message, "top_k": 5},
-            "result_summary": f"Found {data.get('results_count', 0)} documents and {data.get('entities_found', 0)} entities",
-            "full_result": data
-        }]
-
-        status.empty()
+                st.write("No images found matching your query.")
         
-        # Display results
-        st.markdown(f"**Search Results** (Demo Mode)")
-        
-        # Handle new service response format (v2.16.0)
-        if "results_count" in data:
-            st.write(f"- Total results: {data['results_count']}")
-            st.write(f"- Entities found: {data.get('entities_found', 0)}")
-        else:
-            # Legacy format support
-            st.write(f"- FHIR results: {data.get('fhir_results', 'N/A')}")
-            st.write(f"- GraphRAG results: {data.get('graphrag_results', 'N/A')}")
-            st.write(f"- Fused results: {data.get('fused_results', 'N/A')}")
-
-        # Render enhanced details panel for tests to pass
-        # But wait, we should return this data so it's persisted in session state
-        # and rendered during the next rerun.
-        
-        status.empty()
-        
-        # Display results summary
-        text_response = f"**Search Results** (Demo Mode)\n\n"
-        if "results_count" in data:
-            text_response += f"- Total results: {data['results_count']}\n"
-            text_response += f"- Entities found: {data.get('entities_found', 0)}\n\n"
-        
-        if data.get('top_documents'):
-            text_response += "**Top Documents:**\n"
-            for doc in data['top_documents']:
-                sources = ", ".join(doc.get('sources', []))
-                score = doc.get('rrf_score', 0.0)
-                text_response += f"- Document {doc['fhir_id']} (score: {score:.4f}, sources: {sources})\n"
-
         return {
             "text": text_response,
             "execution_log": execution_log
@@ -1629,6 +1546,7 @@ def demo_mode_search(user_message: str):
     except Exception as e:
         status.empty()
         return f"❌ Error in demo mode: {str(e)}"
+
 
 def call_openai_compatible(messages, tools=None):
     """Call OpenAI or NIM LLM (both use OpenAI-compatible API)"""
