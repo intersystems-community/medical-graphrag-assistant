@@ -7,6 +7,15 @@ for local Docker IRIS instance (used on EC2 deployment).
 
 import os
 from typing import Optional
+try:
+    from dotenv import load_dotenv
+    # Look for .env in project root (two levels up from src/db)
+    env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+except ImportError:
+    pass
+
 import iris
 
 
