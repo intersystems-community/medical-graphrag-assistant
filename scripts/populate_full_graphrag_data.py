@@ -524,9 +524,13 @@ def main():
     if stats["errors"]:
         print(f"Errors ({len(stats['errors'])}):")
         for err in stats["errors"]:
-            if "SQL Error" in err:
+            if "SQL Error (Entity)" in err:
                 print(f"  - {err}")
-                break # Just show one for now
+                break
+        for err in stats["errors"]:
+            if "SQL Error (Note)" in err:
+                print(f"  - {err}")
+                break
         for err in stats["errors"][:10]:
             print(f"  - {err}")
         if len(stats["errors"]) > 10:
