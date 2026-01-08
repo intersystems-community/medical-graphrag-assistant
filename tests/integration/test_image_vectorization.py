@@ -55,15 +55,16 @@ SAMPLE_IMAGE_FILES = _all_dcm_files + _all_png_files + _all_jpg_files
 # ===== Fixtures =====
 
 
-    @pytest.fixture
-    def sample_image_path(self):
-        """Return path to a single sample image file (DICOM or PNG/JPG)."""
-        if not SAMPLE_IMAGE_FILES:
-            pytest.skip("No sample image files found in fixtures directory")
-        return SAMPLE_IMAGE_FILES[0]
+@pytest.fixture
+def sample_image_path():
+    """Return path to a single sample image file (DICOM or PNG/JPG)."""
+    if not SAMPLE_IMAGE_FILES:
+        pytest.skip("No sample image files found in fixtures directory")
+    return SAMPLE_IMAGE_FILES[0]
 
-    @pytest.fixture
-    def sample_dicom_path(self):
+
+@pytest.fixture
+def sample_dicom_path():
     """Return path to a single sample DICOM file."""
     if not SAMPLE_DICOM_FILES:
         pytest.skip("No sample DICOM files found in fixtures directory")
