@@ -82,10 +82,21 @@ class VectorMemory:
             1024-dim embedding vector
         """
         if self.embedding_model is None:
-            # Lazy load NV-CLIP
+            # Lazy load NV-CLIP using configuration
             try:
                 from src.embeddings.nvclip_embeddings import NVCLIPEmbeddings
-                self.embedding_model = NVCLIPEmbeddings()
+                from src.search.base import BaseSearchService
+                
+                # Get base URL from config
+                base_service = BaseSearchService()
+                nvclip_config = base_service.config.get('nvclip', {})
+                base_url = nvclip_config.get('base_url')
+                
+                if base_url:
+                    print(f"VectorMemory: Initializing NV-CLIP with base_url: {base_url}", file=sys.stderr)
+                    self.embedding_model = NVCLIPEmbeddings(base_url=base_url)
+                else:
+                    self.embedding_model = NVCLIPEmbeddings()
             except Exception as e:
                 print(f"Warning: Could not load NV-CLIP: {e}", file=sys.stderr)
                 # Return zero vector as fallback
