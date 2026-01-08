@@ -1558,18 +1558,18 @@ def demo_mode_search(user_message: str):
                         else:
                             st.info(f"Image: {caption}")
                 
-                # Render enhanced details panel
-                render_details_panel(
-                    tool_results=[{"tool_name": "search_medical_images", "result": data}],
-                    thinking_blocks=["Running in Demo Mode due to LLM unavailability."],
-                    memory_recalls=[],
-                    execution_log=execution_log,
-                    response_time_ms=0,
-                    msg_idx=888 # Unique ID
-                )
-
+                # Save images for rendering during next rerun
+                # We return a dict with text and execution log, but for images
+                # we also want them to be displayed.
+                # Regular chat_with_tools renders charts into chart_container.
+                # But demo_mode_search doesn't have access to it easily.
+                # We'll just return the info and let the display loop handle it if possible.
+                
                 status.empty()
-                return f"Found {len(images)} images for your query."
+                return {
+                    "text": f"Found {len(images)} images for your query (Demo Mode).",
+                    "execution_log": execution_log
+                }
             else:
                 status.empty()
                 return "No images found matching your query."
@@ -1602,24 +1602,29 @@ def demo_mode_search(user_message: str):
             st.write(f"- GraphRAG results: {data.get('graphrag_results', 'N/A')}")
             st.write(f"- Fused results: {data.get('fused_results', 'N/A')}")
 
+        # Render enhanced details panel for tests to pass
+        # But wait, we should return this data so it's persisted in session state
+        # and rendered during the next rerun.
+        
+        status.empty()
+        
+        # Display results summary
+        text_response = f"**Search Results** (Demo Mode)\n\n"
+        if "results_count" in data:
+            text_response += f"- Total results: {data['results_count']}\n"
+            text_response += f"- Entities found: {data.get('entities_found', 0)}\n\n"
+        
         if data.get('top_documents'):
-            st.write("**Top Documents:**")
+            text_response += "**Top Documents:**\n"
             for doc in data['top_documents']:
                 sources = ", ".join(doc.get('sources', []))
                 score = doc.get('rrf_score', 0.0)
-                st.write(f"- Document {doc['fhir_id']} (score: {score:.4f}, sources: {sources})")
+                text_response += f"- Document {doc['fhir_id']} (score: {score:.4f}, sources: {sources})\n"
 
-        # Render enhanced details panel for tests to pass
-        render_details_panel(
-            tool_results=[{"tool_name": "hybrid_search", "result": data}],
-            thinking_blocks=["Running in Demo Mode due to LLM unavailability."],
-            memory_recalls=[],
-            execution_log=execution_log,
-            response_time_ms=0,
-            msg_idx=999 # Unique ID
-        )
-
-        return "Search completed in Demo Mode."
+        return {
+            "text": text_response,
+            "execution_log": execution_log
+        }
 
     except Exception as e:
         status.empty()
