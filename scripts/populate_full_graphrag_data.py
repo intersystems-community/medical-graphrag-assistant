@@ -425,6 +425,8 @@ def main():
             success, result = execute_sql(sql, params)
             if success:
                 stats["clinical_notes_created"] += 1
+            else:
+                stats["errors"].append(f"SQL Error (Note): {result}")
 
         if stats["clinical_notes_created"] % 20 == 0:
             print(f"  Created {stats['clinical_notes_created']} clinical notes...")
@@ -452,6 +454,8 @@ def main():
             success, result = execute_sql(sql, params)
             if success:
                 stats["entities_created"] += 1
+            else:
+                stats["errors"].append(f"SQL Error (Entity): {result}")
 
         if stats["entities_created"] % 50 == 0:
             print(f"  Created {stats['entities_created']} entities...")
@@ -479,6 +483,8 @@ def main():
             success, result = execute_sql(sql, params)
             if success:
                 stats["relationships_created"] += 1
+            else:
+                stats["errors"].append(f"SQL Error (Relationship): {result}")
 
         if stats["relationships_created"] % 50 == 0:
             print(f"  Created {stats['relationships_created']} relationships...")
