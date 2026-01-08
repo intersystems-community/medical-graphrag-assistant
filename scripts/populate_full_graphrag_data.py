@@ -444,12 +444,12 @@ def main():
     print()
 
     # 4. Create Entities in IRIS
-    print("Creating Entities in IRIS Entity table...")
+    print("Creating Entities in IRIS RAG.Entities table...")
     for patient in patients:
         for entity in patient["entities"]:
             text_escaped = entity["entity_text"].replace("'", "''")
 
-            sql = f"""INSERT INTO SQLUser.Entity
+            sql = f"""INSERT INTO RAG.Entities
                 (EntityID, EntityType, EntityText, SourceDocumentID, PatientID, Confidence)
                 VALUES ('{entity["entity_id"]}', '{entity["entity_type"]}', '{text_escaped}',
                 '{entity["source_document_id"]}', '{entity["patient_id"]}', {entity["confidence"]})"""
@@ -465,10 +465,10 @@ def main():
     print()
 
     # 5. Create Relationships in IRIS
-    print("Creating Relationships in IRIS Relationship table...")
+    print("Creating Relationships in IRIS RAG.EntityRelationships table...")
     for patient in patients:
         for rel in patient["relationships"]:
-            sql = f"""INSERT INTO SQLUser.Relationship
+            sql = f"""INSERT INTO RAG.EntityRelationships
                 (RelationshipID, SourceEntityID, TargetEntityID, RelationType, SourceDocumentID, Confidence)
                 VALUES ('{rel["relationship_id"]}', '{rel["source_entity_id"]}', '{rel["target_entity_id"]}',
                 '{rel["relation_type"]}', '{rel["source_document_id"]}', {rel["confidence"]})"""

@@ -363,9 +363,11 @@ def iris_tables_check(host: str = "localhost", port: int = 1972,
         HealthCheckResult with table existence status
     """
     try:
-        import iris
-
-        conn = iris.connect(host, port, namespace, username, password)
+        # Use centralized connection logic
+        conn = DatabaseConnection.get_connection(
+            hostname=host, port=port, namespace=namespace,
+            username=username, password=password
+        )
         cursor = conn.cursor()
 
         # Check ClinicalNoteVectors table
@@ -510,9 +512,8 @@ def nim_llm_inference_test(host: str = "localhost", port: int = 8001) -> HealthC
     Returns:
         HealthCheckResult with inference test status and response
     """
+    url = f"http://{host}:{port}/v1/chat/completions"
     try:
-        url = f"http://{host}:{port}/v1/chat/completions"
-
         payload = {
             "model": "meta/llama-3.1-8b-instruct",
             "messages": [
@@ -612,8 +613,8 @@ def iris_schema_check(host: Optional[str] = None, port: Optional[int] = None,
         
         required_tables = [
             ("SQLUser", "FHIRDocuments"),
-            ("SQLUser", "Entities"),
-            ("SQLUser", "EntityRelationships"),
+            ("RAG", "Entities"),
+            ("RAG", "EntityRelationships"),
             ("VectorSearch", "MIMICCXRImages")
         ]
         
