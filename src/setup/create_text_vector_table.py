@@ -30,7 +30,7 @@ def create_text_vector_table():
                 ResourceID VARCHAR(255) NOT NULL,
                 ResourceType VARCHAR(50) NOT NULL,
                 TextContent VARCHAR(MAX),
-                Vector VECTOR(DOUBLE, 3072),
+                Vector VECTOR(DOUBLE, 1024),
                 EmbeddingModel VARCHAR(100),
                 Provider VARCHAR(20),
                 CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

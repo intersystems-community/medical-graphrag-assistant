@@ -408,25 +408,39 @@ def main():
             embedding = generate_mock_embedding()
             embedding_str = ",".join(str(v) for v in embedding)
 
-            sql = f"""INSERT INTO SQLUser.ClinicalNoteVectors
-                (ResourceID, PatientID, DocumentType, TextContent, Embedding, EmbeddingModel, SourceBundle, CreatedAt)
-                VALUES (?, ?, ?, ?, TO_VECTOR(?, DOUBLE, 1024), ?, ?, NOW())"""
+            # 1. Insert into SQLUser.FHIRDocuments (for full-text search)
+            sql_doc = """INSERT INTO SQLUser.FHIRDocuments
+                (FHIRResourceId, ResourceType, TextContent, CreatedAt)
+                VALUES (?, ?, ?, NOW())"""
+            
+            params_doc = (
+                note["note_id"],
+                note["document_type"],
+                note["text_content"]
+            )
+            
+            success_doc, result_doc = execute_sql(sql_doc, params_doc)
 
-            params = (
+            # 2. Insert into VectorSearch.FHIRTextVectors (for vector search)
+            sql_vec = f"""INSERT INTO VectorSearch.FHIRTextVectors
+                (ResourceID, ResourceType, TextContent, Vector, EmbeddingModel, Provider, CreatedAt)
+                VALUES (?, ?, ?, TO_VECTOR(?, DOUBLE, 1024), ?, ?, NOW())"""
+
+            params_vec = (
                 note["note_id"], 
-                note["patient_id"], 
                 note["document_type"],
                 note["text_content"], 
                 embedding_str,
                 'nvidia/nv-embedqa-e5-v5', 
-                'synthetic-data.json'
+                'nim'
             )
 
-            success, result = execute_sql(sql, params)
-            if success:
+            success_vec, result_vec = execute_sql(sql_vec, params_vec)
+            
+            if success_doc and success_vec:
                 stats["clinical_notes_created"] += 1
             else:
-                stats["errors"].append(f"SQL Error (Note): {result}")
+                stats["errors"].append(f"SQL Error (Note): {result_doc if not success_doc else result_vec}")
 
         if stats["clinical_notes_created"] % 20 == 0:
             print(f"  Created {stats['clinical_notes_created']} clinical notes...")
