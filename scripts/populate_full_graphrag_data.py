@@ -284,13 +284,12 @@ def execute_iris_sql(sql, params=None):
         else:
             cursor.execute(sql)
             
-        affected = cursor.rowcount
         conn.commit()
         cursor.close()
         conn.close()
         
-        # Return a string containing "Affected" to match script logic
-        return True, f"{affected} Row(s) Affected"
+        # Return success
+        return True, "Success"
     except Exception as e:
         return False, str(e)
 
@@ -424,7 +423,7 @@ def main():
             )
 
             success, result = execute_sql(sql, params)
-            if success and "Affected" in result:
+            if success:
                 stats["clinical_notes_created"] += 1
 
         if stats["clinical_notes_created"] % 20 == 0:
@@ -451,7 +450,7 @@ def main():
             )
 
             success, result = execute_sql(sql, params)
-            if success and "Affected" in result:
+            if success:
                 stats["entities_created"] += 1
 
         if stats["entities_created"] % 50 == 0:
@@ -478,7 +477,7 @@ def main():
             )
 
             success, result = execute_sql(sql, params)
-            if success and "Affected" in result:
+            if success:
                 stats["relationships_created"] += 1
 
         if stats["relationships_created"] % 50 == 0:
