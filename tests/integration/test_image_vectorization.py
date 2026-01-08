@@ -43,23 +43,27 @@ from vectorization.vector_db_client import IRISVectorDBClient
 # Test fixtures directory
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "sample_medical_images"
 
-# Filter for real MIMIC-CXR chest X-ray files (large files with UUID naming pattern)
-# These are the actual medical images suitable for testing, not the small pydicom test files
+# Filter for sample medical image files
 _all_dcm_files = list(FIXTURES_DIR.glob("*.dcm"))
-SAMPLE_DICOM_FILES = [
-    f for f in _all_dcm_files
-    if f.stat().st_size > 1_000_000  # Files larger than 1MB are real chest X-rays
-]
-# Fallback to any DICOM files if no large ones found (for CI environments)
-if not SAMPLE_DICOM_FILES:
-    SAMPLE_DICOM_FILES = _all_dcm_files
+_all_png_files = list(FIXTURES_DIR.glob("*.png"))
+_all_jpg_files = list(FIXTURES_DIR.glob("*.jpg"))
+
+SAMPLE_DICOM_FILES = _all_dcm_files
+SAMPLE_IMAGE_FILES = _all_dcm_files + _all_png_files + _all_jpg_files
 
 
 # ===== Fixtures =====
 
 
-@pytest.fixture
-def sample_dicom_path():
+    @pytest.fixture
+    def sample_image_path(self):
+        """Return path to a single sample image file (DICOM or PNG/JPG)."""
+        if not SAMPLE_IMAGE_FILES:
+            pytest.skip("No sample image files found in fixtures directory")
+        return SAMPLE_IMAGE_FILES[0]
+
+    @pytest.fixture
+    def sample_dicom_path(self):
     """Return path to a single sample DICOM file."""
     if not SAMPLE_DICOM_FILES:
         pytest.skip("No sample DICOM files found in fixtures directory")
