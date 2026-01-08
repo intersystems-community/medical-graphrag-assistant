@@ -19,8 +19,8 @@ def test_fhir_search_decoding(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    # Wait for assistant message to appear
-    page.locator(StreamlitLocators.CHAT_MESSAGE).filter(has_text="assistant").last.wait_for()
+    # Wait for assistant message to appear (using avatar-based selector)
+    page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last.wait_for()
     wait_for_streamlit(page)
     
     # Try to find expander by text first as it's more robust
@@ -39,7 +39,7 @@ def test_kg_search(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    page.locator(StreamlitLocators.CHAT_MESSAGE).filter(has_text="assistant").last.wait_for()
+    page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last.wait_for()
     wait_for_streamlit(page)
     
     expander = page.get_by_text("Execution Details").first
@@ -57,7 +57,7 @@ def test_hybrid_search(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    page.locator(StreamlitLocators.CHAT_MESSAGE).filter(has_text="assistant").last.wait_for()
+    page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last.wait_for()
     wait_for_streamlit(page)
     
     expander = page.get_by_text("Execution Details").first
@@ -74,7 +74,7 @@ def test_image_search(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    page.locator(StreamlitLocators.CHAT_MESSAGE).filter(has_text="assistant").last.wait_for()
+    page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last.wait_for()
     wait_for_streamlit(page)
     
     expander = page.get_by_text("Execution Details").first
@@ -82,7 +82,7 @@ def test_image_search(page, target_url):
     expander.click()
     expect(expander).to_contain_text("search_medical_images")
     
-    # Check for image element
+    # Check for image element (Streamlit uses img tag for st.image)
     expect(page.locator('img').filter(has_text="Patient").first).to_be_visible(timeout=30000)
 
 def test_entity_statistics(page, target_url):
@@ -94,7 +94,7 @@ def test_entity_statistics(page, target_url):
     chat_input.fill(query)
     chat_input.press("Enter")
     
-    page.locator(StreamlitLocators.CHAT_MESSAGE).filter(has_text="assistant").last.wait_for()
+    page.locator(StreamlitLocators.ASSISTANT_MESSAGE).last.wait_for()
     wait_for_streamlit(page)
     
     expander = page.get_by_text("Execution Details").first

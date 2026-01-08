@@ -1,6 +1,8 @@
 class StreamlitLocators:
     CHAT_INPUT = '[data-testid="stChatInput"] textarea'
     CHAT_MESSAGE = '[data-testid="stChatMessage"]'
+    ASSISTANT_MESSAGE = '[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"])'
+    USER_MESSAGE = '[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"])'
     SIDEBAR = '[data-testid="stSidebar"]'
     STATUS_WIDGET = '[data-testid="stStatusWidget"]'
     EXPANDER = '[data-testid="stExpander"]'
