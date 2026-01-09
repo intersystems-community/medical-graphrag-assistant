@@ -30,6 +30,27 @@ def test_allergies_and_images_query(page, target_url):
     expect(assistant_msg).not_to_contain_text("Connection error", ignore_case=True)
     expect(assistant_msg).not_to_contain_text("Configuration file not found", ignore_case=True)
     expect(assistant_msg).not_to_contain_text("Not Found", ignore_case=True)
+
+    # CRITICAL: Verify no hallucinated Python code for charts
+    expect(assistant_msg).not_to_contain_text("import networkx", ignore_case=True)
+    expect(assistant_msg).not_to_contain_text("plt.show()", ignore_case=True)
+    expect(assistant_msg).not_to_contain_text("patient_ids =", ignore_case=True)
+    
+    # Open Execution Details
+    expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")
+    expect(expander).to_be_visible(timeout=60000)
+    
+    # Click the top-level summary to open
+    expander.locator("summary").first.click()
+    
+    # Verify tools were executed successfully (no red X icons)
+    # Streamlit renders ❌ for failed tool executions in our custom UI
+    # We check for the presence of the checkmark ✅ instead
+    expect(expander).to_contain_text("✅", timeout=10000)
+    expect(expander).not_to_contain_text("❌", timeout=10000)
+    
+    # Verify at least one tool was actually called
+    expect(expander).to_contain_text("Tool Execution", ignore_case=True)
     
     # Open Execution Details
     expander = page.locator(StreamlitLocators.EXPANDER).filter(has_text="Execution Details")

@@ -54,6 +54,23 @@ if parent_dir not in sys.path:
 from fhir_graphrag_mcp_server import call_tool
 
 # ============================================================================
+# LLM System Prompt
+# ============================================================================
+SYSTEM_PROMPT = """You are a helpful and accurate medical assistant. 
+You have access to a variety of tools to search FHIR documents, query a knowledge graph, and generate visualizations.
+
+CRITICAL INSTRUCTIONS:
+1. ALWAYS use the provided tools to answer medical questions. Do not speculate or assume data doesn't exist without searching.
+2. For any request involving visualization, charts, graphs, or timelines, you MUST use the appropriate `plot_*` tool. 
+3. NEVER generate Python code, matplotlib code, SVG, or Markdown-based charts yourself. Only use the plotting tools.
+4. If a query is complex (e.g., 'allergies or radiology images'), call MULTIPLE tools in sequence to gather all necessary information.
+5. For image-related queries (X-rays, scans, radiology), use `search_medical_images`.
+6. Use `get_entity_statistics` only for a high-level overview. To check if a SPECIFIC entity (like 'allergies') exists, use `search_knowledge_graph` or `search_fhir_documents`.
+7. When summarizing results, be concise and refer to the specific data returned by the tools.
+"""
+
+
+# ============================================================================
 # Data Models for GraphRAG Details Panel (Feature 005)
 # ============================================================================
 from dataclasses import dataclass, field
@@ -951,7 +968,7 @@ MCP_TOOLS = [
     },
     {
         "name": "get_entity_statistics",
-        "description": "Get knowledge graph statistics - entity counts, types, distribution",
+        "description": "Get knowledge graph OVERVIEW statistics - total entity counts, types, and top 10 entities. IMPORTANT: Use this only for an overview. To find if a specific entity (like 'allergies') exists, use search tools instead.",
         "input_schema": {"type": "object", "properties": {}}
     },
     {
@@ -1005,11 +1022,11 @@ MCP_TOOLS = [
     },
     {
         "name": "search_medical_images",
-        "description": "Search for medical images (X-rays) using text query or metadata.",
+        "description": "Search for medical radiology images (X-rays, scans) using text query or metadata. Supports searching for conditions (e.g., 'pneumonia') or image types.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Search query (e.g., 'chest X-ray of pneumonia')"},
+                "query": {"type": "string", "description": "Search query (e.g., 'radiology images of pneumonia', 'chest X-ray')"},
                 "limit": {"type": "integer", "description": "Max images", "default": 5}
             },
             "required": ["query"]
@@ -1547,6 +1564,7 @@ def demo_mode_search(user_message: str):
 
 
 
+
 def call_openai_compatible(messages, tools=None):
     """Call OpenAI or NIM LLM (both use OpenAI-compatible API)"""
     client = st.session_state.openai_client
@@ -1566,7 +1584,7 @@ def call_openai_compatible(messages, tools=None):
             })
 
     # Build OpenAI messages
-    openai_messages = []
+    openai_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for msg in messages:
         if msg["role"] == "user":
             if isinstance(msg["content"], str):
@@ -1708,7 +1726,8 @@ def call_claude_via_cli(messages, tools=None):
     cmd = [
         "aws", "bedrock-runtime", "converse",
         "--model-id", "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "--messages", json.dumps(converse_messages)
+        "--messages", json.dumps(converse_messages),
+        "--system", json.dumps([{"text": SYSTEM_PROMPT}])
     ]
 
     if tools:
