@@ -98,7 +98,6 @@ class VectorMemory:
                 else:
                     self.embedding_model = NVCLIPEmbeddings()
             except Exception as e:
-                import sys
                 print(f"Warning: Could not load NV-CLIP: {e}", file=sys.stderr)
                 # Return zero vector as fallback
                 return [0.0] * 1024
