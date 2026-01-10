@@ -12,6 +12,7 @@ from src.validation.health_checks import run_all_checks, HealthCheckResult
 from src.search.hybrid_search import HybridSearchService
 from src.setup.create_text_vector_table import create_text_vector_table
 from src.cli.chat import run_chat_cli
+from src.setup.reset_fhir_security import reset_security
 
 def format_report(results: List[HealthCheckResult], duration: float, smoke_test: Optional[Dict] = None) -> str:
     """Format health check results as JSON."""
@@ -76,6 +77,10 @@ def fix_environment_command(args):
     try:
         print("Ensuring database tables exist...")
         create_text_vector_table()
+        
+        print("Resetting FHIR security settings...")
+        reset_security()
+        
         print("✅ Environment fix complete")
         sys.exit(0)
     except Exception as e:
@@ -88,6 +93,17 @@ def chat_command(args):
         asyncio.run(run_chat_cli(args.query, provider=args.provider, verbose=not args.quiet))
     except Exception as e:
         print(f"❌ Chat error: {e}")
+        sys.exit(1)
+
+def reset_security_command(args):
+    try:
+        if reset_security(args.username, args.password, args.fhir_app):
+            print("✅ Security reset successful")
+        else:
+            print("❌ Security reset failed")
+            sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error during security reset: {e}")
         sys.exit(1)
 
 def main():
@@ -106,6 +122,12 @@ def main():
     chat_parser.add_argument("--provider", choices=["nim", "openai", "bedrock"], default="nim", help="LLM provider")
     chat_parser.add_argument("--quiet", action="store_true", help="Hide tool traces")
     
+    # reset-security
+    reset_parser = subparsers.add_parser("reset-security", help="Deep reset of IRIS FHIR security settings")
+    reset_parser.add_argument("--username", default="_SYSTEM", help="Target username")
+    reset_parser.add_argument("--password", default="SYS", help="New password")
+    reset_parser.add_argument("--fhir-app", default="/csp/healthshare/demo/fhir/r4", help="FHIR CSP Application path")
+    
     args = parser.parse_args()
     
     if args.command == "check-health":
@@ -114,6 +136,8 @@ def main():
         fix_environment_command(args)
     elif args.command == "chat":
         chat_command(args)
+    elif args.command == "reset-security":
+        reset_security_command(args)
     else:
 
         parser.print_help()

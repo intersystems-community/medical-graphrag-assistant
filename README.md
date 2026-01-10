@@ -31,8 +31,11 @@ An **agentic medical chat platform** with advanced capabilities:
 # Verify database, GPU, and schema integrity
 python -m src.cli check-health --smoke-test
 
-# If tables are missing (e.g., SQLUser.FHIRDocuments):
+# If tables are missing or authentication fails (HTTP 401):
 python -m src.cli fix-environment
+
+# Or reset security settings specifically:
+python -m src.cli reset-security
 ```
 
 ### 2. Run the Streamlit Chat Interface

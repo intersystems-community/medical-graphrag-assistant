@@ -661,6 +661,70 @@ def iris_schema_check(host: Optional[str] = None, port: Optional[int] = None,
             message=f"Schema check failed: {str(e)}"
         )
 
+def fhir_auth_check(url: Optional[str] = None, username: Optional[str] = None,
+                    password: Optional[str] = None) -> HealthCheckResult:
+    """
+    Check FHIR server authentication and availability.
+    
+    Args:
+        url: FHIR base URL
+        username: Auth username
+        password: Auth password
+        
+    Returns:
+        HealthCheckResult with auth status
+    """
+    import os
+    import base64
+    import requests
+    
+    fhir_url = url or os.getenv("FHIR_BASE_URL", "http://localhost:32783/csp/healthshare/demo/fhir/r4")
+    user = username or os.getenv("FHIR_USERNAME", "_SYSTEM")
+    pw = password or os.getenv("FHIR_PASSWORD", "SYS")
+    
+    try:
+        auth = base64.b64encode(f"{user}:{pw}".encode()).decode()
+        headers = {
+            "Accept": "application/fhir+json",
+            "Authorization": f"Basic {auth}"
+        }
+        
+        # Test with metadata endpoint
+        response = requests.get(f"{fhir_url}/metadata", headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            return HealthCheckResult(
+                component="FHIR Auth",
+                status="pass",
+                message=f"Authenticated successfully with {fhir_url}",
+                details={"status_code": 200}
+            )
+        elif response.status_code == 401:
+            return HealthCheckResult(
+                component="FHIR Auth",
+                status="fail",
+                message="401 Unauthorized - FHIR credentials invalid",
+                details={
+                    "status_code": 401,
+                    "suggestion": "Run 'python -m src.cli reset-security' to fix IRIS security configuration."
+                }
+            )
+        else:
+            return HealthCheckResult(
+                component="FHIR Auth",
+                status="fail",
+                message=f"Unexpected status code {response.status_code}",
+                details={"status_code": response.status_code}
+            )
+            
+    except Exception as e:
+        return HealthCheckResult(
+            component="FHIR Auth",
+            status="fail",
+            message=f"FHIR connectivity check failed: {str(e)}",
+            details={"error_type": type(e).__name__}
+        )
+
 def run_all_checks(iris_host: Optional[str] = None, iris_port: Optional[int] = None,
                   nim_host: str = "localhost", nim_port: int = 8001,
                   skip_gpu: bool = False, skip_docker: bool = False,
@@ -700,6 +764,7 @@ def run_all_checks(iris_host: Optional[str] = None, iris_port: Optional[int] = N
     if not skip_iris:
         results.append(iris_connection_check(iris_host, iris_port))
         results.append(iris_schema_check(iris_host, iris_port))
+        results.append(fhir_auth_check())
 
     if not skip_nim:
         results.append(nim_llm_health_check(nim_host, nim_port))
