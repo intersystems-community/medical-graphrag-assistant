@@ -1,27 +1,17 @@
 #!/usr/bin/env python3
 """
-import sys
 FHIR + GraphRAG MCP Server
 
 Model Context Protocol (MCP) server exposing FHIR repository search,
 GraphRAG knowledge graph queries, and medical data visualization tools
 for AI-powered medical chat applications.
-
-Tools provided:
-- search_fhir_documents: Full-text search of FHIR DocumentReference resources
-- search_knowledge_graph: Entity-based search through medical knowledge graph
-- hybrid_search: Combined FHIR + GraphRAG search with RRF fusion
-- get_entity_relationships: Traverse knowledge graph from seed entities
-- get_document_details: Retrieve full FHIR document with decoded clinical notes
-- get_entity_statistics: Knowledge graph statistics and entity distribution
-- plot_entity_distribution: Generate entity type distribution chart data
-- plot_patient_timeline: Generate patient encounter timeline chart data
-- plot_symptom_frequency: Generate symptom frequency bar chart data
-- plot_entity_network: Generate entity relationship network graph data
 """
 
 import sys
 import os
+import json
+import time  # For execution time tracking
+from typing import Any, Dict, List
 
 # Load .env file at the very top
 try:
@@ -38,13 +28,9 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-import json
-import time  # For execution time tracking
-from typing import Any, Dict, List
-
 # Import MCP modules
 from mcp.server import Server
-from mcp.types import Tool,TextContent
+from mcp.types import Tool, TextContent
 
 # Import async tools
 import asyncio
@@ -65,26 +51,6 @@ except ImportError:
     BOTO3_AVAILABLE = False
     print("Warning: boto3 not available, AWS Bedrock will not be used", file=sys.stderr)
 
-# Add src to path for imports
-# This line is now redundant due to the 'parent_dir' block above, but keeping it for now as it wasn't explicitly removed.
-# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-try:
-    from src.embeddings.nvclip_embeddings import NVCLIPEmbeddings
-except ImportError:
-    print("Warning: Could not import NVCLIPEmbeddings. Image search will be limited.", file=sys.stderr)
-    NVCLIPEmbeddings = None
-
-# MCP SDK
-# This block is now replaced by the explicit MCP imports above.
-# try:
-#     from mcp.server import Server
-#     from mcp.types import Tool, TextContent, ImageContent
-#     import mcp.server.stdio
-# except ImportError:
-#     print("Error: MCP SDK not installed. Install with: pip install mcp", file=sys.stderr)
-#     sys.exit(1)
-
-
 # Import database connection module
 from src.db.connection import get_connection
 
@@ -96,35 +62,13 @@ from src.search.fhir_search import FHIRSearchService
 from src.search.kg_search import KGSearchService
 from src.search.hybrid_search import HybridSearchService
 
-# Import memory system
+# Import memory system and embedder singleton
 from src.memory import VectorMemory
+from src.embeddings.embedder_singleton import get_embedder
 
 
 # Initialize MCP server
 server = Server("fhir-graphrag-server")
-
-# Initialize NV-CLIP embedder (lazy load or global)
-embedder = None
-
-def get_embedder():
-    global embedder
-    if embedder is None and NVCLIPEmbeddings:
-        try:
-            from src.search.base import BaseSearchService
-            base_service = BaseSearchService()
-            config = base_service.config
-            nvclip_config = config.get('nvclip', {})
-            base_url = nvclip_config.get('base_url')
-            if base_url:
-                print(f"Initializing NV-CLIP with base_url: {base_url}", file=sys.stderr)
-                embedder = NVCLIPEmbeddings(base_url=base_url)
-            else:
-                embedder = NVCLIPEmbeddings()
-        except Exception as e:
-            print(f"Warning: Failed to initialize NV-CLIP: {e}", file=sys.stderr)
-    return embedder
-
-
 
 # Initialize vector memory system
 vector_memory = None
@@ -135,6 +79,8 @@ def get_memory():
     if vector_memory is None:
         vector_memory = VectorMemory(embedding_model=get_embedder())
     return vector_memory
+
+
 
 
 @server.list_tools()
