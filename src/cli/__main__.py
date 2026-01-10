@@ -11,6 +11,7 @@ from typing import List, Optional, Dict
 from src.validation.health_checks import run_all_checks, HealthCheckResult
 from src.search.hybrid_search import HybridSearchService
 from src.setup.create_text_vector_table import create_text_vector_table
+from src.cli.chat import run_chat_cli
 
 def format_report(results: List[HealthCheckResult], duration: float, smoke_test: Optional[Dict] = None) -> str:
     """Format health check results as JSON."""
@@ -81,6 +82,14 @@ def fix_environment_command(args):
         print(f"❌ Failed to fix environment: {e}")
         sys.exit(1)
 
+def chat_command(args):
+    import asyncio
+    try:
+        asyncio.run(run_chat_cli(args.query, provider=args.provider, verbose=not args.quiet))
+    except Exception as e:
+        print(f"❌ Chat error: {e}")
+        sys.exit(1)
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Medical GraphRAG CLI")
@@ -92,13 +101,21 @@ def main():
     
     subparsers.add_parser("fix-environment", help="Attempt to fix environment issues (missing tables, etc.)")
     
+    chat_parser = subparsers.add_parser("chat", help="Perform an agentic query via terminal")
+    chat_parser.add_argument("query", help="Query to perform")
+    chat_parser.add_argument("--provider", choices=["nim", "openai", "bedrock"], default="nim", help="LLM provider")
+    chat_parser.add_argument("--quiet", action="store_true", help="Hide tool traces")
+    
     args = parser.parse_args()
     
     if args.command == "check-health":
         check_health_command(args)
     elif args.command == "fix-environment":
         fix_environment_command(args)
+    elif args.command == "chat":
+        chat_command(args)
     else:
+
         parser.print_help()
         sys.exit(1)
 
