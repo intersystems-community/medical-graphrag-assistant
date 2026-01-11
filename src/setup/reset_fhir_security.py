@@ -1,98 +1,200 @@
 """
 Reset FHIR Security Configuration utility.
 Handles password reset, role assignment, and CSP application configuration.
+
+Supports two execution modes:
+1. Native SDK mode - Uses iris.createIRIS() when running inside IRIS or with native SDK
+2. Docker mode - Uses iris-devtester CLI when native SDK unavailable (e.g., EC2 deployment)
 """
 
 import os
 import sys
 import argparse
-import json
-import base64
-from typing import Optional, Dict, Any
+import subprocess
+import shutil
+from typing import Optional
 
 # Ensure project root is in path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from src.db.connection import DatabaseConnection
 
-def reset_security(username: str = "_SYSTEM", password: str = "SYS", fhir_app: str = "/csp/healthshare/demo/fhir/r4"):
+def _check_iris_native_available() -> bool:
+    """Check if native IRIS SDK is available."""
+    try:
+        import iris
+        return hasattr(iris, 'createIRIS') or hasattr(iris, 'connect')
+    except ImportError:
+        return False
+
+
+def _reset_via_docker(container_name: str, username: str, password: str, fhir_app: str) -> bool:
     """
-    Perform deep reset of FHIR security settings.
+    Reset security using iris-devtester CLI (works on EC2 with Docker).
+    """
+    print(f"Using Docker-based reset for container '{container_name}'...")
+
+    # Step 1: Reset password via iris-devtester
+    devtester_path = shutil.which('iris-devtester')
+    if devtester_path:
+        print(f"Resetting password for user {username}...")
+        result = subprocess.run(
+            ['iris-devtester', 'container', 'reset-password', container_name,
+             '--user', username, '--password', password],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"Warning: Password reset via iris-devtester failed: {result.stderr}")
+        else:
+            print(f"✓ Password reset successful")
+    else:
+        # Fallback to direct docker exec
+        print("iris-devtester not found, using docker exec directly...")
+        cmd = f'iris session IRIS -U %SYS "do ##class(Security.Users).ChangePassword(\\"{username}\\",\\"{password}\\")"'
+        result = subprocess.run(
+            ['docker', 'exec', container_name, 'bash', '-c', cmd],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"Warning: Direct password reset failed: {result.stderr}")
+
+    # Step 2: Enable password auth for FHIR app via docker exec
+    print(f"Enabling password auth for {fhir_app}...")
+    objectscript = f'''
+set props=""
+do ##class(Security.Applications).Get("{fhir_app}",.props)
+set props("AutheEnabled")=32
+do ##class(Security.Applications).Modify("{fhir_app}",.props)
+'''
+    result = subprocess.run(
+        ['docker', 'exec', container_name, 'bash', '-c',
+         f'iris session IRIS -U %SYS <<EOF\n{objectscript}\nhalt\nEOF'],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"Warning: Auth configuration may have failed: {result.stderr}")
+    else:
+        print("✓ Password auth enabled for FHIR app")
+
+    # Step 3: Enable CallIn service
+    if devtester_path:
+        print("Enabling CallIn service...")
+        subprocess.run(
+            ['iris-devtester', 'container', 'enable-callin', container_name],
+            capture_output=True, text=True
+        )
+
+    return True
+
+
+def _reset_via_native_sdk(username: str, password: str, fhir_app: str) -> bool:
+    """
+    Reset security using native IRIS SDK (works when SDK is properly installed).
     """
     import iris
-    print(f"Starting security reset for user {username} and app {fhir_app}...")
-    
+    from src.db.connection import DatabaseConnection
+
+    print(f"Using native SDK for security reset...")
+
     conn = None
     try:
         # 1. Connect to IRIS
-        # Try configured credentials first
         try:
             conn = DatabaseConnection.get_connection()
         except Exception:
-            # Fallback to default superuser if config fails
             print("Configured connection failed, trying defaults (_SYSTEM/SYS)...")
             conn = DatabaseConnection.get_connection(username="_SYSTEM", password="SYS")
-            
+
         db_native = iris.createIRIS(conn)
-        
-        # 2. Switch to %SYS namespace for administrative tasks
+
+        # 2. Switch to %SYS namespace
         print("Switching to %SYS namespace...")
         db_native.classMethodValue("%SYS.Process", "SetNamespace", "%SYS")
-        
-        # 3. Reset User Password (FR-001)
+
+        # 3. Reset User Password
         print(f"Resetting password for user {username}...")
         status = db_native.classMethodValue("Security.Users", "ChangePassword", username, password)
         if status != 1:
             print(f"Warning: Password reset might have failed (Status: {status})")
-            
-        # 4. Configure CSP Application (FR-002)
+
+        # 4. Configure CSP Application
         print(f"Ensuring Password auth is enabled for {fhir_app}...")
         props_ref = iris.IRISReference({})
         db_native.classMethodValue("Security.Applications", "Get", fhir_app, props_ref)
-        
-        # Enable Password (32) and ensure application is enabled
-        authen = int(props_ref.value.get("AuthenEnabled", 0))
-        props_ref.value["AuthenEnabled"] = authen | 32
+
+        # Enable Password (32) - note: property is "AutheEnabled" not "AuthenEnabled"
+        authen = int(props_ref.value.get("AutheEnabled", 0))
+        props_ref.value["AutheEnabled"] = authen | 32
         props_ref.value["Enabled"] = 1
-        
+
         status = db_native.classMethodValue("Security.Applications", "Modify", fhir_app, props_ref)
         if status != 1:
             print(f"Warning: Application modification failed (Status: {status})")
 
-        # 5. Assign Roles (FR-003)
+        # 5. Assign Roles
         print(f"Assigning FHIR roles to {username}...")
         props_ref = iris.IRISReference({})
         db_native.classMethodValue("Security.Users", "Get", username, props_ref)
-        
+
         roles = props_ref.value.get("Roles", "")
         required_roles = ["%DB_FHIR", "%HS_FHIR_USER", "%Manager"]
         for role in required_roles:
             if role not in roles:
                 roles = f"{roles},{role}" if roles else role
-        
+
         props_ref.value["Roles"] = roles
         status = db_native.classMethodValue("Security.Users", "Modify", username, props_ref)
         if status != 1:
             print(f"Warning: Role assignment failed (Status: {status})")
 
-        # 6. Verify Reset (FR-005)
+        return True
+    finally:
+        if conn:
+            conn.close()
+
+
+def reset_security(
+    username: str = "_SYSTEM",
+    password: str = "SYS",
+    fhir_app: str = "/csp/healthshare/demo/fhir/r4",
+    container_name: str = "iris-fhir"
+) -> bool:
+    """
+    Perform deep reset of FHIR security settings.
+
+    Automatically detects execution environment and uses appropriate method:
+    - Native SDK when available (embedded Python or properly installed SDK)
+    - Docker-based reset via iris-devtester when native SDK unavailable
+    """
+    print(f"Starting security reset for user {username} and app {fhir_app}...")
+
+    # Try native SDK first, fallback to Docker mode
+    if _check_iris_native_available():
+        try:
+            success = _reset_via_native_sdk(username, password, fhir_app)
+        except Exception as e:
+            print(f"Native SDK reset failed ({e}), falling back to Docker mode...")
+            success = _reset_via_docker(container_name, username, password, fhir_app)
+    else:
+        print("Native IRIS SDK not available, using Docker mode...")
+        success = _reset_via_docker(container_name, username, password, fhir_app)
+
+    # Verify FHIR connectivity regardless of method
+    if success:
         print("Verifying FHIR connectivity...")
         import requests
         from requests.auth import HTTPBasicAuth
-        
-        # Get FHIR URL from environment or construct from app path
+
         fhir_url = os.getenv("FHIR_BASE_URL")
         if not fhir_url:
-            # Fallback to standard mapping
             port = os.getenv("IRIS_PORT_WEB", "32783")
             fhir_url = f"http://localhost:{port}{fhir_app}"
-            
+
         try:
             print(f"Checking {fhir_url}/metadata...")
             response = requests.get(
-                f"{fhir_url}/metadata", 
+                f"{fhir_url}/metadata",
                 auth=HTTPBasicAuth(username, password),
                 timeout=10
             )
@@ -103,21 +205,19 @@ def reset_security(username: str = "_SYSTEM", password: str = "SYS", fhir_app: s
         except Exception as e:
             print(f"⚠️ FHIR connectivity check failed: {e}")
 
-        return True
-    finally:
-        if conn:
-            conn.close()
+    return success
 
 def main():
     parser = argparse.ArgumentParser(description="Reset IRIS FHIR Security")
     parser.add_argument("--username", default="_SYSTEM", help="Target username")
     parser.add_argument("--password", default="SYS", help="New password")
     parser.add_argument("--fhir-app", default="/csp/healthshare/demo/fhir/r4", help="FHIR CSP Application path")
-    
+    parser.add_argument("--container", default="iris-fhir", help="Docker container name (for Docker mode)")
+
     args = parser.parse_args()
-    
+
     try:
-        if reset_security(args.username, args.password, args.fhir_app):
+        if reset_security(args.username, args.password, args.fhir_app, args.container):
             print("✅ Security reset successful")
         else:
             print("❌ Security reset failed")
@@ -125,6 +225,7 @@ def main():
     except Exception as e:
         print(f"❌ Error during security reset: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
