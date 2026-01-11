@@ -68,6 +68,7 @@ def send_bundle(entries):
     auth = "Basic " + base64.b64encode(f"{FHIR_USERNAME}:{FHIR_PASSWORD}".encode()).decode()
     req = urllib.request.Request(FHIR_BASE_URL, data=data, method="POST")
     req.add_header("Content-Type", "application/fhir+json")
+    req.add_header("Accept", "application/fhir+json")
     req.add_header("Authorization", auth)
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
