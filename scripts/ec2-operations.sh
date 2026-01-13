@@ -132,10 +132,9 @@ function deploy_latest() {
     $SSH_CMD "
     cd ~/medical-graphrag-assistant
     git fetch origin
-    git checkout $BRANCH
-    git pull origin $BRANCH
+    git reset --hard origin/$BRANCH
     "
-    print_status "Code updated to $BRANCH"
+    print_status "Code updated to $BRANCH (hard reset)"
 
     restart_streamlit
 }

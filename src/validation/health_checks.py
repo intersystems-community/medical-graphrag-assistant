@@ -283,13 +283,12 @@ def iris_connection_check(host: Optional[str] = None, port: Optional[int] = None
     """
     # Resolve defaults for reporting
     db_config = DatabaseConnection.get_config()
-    report_host = host or db_config['hostname']
-    report_port = port or db_config['port']
-    report_ns = namespace or db_config['namespace']
+    host = host or db_config['hostname']
+    port = port or db_config['port']
+    namespace = namespace or db_config['namespace']
 
     try:
         # Attempt connection using centralized logic
-        # get_connection handles None arguments by falling back to env/defaults
         conn = DatabaseConnection.get_connection(
             hostname=host, port=port, namespace=namespace,
             username=username, password=password
