@@ -15,7 +15,15 @@ FHIR_PASSWORD = os.getenv('FHIR_PASSWORD', "SYS")
 IRIS_NAMESPACE = os.getenv('IRIS_NAMESPACE', '%SYS')
 NUM_PATIENTS = 50
 
-CONDITIONS = [
+# Heuristic mapping for entity types
+MEDICATIONS = {
+    "metformin", "insulin glargine", "lisinopril", "amlodipine", "furosemide", 
+    "carvedilol", "ceftriaxone", "azithromycin", "albuterol", "tiotropium", 
+    "prednisone", "warfarin", "apixaban", "metoprolol", "aspirin", "atorvastatin", 
+    "nitroglycerin", "levothyroxine", "loratadine", "cetirizine", "avoid penicillin"
+}
+
+CONDITIONS_LIST = [
     ("diabetes mellitus type 2", "Condition", ["metformin", "insulin glargine", "hyperglycemia", "neuropathy", "retinopathy"]),
     ("hypertension", "Condition", ["lisinopril", "amlodipine", "elevated blood pressure", "headache", "dizziness"]),
     ("congestive heart failure", "Condition", ["furosemide", "carvedilol", "shortness of breath", "peripheral edema", "fatigue"]),
@@ -49,7 +57,7 @@ def generate_patients():
         fname = random.choice(first_m if gender == "male" else first_f)
         lname = random.choice(last)
         bdate = f"{random.randint(1940, 2000)}-{random.randint(1, 12):02d}-{random.randint(1, 28):02d}"
-        conds = random.sample(CONDITIONS, random.randint(1, 3))
+        conds = random.sample(CONDITIONS_LIST, random.randint(1, 3))
         notes = []
         for j, (name, _, items) in enumerate(conds):
             text = f"Patient {fname} {lname} presents with {items[0]}. History of {name}. Plan: Follow up."
@@ -62,55 +70,71 @@ def generate_patients():
         })
     return patients
 
-def send_bundle(entries):
-    bundle = {"resourceType": "Bundle", "type": "transaction", "entry": entries}
-    data = json.dumps(bundle).encode("utf-8")
+def put_resource(resource):
+    url = f"{FHIR_BASE_URL}/{resource['resourceType']}/{resource['id']}"
+    data = json.dumps(resource).encode("utf-8")
     auth = "Basic " + base64.b64encode(f"{FHIR_USERNAME}:{FHIR_PASSWORD}".encode()).decode()
-    req = urllib.request.Request(FHIR_BASE_URL, data=data, method="POST")
+    req = urllib.request.Request(url, data=data, method="PUT")
     req.add_header("Content-Type", "application/fhir+json")
-    req.add_header("Accept", "application/fhir+json")
     req.add_header("Authorization", auth)
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return True, json.loads(resp.read())
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return True, resp.getcode()
     except Exception as e:
         return False, str(e)
 
 def main():
-    print("Generating 50 patients...")
+    print(f"Populating data for {NUM_PATIENTS} patients...")
     patients = generate_patients()
-    entries = []
-    for p in patients:
-        entries.append({"resource": {"resourceType": "Patient", "id": p["id"], "name": [{"family": p["lname"], "given": [p["fname"]]}], "gender": p["gender"], "birthDate": p["bdate"]}, "request": {"method": "PUT", "url": f"Patient/{p['id']}"}})
-        entries.append({"resource": {"resourceType": "ImagingStudy", "id": p["img"]["id"], "status": "available", "subject": {"reference": f"Patient/{p['id']}"}, "started": p["img"]["date"], "modality": [{"code": "CR"}], "description": p["img"]["finding"]}, "request": {"method": "PUT", "url": f"ImagingStudy/{p['img']['id']}"}})
     
-    print("Uploading FHIR Bundle...")
-    success, res = send_bundle(entries)
-    if not success:
-        print(f"FHIR Error: {res}")
-    else:
-        print("✅ FHIR Data Populated")
+    print("Uploading FHIR Resources...")
+    p_count = 0
+    for p in patients:
+        res, code = put_resource({"resourceType": "Patient", "id": p["id"], "name": [{"family": p["lname"], "given": [p["fname"]]}], "gender": p["gender"], "birthDate": p["bdate"]})
+        if res: p_count += 1
+        put_resource({"resourceType": "ImagingStudy", "id": p["img"]["id"], "status": "available", "subject": {"reference": f"Patient/{p['id']}"}, "started": p["img"]["date"], "modality": [{"code": "CR"}], "description": p["img"]["finding"]})
+    print(f"✅ {p_count} Patients uploaded")
 
     print("Populating IRIS Tables...")
     try:
         conn = get_connection()
         cur = conn.cursor()
+        
         for t in ["SQLUser.FHIRDocuments", "VectorSearch.FHIRTextVectors", "RAG.Entities", "RAG.EntityRelationships"]:
             try: cur.execute(f"DELETE FROM {t}")
             except: pass
         
+        e_count = 0
+        r_count = 0
         for p in patients:
             for n in p["notes"]:
                 res_str = json.dumps({"resourceType": "Composition", "id": n["id"], "status": "final", "text": {"div": n["text"]}})
                 cur.execute("INSERT INTO SQLUser.FHIRDocuments (FHIRResourceId, ResourceType, TextContent, ResourceString, CreatedAt) VALUES (?, ?, ?, ?, NOW())", (n["id"], n["type"], n["text"], res_str))
-                vec = ",".join(str(round(random.uniform(-0.5, 0.5), 4)) for _ in range(1024))
+                vec = ",".join(str(round(random.uniform(-0.1, 0.1), 4)) for _ in range(1024))
                 cur.execute("INSERT INTO VectorSearch.FHIRTextVectors (ResourceID, ResourceType, TextContent, Vector, EmbeddingModel, Provider, CreatedAt) VALUES (?, ?, ?, TO_VECTOR(?, DOUBLE, 1024), ?, ?, NOW())", (n["id"], n["type"], n["text"], vec, 'mock', 'nim'))
+                
                 doc_id = int(n["id"].split('-p')[1].replace('-', ''))
+                
                 cur.execute("INSERT INTO RAG.Entities (EntityText, EntityType, ResourceID, Confidence) VALUES (?, ?, ?, ?)", (n["name"], "CONDITION", doc_id, 0.95))
+                e_count += 1
+                cur.execute("SELECT LAST_IDENTITY()")
+                cond_db_id = cur.fetchone()[0]
+                
+                for item in n["items"]:
+                    etype = "MEDICATION" if item.lower() in MEDICATIONS else "SYMPTOM"
+                    cur.execute("INSERT INTO RAG.Entities (EntityText, EntityType, ResourceID, Confidence) VALUES (?, ?, ?, ?)", (item, etype, doc_id, 0.90))
+                    e_count += 1
+                    cur.execute("SELECT LAST_IDENTITY()")
+                    item_db_id = cur.fetchone()[0]
+                    
+                    rtype = "TREATS" if etype == "MEDICATION" else "CAUSES"
+                    src, tgt = (item_db_id, cond_db_id) if etype == "MEDICATION" else (cond_db_id, item_db_id)
+                    cur.execute("INSERT INTO RAG.EntityRelationships (SourceEntityID, TargetEntityID, RelationshipType, ResourceID, Confidence) VALUES (?, ?, ?, ?, ?)", (src, tgt, rtype, doc_id, 0.85))
+                    r_count += 1
         
         conn.commit()
         conn.close()
-        print("✅ IRIS Data Populated")
+        print(f"✅ IRIS Data Populated: {e_count} entities, {r_count} relationships")
     except Exception as e:
         print(f"IRIS Error: {e}")
 
