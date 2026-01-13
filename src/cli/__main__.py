@@ -4,6 +4,7 @@ Usage: python -m src.cli check-health
 """
 
 import sys
+import os
 import argparse
 import json
 import time
@@ -11,6 +12,8 @@ from typing import List, Optional, Dict
 from src.validation.health_checks import run_all_checks, HealthCheckResult
 from src.search.hybrid_search import HybridSearchService
 from src.setup.create_text_vector_table import create_text_vector_table
+from src.setup.create_knowledge_graph_tables_aws import create_tables_aws
+from src.setup.create_mimic_images_table import create_mimic_images_table
 from src.cli.chat import run_chat_cli
 from src.setup.reset_fhir_security import reset_security
 
@@ -75,8 +78,18 @@ def fix_environment_command(args):
     """Execute the fix-environment command."""
     print("Fixing environment...")
     try:
+        # Load config path from environment or use default
+        config_path = os.getenv("CONFIG_PATH", "config/fhir_graphrag_config.aws.yaml")
+        
         print("Ensuring database tables exist...")
+        # 1. Text & Document tables
         create_text_vector_table()
+        
+        # 2. Knowledge Graph tables
+        create_tables_aws(config_path)
+        
+        # 3. Image tables
+        create_mimic_images_table(drop_existing=False)
         
         print("Resetting FHIR security settings...")
         reset_security()
@@ -115,8 +128,10 @@ def main():
     health_parser = subparsers.add_parser("check-health", help="Verify system health and schema")
     health_parser.add_argument("--smoke-test", action="store_true", help="Perform a minimal end-to-end search test")
     
+    # fix-environment
     subparsers.add_parser("fix-environment", help="Attempt to fix environment issues (missing tables, etc.)")
     
+    # chat
     chat_parser = subparsers.add_parser("chat", help="Perform an agentic query via terminal")
     chat_parser.add_argument("query", help="Query to perform")
     chat_parser.add_argument("--provider", choices=["nim", "openai", "bedrock"], default="nim", help="LLM provider")
@@ -139,7 +154,6 @@ def main():
     elif args.command == "reset-security":
         reset_security_command(args)
     else:
-
         parser.print_help()
         sys.exit(1)
 
