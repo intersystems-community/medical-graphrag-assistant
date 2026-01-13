@@ -171,10 +171,10 @@ def gpu_utilization_check() -> HealthCheckResult:
                 details={"output": result.stdout}
             )
 
-        gpu_util_pct = float(util_info[0])
-        memory_used_mb = float(util_info[1])
-        memory_total_mb = float(util_info[2])
-        temperature_c = float(util_info[3])
+        gpu_util_pct = float(util_info[0].split('\n')[0])
+        memory_used_mb = float(util_info[1].split('\n')[0])
+        memory_total_mb = float(util_info[2].split('\n')[0])
+        temperature_c = float(util_info[3].split('\n')[0])
 
         memory_util_pct = (memory_used_mb / memory_total_mb) * 100 if memory_total_mb > 0 else 0
 
@@ -460,45 +460,39 @@ def nim_llm_health_check(host: str = "localhost", port: int = 8001) -> HealthChe
     Returns:
         HealthCheckResult with service health status
     """
-    try:
-        url = f"http://{host}:{port}/health"
+    endpoints = [
+        f"http://{host}:{port}/v1/health/ready",
+        f"http://{host}:{port}/health/ready",
+        f"http://{host}:{port}/health"
+    ]
+    
+    last_error = None
+    
+    for url in endpoints:
+        try:
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=5) as response:
+                if response.status == 200:
+                    return HealthCheckResult(
+                        component="NIM LLM Health",
+                        status="pass",
+                        message=f"NIM LLM service healthy at {host}:{port}",
+                        details={"endpoint": url}
+                    )
+        except Exception as e:
+            last_error = e
+            continue
 
-        req = urllib.request.Request(url)
-
-        with urllib.request.urlopen(req, timeout=10) as response:
-            if response.status == 200:
-                return HealthCheckResult(
-                    component="NIM LLM Health",
-                    status="pass",
-                    message=f"NIM LLM service healthy at {host}:{port}",
-                    details={"endpoint": url}
-                )
-            else:
-                return HealthCheckResult(
-                    component="NIM LLM Health",
-                    status="fail",
-                    message=f"Health endpoint returned status {response.status}",
-                    details={"status_code": response.status}
-                )
-
-    except urllib.error.URLError as e:
-        return HealthCheckResult(
-            component="NIM LLM Health",
-            status="fail",
-            message="Health endpoint not accessible",
-            details={
-                "error": str(e),
-                "endpoint": f"http://{host}:{port}/health",
-                "suggestion": "NIM may still be initializing - check: docker logs nim-llm"
-            }
-        )
-    except Exception as e:
-        return HealthCheckResult(
-            component="NIM LLM Health",
-            status="fail",
-            message=f"Error checking health: {str(e)}",
-            details={"error_type": type(e).__name__}
-        )
+    return HealthCheckResult(
+        component="NIM LLM Health",
+        status="fail",
+        message="Health endpoint not accessible",
+        details={
+            "error": str(last_error),
+            "endpoints_checked": endpoints,
+            "suggestion": "NIM may still be initializing - check: docker logs nim-llm"
+        }
+    )
 
 
 def nim_llm_inference_test(host: str = "localhost", port: int = 8001) -> HealthCheckResult:
