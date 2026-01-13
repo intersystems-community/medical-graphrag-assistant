@@ -1405,7 +1405,7 @@ Move caching to instance level for testability.
 
 ### Breakthroughs
 - ✅ **Verified Production IP**: Correct EC2 Public IP is `13.218.19.254` (Instance `i-0432eba10b98c4949`).
-- ✅ **AWS SSO Authentication**: Successfully authenticated using profile `PowerUserPlusAccess-122293094970`.
+- ✅ **AWS SSO Authentication**: Successfully authenticated using profile `PowerUserPlusAccess-AWS_ACCOUNT_ID`.
 - ✅ **App Reachability**: Verified Streamlit UI is active at `http://13.218.19.254:8501`.
 - ✅ **Infrastructure Verification**: Confirmed IRIS and NIM services are operational on the target instance.
 

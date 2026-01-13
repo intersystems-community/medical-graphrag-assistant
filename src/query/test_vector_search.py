@@ -9,7 +9,7 @@ import logging
 import sys
 
 # Add src to path
-sys.path.insert(0, '/Users/tdyar/ws/FHIR-AI-Hackathon-Kit')
+sys.path.insert(0, '.')
 
 from src.embeddings.embeddings_factory import EmbeddingsFactory
 

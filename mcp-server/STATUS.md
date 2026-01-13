@@ -128,7 +128,7 @@ Then visit: http://localhost:8501
 
 ### Environment Variables
 ```bash
-export AWS_PROFILE=122293094970_PowerUserPlusAccess
+export AWS_PROFILE=AWS_ACCOUNT_ID_PowerUserPlusAccess
 export IRIS_HOST=13.218.19.254
 export IRIS_PORT=32782
 export IRIS_NAMESPACE=%SYS

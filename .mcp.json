@@ -2,8 +2,8 @@
   "mcpServers": {
     "qwen-impl": {
       "type": "stdio",
-      "command": "/Users/tdyar/ws/productivity-framework/tools/qwen-mcp/venv/bin/python",
-      "args": ["/Users/tdyar/ws/productivity-framework/tools/qwen-mcp/qwen_mcp_server.py"],
+      "command": "~/ws/productivity-framework/tools/qwen-mcp/venv/bin/python",
+      "args": ["~/ws/productivity-framework/tools/qwen-mcp/qwen_mcp_server.py"],
       "env": {
         "QWEN_BASE_URL": "${QWEN_BASE_URL}",
         "QWEN_MODEL": "${QWEN_MODEL}",
@@ -13,8 +13,8 @@
     },
     "gemini-impl": {
       "type": "stdio",
-      "command": "/Users/tdyar/ws/productivity-framework/tools/gemini-mcp/venv/bin/python",
-      "args": ["/Users/tdyar/ws/productivity-framework/tools/gemini-mcp/gemini_mcp_server.py"],
+      "command": "~/ws/productivity-framework/tools/gemini-mcp/venv/bin/python",
+      "args": ["~/ws/productivity-framework/tools/gemini-mcp/gemini_mcp_server.py"],
       "env": {
         "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       }

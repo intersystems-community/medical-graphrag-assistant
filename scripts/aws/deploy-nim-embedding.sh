@@ -9,7 +9,7 @@
 set -e
 
 INSTANCE_ID="i-0432eba10b98c4949"
-AWS_PROFILE="122293094970_PowerUserPlusAccess"
+AWS_PROFILE="AWS_ACCOUNT_ID_PowerUserPlusAccess"
 
 echo "=========================================="
 echo "NVIDIA NIM Embedding Service Deployment"

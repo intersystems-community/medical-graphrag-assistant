@@ -6,10 +6,10 @@ import os
 import json
 
 # Set AWS profile exactly as in streamlit_app.py
-os.environ['AWS_PROFILE'] = '122293094970_PowerUserPlusAccess'
+os.environ['AWS_PROFILE'] = 'AWS_ACCOUNT_ID_PowerUserPlusAccess'
 
 print("Creating boto3 session...")
-session = boto3.Session(profile_name='122293094970_PowerUserPlusAccess')
+session = boto3.Session(profile_name='AWS_ACCOUNT_ID_PowerUserPlusAccess')
 
 print("Creating bedrock-runtime client...")
 bedrock_client = session.client('bedrock-runtime', region_name='us-east-1')

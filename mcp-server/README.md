@@ -9,7 +9,7 @@ Complete implementation of MCP-based medical search with interactive chat interf
 The MCP server exposes 6 medical search tools via stdio transport:
 
 ```bash
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit/mcp-server
+cd ./mcp-server
 python3 fhir_graphrag_mcp_server.py
 ```
 
@@ -18,7 +18,7 @@ python3 fhir_graphrag_mcp_server.py
 Interactive chat UI for medical search:
 
 ```bash
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit/mcp-server
+cd ./mcp-server
 streamlit run streamlit_medical_chat.py
 ```
 
@@ -33,7 +33,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "fhir-graphrag": {
       "command": "python3",
-      "args": ["/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/mcp-server/fhir_graphrag_mcp_server.py"]
+      "args": ["./mcp-server/fhir_graphrag_mcp_server.py"]
     }
   }
 }
@@ -367,7 +367,7 @@ mcp-server/
 ├── debug_mcp_response.py                # Debug helper
 └── README.md                            # This file
 
-/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/
+./
 ├── MCP_SERVER_COMPLETE.md               # Detailed documentation
 ├── STATUS.md                            # Project status
 ├── PROGRESS.md                          # Development log

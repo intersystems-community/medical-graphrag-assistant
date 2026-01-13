@@ -29,8 +29,8 @@ This guide provides step-by-step instructions for setting up and using the FHIR 
    - Miniconda or virtualenv recommended
 
 3. **rag-templates Library**
-   - Location: `/Users/tdyar/ws/rag-templates`
-   - Verify: `ls /Users/tdyar/ws/rag-templates/iris_rag`
+   - Location: `./rag-templates`
+   - Verify: `ls ./rag-templates/iris_rag`
 
 ### Optional Software
 
@@ -63,7 +63,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install iris-python-driver sentence-transformers PyYAML pytest
 
 # Verify rag-templates is accessible
-export PYTHONPATH="/Users/tdyar/ws/rag-templates:$PYTHONPATH"
+export PYTHONPATH="./rag-templates:$PYTHONPATH"
 python3 -c "from iris_rag import create_pipeline; print('✅ rag-templates accessible')"
 ```
 
@@ -352,7 +352,7 @@ tail -f logs/fhir_graphrag.log | grep "query_latency"
 
 **Solution**:
 ```bash
-export PYTHONPATH="/Users/tdyar/ws/rag-templates:$PYTHONPATH"
+export PYTHONPATH="./rag-templates:$PYTHONPATH"
 # Or add to ~/.bashrc or ~/.zshrc for persistence
 ```
 
@@ -461,8 +461,8 @@ export PYTHONPATH="/Users/tdyar/ws/rag-templates:$PYTHONPATH"
 - Research findings: `specs/001-fhir-graphrag/research.md`
 
 ### Code References
-- rag-templates GraphRAG pipeline: `/Users/tdyar/ws/rag-templates/iris_rag/pipelines/graphrag.py`
-- BYOT specification: `/Users/tdyar/ws/rag-templates/specs/014-byot-as-described/spec.md`
+- rag-templates GraphRAG pipeline: `./rag-templates/iris_rag/pipelines/graphrag.py`
+- BYOT specification: `./rag-templates/specs/014-byot-as-described/spec.md`
 
 ### Support
 - File issues: GitHub repository issues tracker

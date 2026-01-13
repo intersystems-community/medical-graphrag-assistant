@@ -13,7 +13,7 @@ Implement GraphRAG knowledge graph capabilities on top of existing direct FHIR i
 
 **Language/Version**: Python 3.12 (existing environment from direct_fhir_vector_approach.py)
 **Primary Dependencies**:
-- rag-templates (GraphRAG pipeline from /Users/tdyar/ws/rag-templates)
+- rag-templates (GraphRAG pipeline from ./rag-templates)
 - iris-python-driver (IRIS database connector)
 - sentence-transformers (all-MiniLM-L6-v2 model for 384-dim embeddings)
 - PyYAML (configuration management)
@@ -235,7 +235,7 @@ Tutorial/
 ### Integration Points
 
 **External Dependencies**:
-- **rag-templates library** (`/Users/tdyar/ws/rag-templates`): Core GraphRAG pipeline
+- **rag-templates library** (`./rag-templates`): Core GraphRAG pipeline
   - Integration: Python path import, configuration via YAML
   - Contract: BYOT mode with custom table mapping
   - Fallback: None (required dependency)

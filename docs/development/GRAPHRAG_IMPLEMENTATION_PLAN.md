@@ -60,7 +60,7 @@ HSFHIR_X0001_R.Rsrc (FHIR native - unchanged)
 
 #### Step 1.1: Create Custom Configuration
 
-Create `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/config/fhir_graphrag_config.yaml`:
+Create `./config/fhir_graphrag_config.yaml`:
 
 ```yaml
 # FHIR GraphRAG Configuration
@@ -125,7 +125,7 @@ embeddings:
 
 #### Step 1.2: Create FHIR Document Adapter
 
-Create `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_document_adapter.py`:
+Create `./fhir_document_adapter.py`:
 
 ```python
 """
@@ -253,7 +253,7 @@ class FHIRDocumentAdapter:
 
 #### Step 2.1: Create GraphRAG Initialization Script
 
-Create `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_graphrag_setup.py`:
+Create `./fhir_graphrag_setup.py`:
 
 ```python
 #!/usr/bin/env python3
@@ -266,8 +266,8 @@ import sys
 import os
 
 # Add rag-templates to path
-sys.path.insert(0, '/Users/tdyar/ws/rag-templates')
-sys.path.insert(0, '/Users/tdyar/ws/FHIR-AI-Hackathon-Kit')
+sys.path.insert(0, './rag-templates')
+sys.path.insert(0, '.')
 
 import iris
 from iris_rag import create_pipeline
@@ -286,7 +286,7 @@ def setup_graphrag_pipeline():
 
     # Step 1: Load custom configuration
     print("\n[Step 1] Loading FHIR GraphRAG configuration...")
-    config_path = '/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/config/fhir_graphrag_config.yaml'
+    config_path = './config/fhir_graphrag_config.yaml'
 
     # Initialize with custom config
     os.environ['RAG_CONFIG_PATH'] = config_path
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
 #### Step 3.1: Create GraphRAG Query Script
 
-Create `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_graphrag_query.py`:
+Create `./fhir_graphrag_query.py`:
 
 ```python
 #!/usr/bin/env python3
@@ -381,8 +381,8 @@ Multi-modal search combining vector, text, and knowledge graph
 """
 
 import sys
-sys.path.insert(0, '/Users/tdyar/ws/rag-templates')
-sys.path.insert(0, '/Users/tdyar/ws/FHIR-AI-Hackathon-Kit')
+sys.path.insert(0, './rag-templates')
+sys.path.insert(0, '.')
 
 from iris_rag import create_pipeline
 import json
@@ -515,7 +515,7 @@ if __name__ == "__main__":
 
 #### Step 4.1: Create Medical Entity Extractor
 
-Create `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/medical_entity_extractor.py`:
+Create `./medical_entity_extractor.py`:
 
 ```python
 """
@@ -697,7 +697,7 @@ python3 fhir_graphrag_query.py "Has the patient had any respiratory issues?" 3
 
 1. **Create directory structure**:
    ```bash
-   mkdir -p /Users/tdyar/ws/FHIR-AI-Hackathon-Kit/config
+   mkdir -p ./config
    ```
 
 2. **Implement Phase 1**: BYOT configuration and adapter
@@ -714,11 +714,11 @@ python3 fhir_graphrag_query.py "Has the patient had any respiratory issues?" 3
 
 ## Files to Create
 
-1. `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/config/fhir_graphrag_config.yaml`
-2. `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_document_adapter.py`
-3. `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_graphrag_setup.py`
-4. `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/fhir_graphrag_query.py`
-5. `/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/medical_entity_extractor.py`
+1. `./config/fhir_graphrag_config.yaml`
+2. `./fhir_document_adapter.py`
+3. `./fhir_graphrag_setup.py`
+4. `./fhir_graphrag_query.py`
+5. `./medical_entity_extractor.py`
 
 ---
 

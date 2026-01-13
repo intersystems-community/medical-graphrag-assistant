@@ -1,10 +1,13 @@
 # Medical GraphRAG Assistant
 
-[![GitHub](https://img.shields.io/badge/GitHub-isc--tdyar%2Fmedical--graphrag--assistant-blue?logo=github)](https://github.com/isc-tdyar/medical-graphrag-assistant)
+> [!IMPORTANT]
+> This repository is part of the InterSystems Community initiative. For institutional support and contributions, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) and [TRANSFER_NOTES.md](TRANSFER_NOTES.md).
+
+[![GitHub](https://img.shields.io/badge/GitHub-intersystems--community%2Fmedical--graphrag--assistant-blue?logo=github)](https://github.com/intersystems-community/medical-graphrag-assistant)
 
 A production-ready medical AI assistant platform built on Model Context Protocol (MCP), featuring GraphRAG multi-modal search, FHIR integration, NVIDIA NIM embeddings, and AWS Bedrock Claude Sonnet 4.5.
 
-**GitHub Repository**: [https://github.com/isc-tdyar/medical-graphrag-assistant](https://github.com/isc-tdyar/medical-graphrag-assistant)
+**GitHub Repository**: [https://github.com/intersystems-community/medical-graphrag-assistant](https://github.com/intersystems-community/medical-graphrag-assistant)
 
 **Originally forked from**: [FHIR-AI-Hackathon-Kit](https://github.com/gabriel-ing/FHIR-AI-Hackathon-Kit)
 
@@ -187,6 +190,7 @@ flowchart TB
         direction TB
         RAG["<a href='https://pypi.org/project/iris-vector-rag/'>iris-vector-rag</a><br/>RAG Framework"]
         GRAPH["<a href='https://pypi.org/project/iris-vector-graph/'>iris-vector-graph</a><br/>Graph Toolkit"]
+        TEST["<a href='https://pypi.org/project/iris-devtester/'>iris-devtester</a><br/>Env Manager"]
 
         subgraph RAG_DETAIL["iris-vector-rag Features"]
             BYOT[BYOT Storage<br/>Bring Your Own Tables]
@@ -216,6 +220,14 @@ flowchart TB
     GRAPH --> ENT
     GRAPH --> REL
     GRAPH --> TRAV
+    
+    %% The Integration Points
+    PIPE -.->|GraphRAG Pipeline| GRAPH
+    ENT --> VEC
+    
+    %% Lifecycle Management
+    TEST -.->|Config & Reset| IRIS_DB
+    
     BYOT --> VEC
     SCHEMA --> SQL
     ENT --> KG
@@ -655,6 +667,7 @@ medical-graphrag-assistant/
 **InterSystems IRIS Vector Packages:**
 - [`iris-vector-rag`](https://pypi.org/project/iris-vector-rag/) - Production RAG framework with BYOT storage, GraphRAG pipelines, and CloudConfiguration API
 - [`iris-vector-graph`](https://pypi.org/project/iris-vector-graph/) - Graph-oriented vector toolkit for entity storage and relationship traversal
+- [`iris-devtester`](https://pypi.org/project/iris-devtester/) - IRIS container lifecycle management and automated configuration
 - `intersystems-irispython` - Native IRIS database driver
 
 **Infrastructure:**

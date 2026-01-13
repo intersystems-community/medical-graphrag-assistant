@@ -71,7 +71,7 @@ Each task follows this format:
 - [ ] [INFRA-001] [P] Implement scripts/aws/utils/check-gpu.sh to verify GPU availability using nvidia-smi and return device information (GPU model, memory, driver version, CUDA version)
 - [ ] [INFRA-002] [P] Implement scripts/aws/utils/wait-for-service.sh utility accepting service URL and timeout, polling until service responds with 200 status or timeout expires
 - [ ] [INFRA-003] [P] Implement scripts/aws/utils/cleanup.sh script to safely terminate EC2 instances, remove Docker containers, and clean up resources based on deployment tags
-- [ ] [INFRA-004] [P] Implement src/vectorization/vector_db_client.py as Python class wrapping IRIS database operations using intersystems-iris driver and rag-templates utilities from /Users/tdyar/ws/rag-templates/common/vector_sql_utils.py
+- [ ] [INFRA-004] [P] Implement src/vectorization/vector_db_client.py as Python class wrapping IRIS database operations using intersystems-iris driver and rag-templates utilities from ./rag-templates/common/vector_sql_utils.py
 - [ ] [INFRA-005] [P] Implement src/vectorization/embedding_client.py as Python class for NVIDIA NIM Cloud API (nvidia/nv-embedqa-e5-v5) with batch request support, retry logic with exponential backoff, and rate limiting
 - [ ] [INFRA-006] Create src/vectorization/batch_processor.py with resumable batch processing logic using SQLite state tracking (see data-model.md VectorizationState schema) and checkpoint recovery
 - [ ] [INFRA-007] Implement tests/unit/test_vector_db_client.py with unit tests for IRIS connection, vector insertion, and similarity search using mock database
@@ -387,7 +387,7 @@ Each success criterion from spec.md is validated by specific tasks:
 ## Implementation Notes
 
 ### Constitution Compliance
-- All vector SQL operations MUST use utilities from `/Users/tdyar/ws/rag-templates/common/vector_sql_utils.py` (execute_safe_vector_search, build_safe_vector_dot_sql) per INFRA-004, US2-005, US3-006, US4-003
+- All vector SQL operations MUST use utilities from `./rag-templates/common/vector_sql_utils.py` (execute_safe_vector_search, build_safe_vector_dot_sql) per INFRA-004, US2-005, US3-006, US4-003
 - Container management follows production deployment practices (not iris-devtester) per plan.md Constitution Check
 - All changes are net new (no modifications to existing FHIR data or tables)
 

@@ -36,7 +36,7 @@ AWS_CONFIG = {
 
 NVIDIA_NIM_CONFIG = {
     'base_url': 'https://integrate.api.nvidia.com/v1',
-    'api_key': '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',
+    'api_key': 'NVIDIA_API_KEY_PLACEHOLDER',
     'model': 'nvidia/nv-embedqa-e5-v5',
     'dimension': 1024
 }

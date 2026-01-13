@@ -30,7 +30,7 @@ source ~/.zshrc  # or ~/.bashrc
 ### Option B: .env File
 ```bash
 # Create .env file in project root
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit
+cd .
 echo 'NVIDIA_API_KEY="nvapi-your-key-here"' > .env
 
 # Add .env to .gitignore

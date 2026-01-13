@@ -102,7 +102,7 @@ System administrators need to ensure that knowledge graph queries complete withi
 - **FR-008**: System MUST support multi-modal search queries combining vector search, text search, and graph traversal
 - **FR-009**: System MUST use Reciprocal Rank Fusion (RRF) to combine results from multiple search methods into unified ranking
 - **FR-010**: System MUST support patient-specific filtering in queries using patient ID from FHIR Compartments field
-- **FR-011**: System MUST use rag-templates GraphRAG pipeline from /Users/tdyar/ws/rag-templates for entity extraction and knowledge graph operations
+- **FR-011**: System MUST use rag-templates GraphRAG pipeline from ./rag-templates for entity extraction and knowledge graph operations
 - **FR-012**: System MUST connect to IRIS database at localhost:32782, namespace DEMO, using provided credentials
 - **FR-013**: System MUST provide a YAML configuration file for BYOT mode that maps FHIR table columns to rag-templates expected schema
 - **FR-014**: System MUST provide a FHIR document adapter that converts FHIR ResourceString JSON to rag-templates Document format
@@ -159,7 +159,7 @@ System administrators need to ensure that knowledge graph queries complete withi
 
 ## Assumptions
 
-- The rag-templates library is available at /Users/tdyar/ws/rag-templates and supports BYOT (Bring Your Own Table) mode as documented
+- The rag-templates library is available at ./rag-templates and supports BYOT (Bring Your Own Table) mode as documented
 - IRIS database credentials (_SYSTEM/ISCDEMO) remain valid and have permissions to create new tables (RAG.Entities, RAG.EntityRelationships)
 - The existing 51 DocumentReference resources contain sufficient medical content for meaningful entity extraction
 - Clinical notes are in English and use standard medical terminology
@@ -172,7 +172,7 @@ System administrators need to ensure that knowledge graph queries complete withi
 
 ## Dependencies
 
-- **rag-templates library**: GraphRAG pipeline implementation at /Users/tdyar/ws/rag-templates
+- **rag-templates library**: GraphRAG pipeline implementation at ./rag-templates
 - **IRIS database**: Running instance at localhost:32782 with DEMO namespace
 - **Python libraries**: iris-python-driver, sentence-transformers, PyYAML
 - **Existing implementation**: direct_fhir_vector_approach.py and VectorSearch.FHIRResourceVectors table

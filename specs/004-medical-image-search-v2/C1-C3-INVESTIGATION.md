@@ -21,7 +21,7 @@
 2. **File System Verification**:
    ```bash
    $ ls -la ../mimic-cxr/
-   drwxr-xr-x@   4 tdyar  physionet.org
+   drwxr-xr-x@   4 maintainer  physionet.org
    
    $ find ../mimic-cxr/ -name "*.dcm" | head -3
    ../mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/p10/p10045779/s53819164/4b369dbe-417168fa-7e2b5f04-00582488-c50504e7.dcm

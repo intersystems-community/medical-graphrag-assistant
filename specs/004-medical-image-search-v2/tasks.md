@@ -291,7 +291,7 @@
 - [ ] **T034** Create demo video (optional):
   - Use browser agent to record search workflow
   - Show search query → results with scores → score explanation
-  - Save to `/Users/tdyar/.gemini/antigravity/brain/*/demo_image_search.webp`
+  - Save to `~/.gemini/antigravity/brain/*/demo_image_search.webp`
 
 ---
 

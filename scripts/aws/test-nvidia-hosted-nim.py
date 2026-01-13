@@ -3,7 +3,7 @@
 
 import requests
 
-API_KEY = "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"
+API_KEY = "NVIDIA_API_KEY_PLACEHOLDER"
 MODEL = "nvidia/nv-embedqa-e5-v5"
 
 response = requests.post(

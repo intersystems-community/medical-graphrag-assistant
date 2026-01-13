@@ -203,7 +203,7 @@ MedicalImageVectors
 
 ### Similarity Search Query Pattern
 
-Using `/Users/tdyar/ws/rag-templates/common/vector_sql_utils.py` utilities:
+Using `./rag-templates/common/vector_sql_utils.py` utilities:
 
 ```python
 from common.vector_sql_utils import execute_safe_vector_search

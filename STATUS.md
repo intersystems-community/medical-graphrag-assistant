@@ -134,7 +134,7 @@ All core systems are functioning and verified on the target EC2 environment.
 ### Environment Variables (Required)
 ```bash
 # AWS
-export AWS_PROFILE=122293094970_PowerUserPlusAccess
+export AWS_PROFILE=AWS_ACCOUNT_ID_PowerUserPlusAccess
 
 # IRIS Database
 export IRIS_HOST=13.218.19.254

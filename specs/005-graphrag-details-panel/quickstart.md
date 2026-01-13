@@ -13,7 +13,7 @@
 
 ```bash
 # Navigate to project root
-cd /Users/tdyar/ws/medical-graphrag-assistant
+cd .
 
 # Ensure on feature branch
 git checkout 005-graphrag-details-panel

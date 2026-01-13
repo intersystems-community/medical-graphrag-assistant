@@ -29,8 +29,8 @@ medical-graphrag-assistant/
 
 ### 📦 Setup & Dependencies
 - **Install**: `pip install -r requirements.txt`
-- **AWS Profile**: Use `PowerUserPlusAccess-122293094970` for all AWS operations.
-- **AWS Login**: `aws sso login --profile PowerUserPlusAccess-122293094970`
+- **AWS Profile**: Use `PowerUserPlusAccess-AWS_ACCOUNT_ID` for all AWS operations.
+- **AWS Login**: `aws sso login --profile PowerUserPlusAccess-AWS_ACCOUNT_ID`
 - **Environment Variables**: Required keys: `AWS_PROFILE`, `IRIS_HOST`, `IRIS_PORT`, `IRIS_NAMESPACE`, `IRIS_USERNAME`, `IRIS_PASSWORD`, `NVCLIP_BASE_URL`, `NVIDIA_API_KEY`.
 - **Python Driver**: ALWAYS use `intersystems-irispython` (NOT `iris` or `intersystems-iris`).
 

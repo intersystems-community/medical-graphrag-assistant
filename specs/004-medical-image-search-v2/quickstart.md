@@ -23,7 +23,7 @@
 ### 1. Install Dependencies
 
 ```bash
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit
+cd .
 
 # Use Miniconda Python (verified working)
 /opt/homebrew/Caskroom/miniconda/base/bin/pip install -r requirements.txt

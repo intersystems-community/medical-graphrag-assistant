@@ -41,7 +41,7 @@
 ```bash
 pip install iris-devtester
 # Or from local copy
-pip install -e /Users/tdyar/ws/iris-devtester
+pip install -e ./iris-devtester
 ```
 
 ### Basic Usage Pattern
@@ -229,7 +229,7 @@ def test_vector_similarity(iris_container):
 
 ## References
 
-- **iris-devtester Location**: `/Users/tdyar/ws/iris-devtester`
+- **iris-devtester Location**: `./iris-devtester`
 - **Constitution**: `.specify/memory/constitution.md` Section VI
 - **Current Deployment Scripts**: `scripts/aws/`
 - **AWS Config**: `config/fhir_graphrag_config.aws.yaml`

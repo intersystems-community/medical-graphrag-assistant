@@ -179,7 +179,7 @@ Cross-Modal Search
 - Synthea: https://github.com/synthetichealth/synthea
 - OpenAI Embeddings: https://platform.openai.com/docs/guides/embeddings
 - NVIDIA NIM: https://build.nvidia.com/nim
-- rag-templates: /Users/tdyar/ws/rag-templates
+- rag-templates: ./rag-templates
 
 ---
 

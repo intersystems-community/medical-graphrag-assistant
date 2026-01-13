@@ -5,10 +5,10 @@ import boto3
 import os
 import json
 
-os.environ['AWS_PROFILE'] = '122293094970_PowerUserPlusAccess'
+os.environ['AWS_PROFILE'] = 'AWS_ACCOUNT_ID_PowerUserPlusAccess'
 
 print("Creating session...")
-session = boto3.Session(profile_name='122293094970_PowerUserPlusAccess')
+session = boto3.Session(profile_name='AWS_ACCOUNT_ID_PowerUserPlusAccess')
 
 print("\n=== Credential Source ===")
 credentials = session.get_credentials()

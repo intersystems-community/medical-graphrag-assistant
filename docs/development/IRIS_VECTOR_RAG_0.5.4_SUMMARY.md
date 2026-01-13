@@ -2,7 +2,7 @@
 
 **Date**: December 14, 2025
 **Version**: 0.5.4 (local unreleased build)
-**Installation**: `/Users/tdyar/ws/iris-vector-rag-private/dist/iris_vector_rag-0.5.4-py3-none-any.whl`
+**Installation**: `~/ws/iris-vector-rag-private/dist/iris_vector_rag-0.5.4-py3-none-any.whl`
 
 ## Quick Results
 

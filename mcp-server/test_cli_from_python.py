@@ -5,7 +5,7 @@ import subprocess
 import json
 import os
 
-os.environ['AWS_PROFILE'] = '122293094970_PowerUserPlusAccess'
+os.environ['AWS_PROFILE'] = 'AWS_ACCOUNT_ID_PowerUserPlusAccess'
 
 def call_claude_via_cli(user_message: str, tools=None):
     """Call Claude via AWS CLI instead of boto3"""

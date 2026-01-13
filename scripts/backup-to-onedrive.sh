@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-BACKUP_DIR="/Users/tdyar/Library/CloudStorage/OneDrive-InterSystemsCorporation/backups/medical-graphrag-assistant"
+BACKUP_DIR="~/Library/CloudStorage/OneDrive-InterSystemsCorporation/backups/medical-graphrag-assistant"
 
 # Ensure backup directory exists
 mkdir -p "$BACKUP_DIR"

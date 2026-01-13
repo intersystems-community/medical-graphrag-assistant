@@ -25,7 +25,7 @@
 - [X] T001 Create project directory structure (src/adapters/, src/extractors/, src/setup/, src/query/, tests/integration/, tests/unit/, tests/fixtures/, config/)
 - [X] T002 [P] Create Python .gitignore with venv/, __pycache__/, *.pyc, .env*, dist/, *.egg-info/, logs/
 - [X] T003 [P] Create config/fhir_graphrag_config.yaml from contracts/byot-config-schema.yaml template
-- [X] T004 [P] Verify rag-templates library accessibility at /Users/tdyar/ws/rag-templates
+- [X] T004 [P] Verify rag-templates library accessibility at ./rag-templates
 - [X] T005 [P] Create tests/fixtures/sample_fhir_resources.json with sample DocumentReference FHIR JSON
 - [X] T006 [P] Create tests/fixtures/expected_entities.json with expected entity extraction results
 

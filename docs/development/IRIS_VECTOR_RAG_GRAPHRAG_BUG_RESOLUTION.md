@@ -2,7 +2,7 @@
 
 **Date**: December 13, 2025
 **Status**: ✅ **RESOLVED**
-**Fixed In**: Local development version (`/Users/tdyar/ws/iris-vector-rag-private`)
+**Fixed In**: Local development version (`~/ws/iris-vector-rag-private`)
 **Related**: IRIS_VECTOR_RAG_GRAPHRAG_BUG_REPORT.md
 
 ---
@@ -58,7 +58,7 @@ def load_documents(self, documents_path: str, **kwargs) -> None:
 ## Fix Applied
 
 ### Changed File
-`/Users/tdyar/ws/iris-vector-rag-private/iris_vector_rag/pipelines/graphrag.py`
+`~/ws/iris-vector-rag-private/iris_vector_rag/pipelines/graphrag.py`
 
 ### Change Made
 **Removed duplicate import on line 144:**
@@ -110,7 +110,7 @@ python3 scripts/aws/build-knowledge-graph-aws.py
 
 ### For Development/Testing
 ```bash
-cd /Users/tdyar/ws/iris-vector-rag-private
+cd ~/ws/iris-vector-rag-private
 pip install -e .
 ```
 

@@ -4,8 +4,8 @@
 import boto3
 import os
 
-os.environ['AWS_PROFILE'] = '122293094970_PowerUserPlusAccess'
-session = boto3.Session(profile_name='122293094970_PowerUserPlusAccess')
+os.environ['AWS_PROFILE'] = 'AWS_ACCOUNT_ID_PowerUserPlusAccess'
+session = boto3.Session(profile_name='AWS_ACCOUNT_ID_PowerUserPlusAccess')
 bedrock_client = session.client('bedrock-runtime', region_name='us-east-1')
 
 # Test WITHOUT tools

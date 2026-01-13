@@ -8,7 +8,7 @@
 
 ## Research Summary
 
-All critical technical questions for GraphRAG implementation have been resolved through examination of the rag-templates library at `/Users/tdyar/ws/rag-templates`. The library fully supports our requirements with production-hardened BYOT mode, GraphRAG pipeline, and entity extraction capabilities.
+All critical technical questions for GraphRAG implementation have been resolved through examination of the rag-templates library at `./rag-templates`. The library fully supports our requirements with production-hardened BYOT mode, GraphRAG pipeline, and entity extraction capabilities.
 
 ---
 
@@ -19,7 +19,7 @@ All critical technical questions for GraphRAG implementation have been resolved 
 **Answer**: ✅ **YES - Fully Supported**
 
 **Evidence**:
-- Spec: `/Users/tdyar/ws/rag-templates/specs/014-byot-as-described/spec.md`
+- Spec: `./rag-templates/specs/014-byot-as-described/spec.md`
 - Implementation: `iris_rag/storage/vector_store_iris.py` (table_name configuration)
 - Configuration: `storage:iris:table_name` setting in YAML config
 
@@ -392,7 +392,7 @@ self.entity_extraction_enabled = self.pipeline_config.get("entity_extraction_ena
 ## Implementation Readiness
 
 ### Prerequisites Validated
-- ✅ rag-templates library exists at `/Users/tdyar/ws/rag-templates`
+- ✅ rag-templates library exists at `./rag-templates`
 - ✅ BYOT mode supported and production-ready
 - ✅ GraphRAG pipeline with entity extraction available
 - ✅ RRF fusion for multi-modal search confirmed
@@ -412,11 +412,11 @@ None - all research questions resolved
 ## Appendix: Code References
 
 ### BYOT Spec Reference
-- **File**: `/Users/tdyar/ws/rag-templates/specs/014-byot-as-described/spec.md`
+- **File**: `./rag-templates/specs/014-byot-as-described/spec.md`
 - **Key Sections**: FR-008 (column mapping), FR-005 (zero-copy), FR-002 (security validation)
 
 ### GraphRAG Pipeline Reference
-- **File**: `/Users/tdyar/ws/rag-templates/iris_rag/pipelines/graphrag.py`
+- **File**: `./rag-templates/iris_rag/pipelines/graphrag.py`
 - **Key Lines**:
   - 35-41: GraphRAGPipeline class definition (production-hardened)
   - 66-71: EntityExtractionService initialization
@@ -424,11 +424,11 @@ None - all research questions resolved
   - 86-100: load_documents() method with document kwargs
 
 ### RRF Implementation Reference
-- **File**: `/Users/tdyar/ws/rag-templates/tests/integration/test_multi_query_rrf_e2e.py`
+- **File**: `./rag-templates/tests/integration/test_multi_query_rrf_e2e.py`
 - **Key Finding**: RRF fusion tested with multi-query scenarios
 
 ### BYOT Implementation Reference
-- **File**: `/Users/tdyar/ws/rag-templates/iris_rag/storage/vector_store_iris.py`
+- **File**: `./rag-templates/iris_rag/storage/vector_store_iris.py`
 - **Key Finding**: table_name configuration for custom tables
 
 ---

@@ -26,10 +26,10 @@ Three approaches for automatic knowledge graph updates:
 crontab -e
 
 # Add this line to run sync every 5 minutes
-*/5 * * * * cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit && /usr/bin/python3 src/setup/fhir_graphrag_setup.py --mode=sync >> logs/kg_sync.log 2>&1
+*/5 * * * * cd . && /usr/bin/python3 src/setup/fhir_graphrag_setup.py --mode=sync >> logs/kg_sync.log 2>&1
 
 # Or every minute for near real-time
-* * * * * cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit && /usr/bin/python3 src/setup/fhir_graphrag_setup.py --mode=sync >> logs/kg_sync.log 2>&1
+* * * * * cd . && /usr/bin/python3 src/setup/fhir_graphrag_setup.py --mode=sync >> logs/kg_sync.log 2>&1
 ```
 
 ### Setup with systemd Timer (Linux)
@@ -43,8 +43,8 @@ After=network.target
 
 [Service]
 Type=oneshot
-User=tdyar
-WorkingDirectory=/Users/tdyar/ws/FHIR-AI-Hackathon-Kit
+User=maintainer
+WorkingDirectory=.
 ExecStart=/usr/bin/python3 src/setup/fhir_graphrag_setup.py --mode=sync
 StandardOutput=append:/var/log/fhir-kg-sync.log
 StandardError=append:/var/log/fhir-kg-sync.log
@@ -96,16 +96,16 @@ Create `~/Library/LaunchAgents/com.fhir.kg-sync.plist`:
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/tdyar/ws/FHIR-AI-Hackathon-Kit</string>
+    <string>.</string>
 
     <key>StartInterval</key>
     <integer>300</integer> <!-- 300 seconds = 5 minutes -->
 
     <key>StandardOutPath</key>
-    <string>/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/logs/kg-sync.log</string>
+    <string>./logs/kg-sync.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/logs/kg-sync-error.log</string>
+    <string>./logs/kg-sync-error.log</string>
 </dict>
 </plist>
 ```
@@ -256,7 +256,7 @@ sudo launchctl list | grep cron
 grep CRON /var/log/system.log
 
 # Test script manually
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit
+cd .
 python3 src/setup/fhir_graphrag_setup.py --mode=sync
 ```
 

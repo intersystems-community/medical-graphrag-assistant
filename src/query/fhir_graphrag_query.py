@@ -30,7 +30,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # Add rag-templates to path
-RAG_TEMPLATES_PATH = "/Users/tdyar/ws/rag-templates"
+RAG_TEMPLATES_PATH = "./rag-templates"
 if RAG_TEMPLATES_PATH not in sys.path:
     sys.path.insert(0, RAG_TEMPLATES_PATH)
 

@@ -79,7 +79,7 @@ CREATE TABLE SQLUser.EntityRelationships (
 ### Issue 1: iris-vector-rag GraphRAG Bug ✅ FIXED
 - **Problem**: `UnboundLocalError: cannot access local variable 'time'`
 - **Root Cause**: Duplicate `import time` statement (line 144) causing Python scoping issue
-- **Solution**: Removed duplicate import from `/Users/tdyar/ws/iris-vector-rag-private/iris_vector_rag/pipelines/graphrag.py`
+- **Solution**: Removed duplicate import from `~/ws/iris-vector-rag-private/iris_vector_rag/pipelines/graphrag.py`
 - **Status**: Fixed in local development version, awaiting upstream contribution
 
 ### Issue 2: Schema Mismatch - Entity IDs ✅ FIXED

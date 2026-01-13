@@ -207,7 +207,7 @@ All 6 MCP tools tested successfully:
 ### Run MCP Server
 
 ```bash
-cd /Users/tdyar/ws/FHIR-AI-Hackathon-Kit/mcp-server
+cd ./mcp-server
 python3 fhir_graphrag_mcp_server.py
 ```
 
@@ -222,7 +222,7 @@ Add to Claude Desktop MCP config (`~/Library/Application Support/Claude/claude_d
   "mcpServers": {
     "fhir-graphrag": {
       "command": "python3",
-      "args": ["/Users/tdyar/ws/FHIR-AI-Hackathon-Kit/mcp-server/fhir_graphrag_mcp_server.py"]
+      "args": ["./mcp-server/fhir_graphrag_mcp_server.py"]
     }
   }
 }

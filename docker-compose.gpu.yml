@@ -1,0 +1,182 @@
+# Docker Compose for GPU Deployment - Medical GraphRAG Assistant
+# Full stack: IRIS FHIR + NIM LLM + NV-CLIP on multi-GPU instances
+#
+# Recommended: g5.12xlarge (4x A10G, 96GB VRAM) or g5.xlarge (1x A10G, 24GB)
+#
+# Usage:
+#   # Set your NGC API key
+#   export NGC_API_KEY=nvapi-xxx
+#
+#   # Start everything
+#   docker compose -f docker-compose.gpu.yml up -d
+#
+#   # Check status
+#   docker compose -f docker-compose.gpu.yml ps
+#
+#   # View logs
+#   docker compose -f docker-compose.gpu.yml logs -f
+#
+#   # Stop everything
+#   docker compose -f docker-compose.gpu.yml down
+
+services:
+  # ============================================================================
+  # IRIS for Health - FHIR Repository + Vector Database
+  # Uses custom-built image with FHIR packages pre-installed
+  # ============================================================================
+  iris-fhir:
+    build:
+      context: ./Dockerfhir
+      dockerfile: Dockerfile
+    image: dockerfhir-iris-fhir:latest
+    container_name: iris-fhir
+    ports:
+      - "32782:1972"   # SuperServer (SQL)
+      - "32783:52773"  # Web Portal + FHIR
+    volumes:
+      - iris-data:/durable
+    # IRIS Community Edition is limited to ~8 cores
+    # g5.12xlarge has 48 vCPUs - must limit to avoid license error
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+    restart: unless-stopped
+    healthcheck:
+      # Use wget since curl not in container
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:52773/csp/sys/UtilHome.csp || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
+  # ============================================================================
+  # NIM LLM - Llama 3.1 8B for text generation and entity extraction
+  # Uses GPUs 0-2 on multi-GPU instances (tensor parallel)
+  # ============================================================================
+  nim-llm:
+    image: nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
+    container_name: nim-llm
+    ports:
+      - "8001:8000"
+    environment:
+      - NGC_API_KEY=${NGC_API_KEY}
+      - CUDA_VISIBLE_DEVICES=0,1,2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+    depends_on:
+      iris-fhir:
+        condition: service_healthy
+
+  # ============================================================================
+  # NV-CLIP - Multimodal embeddings for medical image search
+  # Uses GPU 3 on multi-GPU instances (dedicated)
+  # ============================================================================
+  nim-nvclip:
+    image: nvcr.io/nim/nvidia/nvclip:2.0.0
+    container_name: nim-nvclip
+    ports:
+      - "8002:8000"
+    environment:
+      - NGC_API_KEY=${NGC_API_KEY}
+      - CUDA_VISIBLE_DEVICES=3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-X", "POST", "http://localhost:8000/v1/embeddings", "-H", "Content-Type: application/json", "-d", "{\"input\":[\"test\"],\"model\":\"nvidia/nvclip\"}"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 180s
+    depends_on:
+      iris-fhir:
+        condition: service_healthy
+
+  # ============================================================================
+  # Streamlit UI - Chat interface for medical search
+  # ============================================================================
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - IRIS_HOST=iris-fhir
+      - IRIS_PORT=1972
+      - IRIS_NAMESPACE=%SYS
+      - IRIS_USERNAME=_SYSTEM
+      - IRIS_PASSWORD=SYS
+      - FHIR_BASE_URL=http://iris-fhir:52773/csp/healthshare/demo/fhir/r4
+      - FHIR_USERNAME=_SYSTEM
+      - FHIR_PASSWORD=SYS
+      - NIM_LLM_URL=http://nim-llm:8000/v1
+      - NVCLIP_BASE_URL=http://nim-nvclip:8000/v1
+      - NVIDIA_API_KEY=${NGC_API_KEY}
+    restart: unless-stopped
+    depends_on:
+      nim-llm:
+        condition: service_healthy
+      nim-nvclip:
+        condition: service_healthy
+    profiles:
+      - full  # Only start with: docker compose --profile full up
+
+volumes:
+  iris-data:
+    driver: local
+
+# =============================================================================
+# DEPLOYMENT PROFILES
+# =============================================================================
+#
+# 1. FULL STACK (g5.12xlarge - 4 GPUs):
+#    docker compose -f docker-compose.gpu.yml --profile full up -d
+#
+# 2. WITHOUT STREAMLIT (manual UI startup):
+#    docker compose -f docker-compose.gpu.yml up -d
+#
+# 3. SINGLE GPU (g5.xlarge - requires stopping LLM for NV-CLIP):
+#    # Edit CUDA_VISIBLE_DEVICES to share GPU 0
+#    # Or run services sequentially
+#
+# =============================================================================
+# TROUBLESHOOTING
+# =============================================================================
+#
+# GPU Memory Issues:
+#   - g5.xlarge (24GB): Can run LLM OR NV-CLIP, not both
+#   - g5.12xlarge (96GB): Can run all services simultaneously
+#
+# NIM Authentication:
+#   - Ensure NGC_API_KEY is set: echo $NGC_API_KEY
+#   - Get key from: https://ngc.nvidia.com/setup/api-key
+#
+# Service Logs:
+#   docker compose -f docker-compose.gpu.yml logs nim-llm
+#   docker compose -f docker-compose.gpu.yml logs nim-nvclip
+#
+# Health Status:
+#   curl http://localhost:8001/v1/models      # LLM
+#   curl -X POST http://localhost:8002/v1/embeddings \
+#     -H "Content-Type: application/json" \
+#     -d '{"input":["test"],"model":"nvidia/nvclip"}'  # NV-CLIP
+#
+# =============================================================================

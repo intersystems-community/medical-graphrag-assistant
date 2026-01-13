@@ -16,7 +16,7 @@ This directory contains a sample of 50 DICOM chest X-ray images from the MIMIC-C
 
 Files are symlinked from the full MIMIC-CXR dataset located at:
 ```
-/Users/tdyar/ws/mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/
+~/ws/mimic-cxr/physionet.org/files/mimic-cxr/2.1.0/files/
 ```
 
 Original file structure:
