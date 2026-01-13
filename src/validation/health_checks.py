@@ -460,6 +460,7 @@ def nim_llm_health_check(host: str = "localhost", port: int = 8001) -> HealthChe
         HealthCheckResult with service health status
     """
     endpoints = [
+        f"http://{host}:{port}/v1/models",
         f"http://{host}:{port}/v1/health/ready",
         f"http://{host}:{port}/health/ready",
         f"http://{host}:{port}/health"
