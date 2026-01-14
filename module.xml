@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+  <Document name="medical-graphrag-assistant.ZPM">
+    <Module>
+      <Name>medical-graphrag-assistant</Name>
+      <Version>2.16.0</Version>
+      <Description>A production-ready medical AI assistant platform built on MCP, featuring GraphRAG multi-modal search, FHIR integration, and NVIDIA NIM embeddings.</Description>
+      <Keywords>python, fhir, rag, graphrag, mcp, nvidia, nim, ai, medical</Keywords>
+      <Author>
+        <Person>InterSystems Community</Person>
+        <Organization>InterSystems</Organization>
+        <CopyrightDate>2025</CopyrightDate>
+        <License>MIT</License>
+        <Notes>Requires InterSystems IRIS 2021.2+ for Embedded Python and Vector Search support.</Notes>
+      </Author>
+
+      <!-- Source Directories -->
+      <Resource Name="src/" />
+      <Resource Name="mcp-server/" />
+      <Resource Name="config/" />
+      <Resource Name="scripts/" />
+      
+      <!-- Python Dependencies -->
+      <Resource Name="requirements.txt" />
+
+      <Invokes>
+        <!-- Initialize environment (create tables, etc.) using the CLI fix-environment command -->
+        <Invoke Class="%SYS.Python" Method="Run" CheckStatus="true">
+          <Arg>import sys, os; sys.path.append('${installdir}'); from src.cli.__main__ import fix_environment_command; fix_environment_command(type('Args', (), {})())</Arg>
+        </Invoke>
+      </Invokes>
+    </Module>
+  </Document>
+</Export>

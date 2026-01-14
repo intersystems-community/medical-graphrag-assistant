@@ -1,0 +1,23 @@
+{
+  "name": "medical-graphrag-assistant",
+  "label": "Medical GraphRAG Assistant",
+  "description": "An agentic medical chat platform using GraphRAG, FHIR integration, and NVIDIA NIM for multi-modal medical search.",
+  "version": "2.16.0",
+  "author": "InterSystems Community",
+  "github_url": "https://github.com/intersystems-community/medical-graphrag-assistant",
+  "tags": [
+    "Embedded Python",
+    "AI",
+    "FHIR",
+    "RAG",
+    "GraphDB",
+    "NVIDIA",
+    "MCP"
+  ],
+  "dependencies": [
+    "zpip"
+  ],
+  "images": [
+    "https://raw.githubusercontent.com/intersystems-community/medical-graphrag-assistant/main/docs/images/architecture_diagram.png"
+  ]
+}
