@@ -93,8 +93,11 @@ def create_tables_aws(config_path: str):
         print(f"[INFO] Loading configuration from {config_path}...")
         config = load_config(config_path)
 
-        db_config = config['database']['iris']
-        host = db_config.get('host')
+        # Merge config with environment variables via DatabaseConnection
+        from src.db.connection import DatabaseConnection
+        db_config = DatabaseConnection.get_config()
+        
+        host = db_config.get('hostname')
         port = db_config.get('port')
         namespace = db_config.get('namespace')
         username = db_config.get('username')
