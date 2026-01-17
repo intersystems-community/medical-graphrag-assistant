@@ -38,12 +38,12 @@ def get_env_profiles() -> dict:
         "aws": {
             "IRIS_HOST": ec2_host or os.getenv("IRIS_HOST", ""),
             "IRIS_PORT": os.getenv("IRIS_PORT", "1972"),
-            "IRIS_NAMESPACE": "%SYS",
+            "IRIS_NAMESPACE": "DEMO",
             "IRIS_USERNAME": "_SYSTEM",
             "IRIS_PASSWORD": "SYS",
             "FHIR_BASE_URL": f"http://{ec2_host}:52773/csp/healthshare/demo/fhir/r4" if ec2_host else "",
-            "NIM_HOST": "localhost",
-            "NIM_PORT": "8002",
+            "NIM_HOST": "integrate.api.nvidia.com",
+            "NIM_PORT": "443",
             "skip_gpu": True,
             "skip_docker_gpu": True,
         },
@@ -168,7 +168,8 @@ def fix_environment_command(args):
         create_mimic_images_table(drop_existing=False)
         
         print("Resetting FHIR security settings...")
-        reset_security()
+        container_name = "iris-vector-db" if args.env != "local" else "iris-fhir"
+        reset_security(container_name=container_name)
         
         print("✅ Environment fix complete")
         sys.exit(0)

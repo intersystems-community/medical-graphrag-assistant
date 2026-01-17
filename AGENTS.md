@@ -35,19 +35,27 @@ medical-graphrag-assistant/
 - **Python Driver**: ALWAYS use `intersystems-irispython` (NOT `iris` or `intersystems-iris`).
 
 ### 🖥️ EC2 Environment
-- **Instance Name**: `fhir-ai-hackathon`
-- **Instance ID**: `i-0432eba10b98c4949` (us-east-1)
-- **Public IP**: `13.218.19.254` (Verified 2026-01-02)
-- **Streamlit URL**: `http://13.218.19.254:8501`
+- **Instance Name**: `fhir-graphrag-spot`
+- **Instance ID**: `i-0fee5f32e867e65c1` (us-east-1)
+- **Public IP**: `44.200.206.67` (Verified 2026-01-17)
+- **Streamlit URL**: `http://44.200.206.67:8501`
 - **IRIS Port**: `1972` (SQL), `52773` (Portal)
+- **Status**: ✅ Up, Tables Created, Hosted NIM Active.
 
 ### 🛠️ Development & Execution
 - **Run Streamlit UI**: `cd mcp-server && streamlit run streamlit_app.py`
 - **Run MCP Server**: `python mcp-server/fhir_graphrag_mcp_server.py`
-- **System Health Check**: `python -m src.cli check-health --smoke-test`
+- **System Health Check**: `EC2_HOST=44.200.206.67 python -m src.cli --env aws check-health`
 - **Fix Environment**: `python -m src.cli fix-environment`
+- **Spot Instances**: Use `scripts/aws/launch-spot.sh` to save 60% on EC2 costs.
+- **Docker Storage**: Uses ephemeral drive `/opt/dlami/nvme/docker` for large NIM images.
 - **Linting**: `ruff check .` or `ruff check . --fix`
 - **Type Checking**: `mypy .` (if configured)
+
+### 🔑 Secrets & Keys
+- **NVIDIA API Key**: `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` (Used for NIM and Hosted API).
+- **IRIS Password**: Default is `SYS`.
+- **AWS Profile**: `PowerUserPlusAccess-122293094970` (Latest verified).
 
 ### 🧪 Testing
 - **Run all tests**: `pytest`

@@ -13,6 +13,7 @@ and diagnostic messages for troubleshooting.
 
 import subprocess
 import json
+import os
 import urllib.request
 import urllib.error
 from typing import Dict, List, Any, Optional
@@ -451,19 +452,15 @@ def iris_tables_check(host: str = "localhost", port: int = 1972,
 def nim_llm_health_check(host: str = "localhost", port: int = 8001) -> HealthCheckResult:
     """
     Check NIM LLM service health endpoint.
-
-    Args:
-        host: NIM service host
-        port: NIM service port
-
-    Returns:
-        HealthCheckResult with service health status
     """
+    scheme = "https" if port == 443 else "http"
+    base_url = f"{scheme}://{host}" if port in (80, 443) else f"{scheme}://{host}:{port}"
+    
     endpoints = [
-        f"http://{host}:{port}/v1/models",
-        f"http://{host}:{port}/v1/health/ready",
-        f"http://{host}:{port}/health/ready",
-        f"http://{host}:{port}/health"
+        f"{base_url}/v1/models",
+        f"{base_url}/v1/health/ready",
+        f"{base_url}/health/ready",
+        f"{base_url}/health"
     ]
     
     last_error = None
@@ -498,30 +495,30 @@ def nim_llm_health_check(host: str = "localhost", port: int = 8001) -> HealthChe
 def nim_llm_inference_test(host: str = "localhost", port: int = 8001) -> HealthCheckResult:
     """
     Test NIM LLM inference with a simple query.
-
-    Args:
-        host: NIM service host
-        port: NIM service port
-
-    Returns:
-        HealthCheckResult with inference test status and response
     """
-    url = f"http://{host}:{port}/v1/chat/completions"
+    scheme = "https" if port == 443 else "http"
+    base_url = f"{scheme}://{host}" if port in (80, 443) else f"{scheme}://{host}:{port}"
+    url = f"{base_url}/v1/chat/completions"
+    
     try:
+        # Use a model that exists on both local and Hosted API
+        model_name = "meta/llama-3.1-8b-instruct"
+        
         payload = {
-            "model": "meta/llama-3.1-8b-instruct",
+            "model": model_name,
             "messages": [
                 {"role": "user", "content": "What is 2+2? Answer with just the number."}
             ],
             "max_tokens": 10
         }
-
+        
+        api_key = os.getenv("NVIDIA_API_KEY")
+        headers = {'Content-Type': 'application/json'}
+        if api_key:
+            headers['Authorization'] = f'Bearer {api_key}'
+            
         data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={'Content-Type': 'application/json'}
-        )
+        req = urllib.request.Request(url, data=data, headers=headers)
 
         with urllib.request.urlopen(req, timeout=60) as response:
             if response.status == 200:
