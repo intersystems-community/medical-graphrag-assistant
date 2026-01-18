@@ -29,9 +29,9 @@ import sys
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from vectorization.embedding_client import NVIDIAEmbeddingsClient
-from vectorization.vector_db_client import IRISVectorDBClient
-from vectorization.text_vectorizer import ClinicalNoteVectorizer
+from src.vectorization.embedding_client import NVIDIAEmbeddingsClient
+from src.vectorization.vector_db_client import IRISVectorDBClient
+from src.vectorization.text_vectorizer import ClinicalNoteVectorizer
 
 
 # Test configuration
@@ -187,8 +187,7 @@ class TestDocumentPreprocessing:
         assert "\n\n" not in processed["text_content"]
 
     def test_preprocessing_truncates_for_storage(self, vectorizer):
-        """Test TextContent truncation to 10000 chars."""
-        long_text = "A" * 15000
+        long_text = "A" * 35000
 
         doc = {
             "resource_id": "test-123",
@@ -199,11 +198,7 @@ class TestDocumentPreprocessing:
 
         processed = vectorizer.preprocess_document(doc)
 
-        # Truncated version should be 10000 chars
-        assert len(processed["text_content_truncated"]) == 10000
-
-        # Full version should be preserved for embedding
-        assert len(processed["text_content"]) == 15000
+        assert len(processed["text_content"]) == 32000
 
 
 class TestVectorizationPipeline:
@@ -222,7 +217,8 @@ class TestVectorizationPipeline:
                 input_file=temp_file,
                 batch_size=5,
                 resume=False,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             # Verify statistics
@@ -252,7 +248,8 @@ class TestVectorizationPipeline:
                 input_file=temp_file,
                 batch_size=5,
                 resume=False,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             # Verify checkpoint DB exists
@@ -287,7 +284,8 @@ class TestResumeability:
                 input_file=temp_file,
                 batch_size=5,
                 resume=False,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             successful_first = stats1["successful"]
@@ -297,7 +295,8 @@ class TestResumeability:
                 input_file=temp_file,
                 batch_size=5,
                 resume=True,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             # Should process 0 new documents
@@ -323,7 +322,8 @@ class TestResumeability:
                 input_file=temp_file,
                 batch_size=5,
                 resume=False,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             first_batch_count = stats1["successful"]
@@ -342,7 +342,8 @@ class TestResumeability:
                 input_file=temp_file,
                 batch_size=5,
                 resume=True,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             # Total should equal full set
@@ -371,7 +372,8 @@ class TestVectorSearch:
                 input_file=temp_file,
                 batch_size=5,
                 resume=False,
-                show_progress=False
+                show_progress=False,
+                table_name=TEST_TABLE_NAME
             )
 
             # Test search

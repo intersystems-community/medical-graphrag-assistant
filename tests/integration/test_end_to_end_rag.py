@@ -30,16 +30,16 @@ from typing import Dict, Any
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from query.rag_pipeline import RAGPipeline
+from src.query.rag_pipeline import RAGPipeline
 
 
 @pytest.fixture(scope="module")
 def iris_config():
     """IRIS database configuration from environment."""
     return {
-        "host": os.getenv("IRIS_HOST", "localhost"),
+        "host": os.getenv("IRIS_HOST", "44.200.206.67"),
         "port": int(os.getenv("IRIS_PORT", "1972")),
-        "namespace": os.getenv("IRIS_NAMESPACE", "DEMO"),
+        "namespace": os.getenv("IRIS_NAMESPACE", "USER"),
         "username": os.getenv("IRIS_USERNAME", "_SYSTEM"),
         "password": os.getenv("IRIS_PASSWORD", "SYS")
     }
@@ -48,7 +48,7 @@ def iris_config():
 @pytest.fixture(scope="module")
 def llm_endpoint():
     """NIM LLM endpoint URL."""
-    return os.getenv("NIM_LLM_ENDPOINT", "http://localhost:8001")
+    return os.getenv("NIM_LLM_ENDPOINT", "http://44.200.206.67:8001")
 
 
 @pytest.fixture(scope="module")

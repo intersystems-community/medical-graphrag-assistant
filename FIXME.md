@@ -132,8 +132,8 @@ pytest tests/ --ignore=tests/ux -v
 4. This requires significant IRIS HealthShare configuration
 
 **Option C: Rewrite tests to use IRIS SQL instead of FHIR REST**
-- Modify tests to query `SQLUser.ClinicalNoteVectors` directly
-- Remove dependency on FHIR REST endpoint
+- Modify tests to query `SQLUser.ClinicalNoteVectors` or `SQLUser.MedicalImageVectors` directly
+- **CRITICAL**: Use a transformation layer in the adapter to ensure SQL results are returned as valid FHIR R4 JSON structures. This maintains the contract with the agent even in SQL Fallback mode.
 
 ---
 

@@ -142,10 +142,14 @@ class NVIDIAEmbeddingsClient:
         """
         self._wait_for_rate_limit()
 
+        # Truncate texts to avoid 400 errors from API (approx 2000 tokens)
+        # 1 token is roughly 4 chars, so 8000 chars is a safe limit
+        truncated_texts = [text[:8000] for text in texts]
+
         payload = {
-            "input": texts,
+            "input": truncated_texts,
             "model": self.model,
-            "input_type": "passage"  # or "query" for search queries
+            "input_type": "passage"
         }
 
         try:

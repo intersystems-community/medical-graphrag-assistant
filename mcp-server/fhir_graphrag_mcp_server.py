@@ -1349,58 +1349,19 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
         elif name == "get_patient_imaging_studies":
             patient_id = arguments["patient_id"]
-            date_from = arguments.get("date_from")
-            date_to = arguments.get("date_to")
             modality = arguments.get("modality")
+            limit = arguments.get("limit", 20)
 
             # Import the FHIR radiology adapter
             from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
-
             adapter = FHIRRadiologyAdapter()
 
-            # Build FHIR search URL with parameters
-            search_url = f"{adapter.fhir_base_url}/ImagingStudy"
-            params = {"subject": f"Patient/{patient_id}"}
-
-            if date_from:
-                params["started"] = f"ge{date_from}"
-            if date_to:
-                if "started" in params:
-                    # Can't have two started params, use _filter or adjust
-                    pass  # FHIR servers handle date ranges differently
-                else:
-                    params["started"] = f"le{date_to}"
-            if modality:
-                params["modality"] = modality
-
-            response = adapter.session.get(search_url, params=params)
-
-            studies = []
-            if response.status_code == 200:
-                bundle = response.json()
-                for entry in bundle.get("entry", []):
-                    resource = entry.get("resource", {})
-                    study_entry = {
-                        "id": resource.get("id"),
-                        "status": resource.get("status"),
-                        "started": resource.get("started"),
-                        "modality": None,
-                        "description": resource.get("description"),
-                        "number_of_series": resource.get("numberOfSeries", 0),
-                        "number_of_instances": resource.get("numberOfInstances", 0)
-                    }
-
-                    # Extract modality
-                    modalities = resource.get("modality", [])
-                    if modalities:
-                        study_entry["modality"] = modalities[0].get("code")
-
-                    # Extract study ID from identifiers
-                    for identifier in resource.get("identifier", []):
-                        if identifier.get("system") == "urn:mimic-cxr:study":
-                            study_entry["mimic_study_id"] = identifier.get("value")
-
-                    studies.append(study_entry)
+            # Use adapter method which handles SQL fallback
+            studies = adapter.get_patient_imaging_studies(
+                patient_id=patient_id,
+                limit=limit,
+                modality=modality
+            )
 
             return [TextContent(
                 type="text",
@@ -1518,15 +1479,57 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             )]
 
         elif name == "get_radiology_reports":
-            study_id = arguments.get("study_id")
             patient_id = arguments.get("patient_id")
-            include_full_text = arguments.get("include_full_text", True)
+            study_id = arguments.get("study_id")
+            limit = arguments.get("limit", 20)
 
-            if not study_id and not patient_id:
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+            adapter = FHIRRadiologyAdapter()
+
+            if not patient_id and not study_id:
                 return [TextContent(
                     type="text",
-                    text=json.dumps({"error": "Either study_id or patient_id is required"})
+                    text=json.dumps({"error": "Either patient_id or study_id must be provided"})
                 )]
+
+            reports = adapter.get_radiology_reports(
+                patient_id=patient_id,
+                limit=limit
+            )
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "patient_id": patient_id,
+                    "reports": reports,
+                    "total_count": len(reports)
+                }, indent=2)
+            )]
+
+        elif name == "search_patients_with_imaging":
+            modality = arguments.get("modality")
+            finding_text = arguments.get("finding_text")
+            limit = arguments.get("limit", 20)
+
+            # Import the FHIR radiology adapter
+            from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
+            adapter = FHIRRadiologyAdapter()
+
+            patients = adapter.search_patients_with_imaging(
+                modality=modality,
+                limit=limit
+            )
+
+            return [TextContent(
+                type="text",
+                text=json.dumps({
+                    "modality": modality,
+                    "finding_text": finding_text,
+                    "patients": patients,
+                    "total_count": len(patients)
+                }, indent=2)
+            )]
 
             # Import the FHIR radiology adapter
             from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter

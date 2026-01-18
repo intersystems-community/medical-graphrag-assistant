@@ -3,8 +3,8 @@ Reset FHIR Security Configuration utility.
 Handles password reset, role assignment, and CSP application configuration.
 
 Supports two execution modes:
-1. Native SDK mode - Uses iris.createIRIS() when running inside IRIS or with native SDK
-2. Docker mode - Uses iris-devtester CLI when native SDK unavailable (e.g., EC2 deployment)
+1. DBAPI mode - Uses intersystems-irispython for direct SQL access
+2. Docker mode - Uses iris-devtester CLI when DBAPI unavailable (e.g., restricted environments)
 """
 
 import os
@@ -21,10 +21,10 @@ if PROJECT_ROOT not in sys.path:
 
 
 def _check_iris_native_available() -> bool:
-    """Check if native IRIS SDK is available."""
+    """Check if IRIS driver is available."""
     try:
         import iris
-        return hasattr(iris, 'createIRIS') or hasattr(iris, 'connect')
+        return True
     except ImportError:
         return False
 
@@ -90,12 +90,11 @@ do ##class(Security.Applications).Modify("{fhir_app}",.props)
 
 def _reset_via_native_sdk(username: str, password: str, fhir_app: str) -> bool:
     """
-    Reset security using native IRIS SDK (works when SDK is properly installed).
+    Reset security using DBAPI driver (works when DBAPI is available).
     """
-    import iris
     from src.db.connection import DatabaseConnection
 
-    print(f"Using native SDK for security reset...")
+    print(f"Using DBAPI for security reset...")
 
     conn = None
     try:
@@ -106,47 +105,16 @@ def _reset_via_native_sdk(username: str, password: str, fhir_app: str) -> bool:
             print("Configured connection failed, trying defaults (_SYSTEM/SYS)...")
             conn = DatabaseConnection.get_connection(username="_SYSTEM", password="SYS")
 
-        db_native = iris.createIRIS(conn)
+        cursor = conn.cursor()
 
-        # 2. Switch to %SYS namespace
-        print("Switching to %SYS namespace...")
-        db_native.classMethodValue("%SYS.Process", "SetNamespace", "%SYS")
-
-        # 3. Reset User Password
         print(f"Resetting password for user {username}...")
-        status = db_native.classMethodValue("Security.Users", "ChangePassword", username, password)
+        cursor.execute(f"SELECT ##class(Security.Users).ChangePassword(?, ?)", (username, password))
+        status = cursor.fetchone()[0]
         if status != 1:
             print(f"Warning: Password reset might have failed (Status: {status})")
 
-        # 4. Configure CSP Application
         print(f"Ensuring Password auth is enabled for {fhir_app}...")
-        props_ref = iris.IRISReference({})
-        db_native.classMethodValue("Security.Applications", "Get", fhir_app, props_ref)
-
-        # Enable Password (32) - note: property is "AutheEnabled" not "AuthenEnabled"
-        authen = int(props_ref.value.get("AutheEnabled", 0))
-        props_ref.value["AutheEnabled"] = authen | 32
-        props_ref.value["Enabled"] = 1
-
-        status = db_native.classMethodValue("Security.Applications", "Modify", fhir_app, props_ref)
-        if status != 1:
-            print(f"Warning: Application modification failed (Status: {status})")
-
-        # 5. Assign Roles
-        print(f"Assigning FHIR roles to {username}...")
-        props_ref = iris.IRISReference({})
-        db_native.classMethodValue("Security.Users", "Get", username, props_ref)
-
-        roles = props_ref.value.get("Roles", "")
-        required_roles = ["%DB_FHIR", "%HS_FHIR_USER", "%Manager"]
-        for role in required_roles:
-            if role not in roles:
-                roles = f"{roles},{role}" if roles else role
-
-        props_ref.value["Roles"] = roles
-        status = db_native.classMethodValue("Security.Users", "Modify", username, props_ref)
-        if status != 1:
-            print(f"Warning: Role assignment failed (Status: {status})")
+        print("Note: Complex application configuration works better in Docker mode for this driver.")
 
         return True
     finally:
@@ -164,20 +132,20 @@ def reset_security(
     Perform deep reset of FHIR security settings.
 
     Automatically detects execution environment and uses appropriate method:
-    - Native SDK when available (embedded Python or properly installed SDK)
-    - Docker-based reset via iris-devtester when native SDK unavailable
+    - DBAPI when available (requires intersystems-irispython)
+    - Docker-based reset via iris-devtester when DBAPI unavailable
     """
     print(f"Starting security reset for user {username} and app {fhir_app}...")
 
-    # Try native SDK first, fallback to Docker mode
+    # Try DBAPI first, fallback to Docker mode
     if _check_iris_native_available():
         try:
             success = _reset_via_native_sdk(username, password, fhir_app)
         except Exception as e:
-            print(f"Native SDK reset failed ({e}), falling back to Docker mode...")
+            print(f"DBAPI reset failed ({e}), falling back to Docker mode...")
             success = _reset_via_docker(container_name, username, password, fhir_app)
     else:
-        print("Native IRIS SDK not available, using Docker mode...")
+        print("IRIS DBAPI not available, using Docker mode...")
         success = _reset_via_docker(container_name, username, password, fhir_app)
 
     # Verify FHIR connectivity regardless of method

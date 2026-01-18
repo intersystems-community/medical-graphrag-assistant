@@ -31,27 +31,11 @@ if mcp_server_dir not in sys.path:
 from fhir_graphrag_mcp_server import call_tool
 
 
-# Skip if FHIR server not available
+# Radiology tests use SQL fallback when FHIR server is unavailable
 FHIR_BASE_URL = os.getenv('FHIR_BASE_URL', 'http://localhost:52773/fhir/r4')
 
-
-def check_fhir_server():
-    """Check if FHIR server is available."""
-    import requests
-    try:
-        response = requests.get(f"{FHIR_BASE_URL}/metadata", timeout=5)
-        return response.status_code == 200
-    except Exception:
-        return False
-
-
-# Conditionally skip all tests if FHIR server unavailable
 pytestmark = [
-    pytest.mark.e2e,
-    pytest.mark.skipif(
-        not check_fhir_server(),
-        reason="FHIR server not available"
-    )
+    pytest.mark.e2e
 ]
 
 

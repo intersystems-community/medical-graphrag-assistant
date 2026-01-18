@@ -64,6 +64,9 @@ class IRISVectorDBClient:
             )
 
             self.cursor = self.connection.cursor()
+            if self.cursor is None:
+                raise ConnectionError("Failed to create database cursor")
+                
             logger.info(f"✓ Connected to IRIS: {self.host}:{self.port}/{self.namespace}")
 
         except Exception as e:
@@ -107,6 +110,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         full_table_name = self._get_full_table_name(table_name)
 
@@ -123,7 +127,7 @@ class IRISVectorDBClient:
                 ResourceID VARCHAR(255) PRIMARY KEY,
                 PatientID VARCHAR(255) NOT NULL,
                 DocumentType VARCHAR(255) NOT NULL,
-                TextContent VARCHAR(10000),
+                TextContent VARCHAR(32000),
                 SourceBundle VARCHAR(500),
                 Embedding VECTOR(DOUBLE, {self.vector_dimension}) NOT NULL,
                 EmbeddingModel VARCHAR(100) NOT NULL,
@@ -159,6 +163,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         # Validate vector dimension
         if len(embedding) != self.vector_dimension:
@@ -214,6 +219,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         success_count = 0
         failed_count = 0
@@ -252,6 +258,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         # Validate vector dimension
         if len(query_vector) != self.vector_dimension:
@@ -325,6 +332,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         full_table_name = self._get_full_table_name(table_name)
 
@@ -348,6 +356,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         full_table_name = self._get_full_table_name(table_name)
 
@@ -402,6 +411,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         # Validate vector dimension
         if len(embedding) != self.vector_dimension:
@@ -459,6 +469,7 @@ class IRISVectorDBClient:
         """
         if not self.connection:
             self.connect()
+        assert self.cursor is not None
 
         # Validate vector dimension
         if len(query_vector) != self.vector_dimension:

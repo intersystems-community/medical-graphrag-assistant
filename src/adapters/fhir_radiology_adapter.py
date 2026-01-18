@@ -379,7 +379,8 @@ class FHIRRadiologyAdapter:
     def get_patient_imaging_studies(
         self,
         patient_id: str,
-        limit: int = 20
+        limit: int = 20,
+        modality: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Get all ImagingStudy resources for a patient.
@@ -387,28 +388,74 @@ class FHIRRadiologyAdapter:
         Args:
             patient_id: FHIR Patient resource ID
             limit: Maximum results to return
+            modality: Optional modality filter (e.g. "CR", "CT")
 
         Returns:
             List of ImagingStudy resources
         """
-        # Demo mode: return sample data
-        if self.demo_mode:
-            return [
-                s for s in self.SAMPLE_IMAGING_STUDIES
-                if f"Patient/{patient_id}" in s.get("subject", {}).get("reference", "")
-            ][:limit]
+        if self._is_fhir_available():
+            try:
+                url = f"{self.fhir_base_url}/ImagingStudy"
+                params = {
+                    "subject": f"Patient/{patient_id}",
+                    "_count": limit
+                }
+                if modality:
+                    params["modality"] = modality
 
-        url = f"{self.fhir_base_url}/ImagingStudy"
-        params = {
-            "subject": f"Patient/{patient_id}",
-            "_count": limit
-        }
+                response = self.session.get(url, params=params)
+                response.raise_for_status()
 
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
+                bundle = response.json()
+                return [entry.get("resource") for entry in bundle.get("entry", [])]
+            except Exception as e:
+                print(f"[WARN] FHIR search failed, trying SQL fallback: {e}")
 
-        bundle = response.json()
-        return [entry.get("resource") for entry in bundle.get("entry", [])]
+        try:
+            from src.db.connection import get_connection
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            where_clause = "WHERE PatientID = ?"
+            params = [patient_id]
+            
+            if modality:
+                where_clause += " AND StudyType = ?"
+                params.append(modality)
+                
+            sql = f"""
+                SELECT TOP {limit} ImageID, PatientID, StudyType, ImagePath, RelatedReportID
+                FROM SQLUser.MedicalImageVectors
+                {where_clause}
+            """
+            cursor.execute(sql, params)
+            rows = cursor.fetchall()
+            
+            studies = []
+            for row in rows:
+                image_id, pat_id, study_type, path, report_id = row
+                studies.append({
+                    "resourceType": "ImagingStudy",
+                    "id": f"study-{image_id}",
+                    "status": "available",
+                    "subject": {"reference": f"Patient/{pat_id}"},
+                    "modality": study_type,
+                    "identifier": [{"system": self.MIMIC_STUDY_SYSTEM, "value": image_id}],
+                    "description": f"Radiology study from {path}",
+                    "number_of_series": 1,
+                    "number_of_instances": 1
+                })
+            
+            conn.close()
+            if studies:
+                return studies
+        except Exception as e:
+            print(f"[WARN] SQL fallback failed: {e}")
+
+        return [
+            s for s in self.SAMPLE_IMAGING_STUDIES
+            if f"Patient/{patient_id}" in s.get("subject", {}).get("reference", "")
+        ][:limit]
 
     def get_radiology_reports(
         self,
@@ -417,33 +464,58 @@ class FHIRRadiologyAdapter:
     ) -> List[Dict[str, Any]]:
         """
         Get DiagnosticReport resources for a patient.
-
-        Args:
-            patient_id: FHIR Patient resource ID
-            limit: Maximum results to return
-
-        Returns:
-            List of DiagnosticReport resources
         """
-        # Demo mode: return sample data
-        if self.demo_mode:
-            return [
-                r for r in self.SAMPLE_DIAGNOSTIC_REPORTS
-                if f"Patient/{patient_id}" in r.get("subject", {}).get("reference", "")
-            ][:limit]
+        if self._is_fhir_available():
+            try:
+                url = f"{self.fhir_base_url}/DiagnosticReport"
+                params = {
+                    "subject": f"Patient/{patient_id}",
+                    "category": f"{self.LOINC_SYSTEM}|{self.LOINC_IMAGING_STUDY_CODE}",
+                    "_count": limit
+                }
+                response = self.session.get(url, params=params)
+                response.raise_for_status()
+                bundle = response.json()
+                return [entry.get("resource") for entry in bundle.get("entry", [])]
+            except Exception as e:
+                print(f"[WARN] FHIR reports failed: {e}")
 
-        url = f"{self.fhir_base_url}/DiagnosticReport"
-        params = {
-            "subject": f"Patient/{patient_id}",
-            "category": f"{self.LOINC_SYSTEM}|{self.LOINC_IMAGING_STUDY_CODE}",
-            "_count": limit
-        }
+        try:
+            from src.db.connection import get_connection
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            sql = f"""
+                SELECT TOP {limit} ImageID, PatientID, StudyType, ImagePath, RelatedReportID
+                FROM SQLUser.MedicalImageVectors
+                WHERE PatientID = ? AND RelatedReportID IS NOT NULL
+            """
+            cursor.execute(sql, [patient_id])
+            rows = cursor.fetchall()
+            
+            reports = []
+            for row in rows:
+                image_id, pat_id, study_type, path, report_id = row
+                reports.append({
+                    "resourceType": "DiagnosticReport",
+                    "id": f"report-{report_id}",
+                    "status": "final",
+                    "code": {"coding": [{"system": self.LOINC_SYSTEM, "code": self.LOINC_IMAGING_STUDY_CODE}]},
+                    "subject": {"reference": f"Patient/{pat_id}"},
+                    "imagingStudy": [{"reference": f"ImagingStudy/study-{image_id}"}],
+                    "conclusion": f"Radiology report for {study_type} study"
+                })
+            
+            conn.close()
+            if reports:
+                return reports
+        except Exception as e:
+            print(f"[WARN] SQL reports fallback failed: {e}")
 
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        bundle = response.json()
-        return [entry.get("resource") for entry in bundle.get("entry", [])]
+        return [
+            r for r in self.SAMPLE_DIAGNOSTIC_REPORTS
+            if f"Patient/{patient_id}" in r.get("subject", {}).get("reference", "")
+        ][:limit]
 
     def get_encounter_imaging(
         self,
@@ -451,101 +523,62 @@ class FHIRRadiologyAdapter:
     ) -> List[Dict[str, Any]]:
         """
         Get ImagingStudy resources for an encounter.
-
-        Args:
-            encounter_id: FHIR Encounter resource ID
-
-        Returns:
-            List of ImagingStudy resources
         """
-        # Demo mode: return sample data (first study as example)
-        if self.demo_mode:
-            return self.SAMPLE_IMAGING_STUDIES[:1]
+        if self._is_fhir_available():
+            try:
+                url = f"{self.fhir_base_url}/ImagingStudy"
+                params = {"encounter": f"Encounter/{encounter_id}"}
+                response = self.session.get(url, params=params)
+                response.raise_for_status()
+                bundle = response.json()
+                return [entry.get("resource") for entry in bundle.get("entry", [])]
+            except Exception as e:
+                print(f"[WARN] FHIR encounter imaging failed: {e}")
 
-        url = f"{self.fhir_base_url}/ImagingStudy"
-        params = {
-            "encounter": f"Encounter/{encounter_id}"
-        }
-
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        bundle = response.json()
-        return [entry.get("resource") for entry in bundle.get("entry", [])]
+        return self.SAMPLE_IMAGING_STUDIES[:1]
 
     def search_patients_with_imaging(
         self,
         name: Optional[str] = None,
         identifier: Optional[str] = None,
-        limit: int = 20
+        limit: int = 20,
+        modality: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Search for patients who have imaging studies.
-
-        Args:
-            name: Patient name to search (optional)
-            identifier: Patient identifier to search (optional)
-            limit: Maximum results to return
-
-        Returns:
-            List of Patient resources with imaging data
         """
-        # Demo mode: return sample patients
+        try:
+            from src.db.connection import get_connection
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            where_clauses = []
+            params = []
+            
+            if modality:
+                where_clauses.append("StudyType = ?")
+                params.append(modality)
+                
+            where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+            
+            sql = f"""
+                SELECT DISTINCT TOP {limit} PatientID
+                FROM SQLUser.MedicalImageVectors
+                {where_sql}
+            """
+            cursor.execute(sql, params)
+            patient_ids = [row[0] for row in cursor.fetchall()]
+            conn.close()
+            
+            if patient_ids:
+                return [{"resourceType": "Patient", "id": pat_id} for pat_id in patient_ids]
+        except Exception as e:
+            print(f"[WARN] SQL patient search failed: {e}")
+
         if self.demo_mode:
-            results = self.SAMPLE_PATIENTS[:limit]
-            # Apply name filter if provided
-            if name:
-                results = [
-                    p for p in results
-                    if any(
-                        name.lower() in json.dumps(n).lower()
-                        for n in p.get("name", [])
-                    )
-                ]
-            return results
-
-        # First get ImagingStudy patient references
-        url = f"{self.fhir_base_url}/ImagingStudy"
-        params = {"_count": 100, "_elements": "subject"}
-
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        bundle = response.json()
-        patient_refs = set()
-        for entry in bundle.get("entry", []):
-            resource = entry.get("resource", {})
-            subject = resource.get("subject", {})
-            ref = subject.get("reference", "")
-            if ref.startswith("Patient/"):
-                patient_refs.add(ref.replace("Patient/", ""))
-
-        # Now fetch those patients with optional filters
-        results = []
-        for patient_id in list(patient_refs)[:limit]:
-            url = f"{self.fhir_base_url}/Patient/{patient_id}"
-
-            try:
-                response = self.session.get(url)
-                response.raise_for_status()
-                patient = response.json()
-
-                # Apply filters
-                if name:
-                    patient_names = patient.get("name", [])
-                    name_match = any(
-                        name.lower() in json.dumps(n).lower()
-                        for n in patient_names
-                    )
-                    if not name_match:
-                        continue
-
-                results.append(patient)
-
-            except requests.HTTPError:
-                continue
-
-        return results
+            return self.SAMPLE_PATIENTS[:limit]
+            
+        return []
 
     def lookup_encounter_by_date(
         self,

@@ -69,13 +69,13 @@ class RAGPipeline:
 
     def __init__(
         self,
-        iris_host: str = None,
-        iris_port: int = None,
-        iris_namespace: str = None,
-        iris_username: str = None,
-        iris_password: str = None,
-        llm_endpoint: str = None,
-        embedding_api_key: str = None,
+        iris_host: Optional[str] = None,
+        iris_port: Optional[int] = None,
+        iris_namespace: Optional[str] = None,
+        iris_username: Optional[str] = None,
+        iris_password: Optional[str] = None,
+        llm_endpoint: Optional[str] = None,
+        embedding_api_key: Optional[str] = None,
         vector_dimension: int = 1024
     ):
         """
@@ -92,16 +92,17 @@ class RAGPipeline:
             vector_dimension: Embedding dimension (default: 1024)
         """
         # IRIS database configuration
-        self.iris_host = iris_host or os.getenv("IRIS_HOST", "localhost")
+        self.iris_host = iris_host or os.getenv("IRIS_HOST", "44.200.206.67")
         self.iris_port = iris_port or int(os.getenv("IRIS_PORT", "1972"))
-        self.iris_namespace = iris_namespace or os.getenv("IRIS_NAMESPACE", "DEMO")
+        self.iris_namespace = iris_namespace or os.getenv("IRIS_NAMESPACE", "USER")
         self.iris_username = iris_username or os.getenv("IRIS_USERNAME", "_SYSTEM")
         self.iris_password = iris_password or os.getenv("IRIS_PASSWORD", "SYS")
         self.vector_dimension = vector_dimension
 
         # LLM configuration
-        self.llm_endpoint = llm_endpoint or "http://localhost:8001"
+        self.llm_endpoint = llm_endpoint or os.getenv("LLM_ENDPOINT", "http://44.200.206.67:8001")
         self.llm_completions_url = f"{self.llm_endpoint}/v1/chat/completions"
+        self.llm_model = "meta/llama-3.1-8b-instruct"
 
         # Initialize clients
         logger.info("Initializing NVIDIA NIM embeddings client...")
@@ -378,18 +379,23 @@ Please answer the question based on the clinical notes provided above. Cite the 
             RuntimeError: If API call fails
         """
         payload = {
-            "model": "meta/llama-3.1-8b-instruct",
+            "model": self.llm_model,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature
         }
 
+        headers = {}
+        if "integrate.api.nvidia.com" in self.llm_endpoint:
+            headers["Authorization"] = f"Bearer {self.embedding_client.api_key}"
+
         try:
-            logger.info(f"Calling NIM LLM API at {self.llm_completions_url}...")
+            logger.info(f"Calling LLM API at {self.llm_completions_url}...")
             response = requests.post(
                 self.llm_completions_url,
+                headers=headers,
                 json=payload,
-                timeout=60  # 60 second timeout
+                timeout=60
             )
             response.raise_for_status()
 

@@ -171,11 +171,8 @@ class ClinicalNoteVectorizer:
         text = processed["text_content"]
         text = " ".join(text.split())  # Collapse multiple whitespace
 
-        # Store truncated version for TextContent field (10000 chars max)
-        processed["text_content_truncated"] = text[:10000]
-
-        # Keep full text for embedding generation
-        processed["text_content"] = text
+        # Store truncated version for TextContent field (32000 chars max)
+        processed["text_content"] = text[:32000]
 
         return processed
 
@@ -184,7 +181,8 @@ class ClinicalNoteVectorizer:
         input_file: str,
         batch_size: int = 50,
         resume: bool = False,
-        show_progress: bool = True
+        show_progress: bool = True,
+        table_name: str = "ClinicalNoteVectors"
     ) -> Dict[str, Any]:
         """
         Vectorize clinical notes from input file.
@@ -194,18 +192,15 @@ class ClinicalNoteVectorizer:
             batch_size: Number of documents per batch
             resume: Whether to resume from checkpoint
             show_progress: Whether to show progress updates
-
-        Returns:
-            Processing statistics dictionary
+            table_name: Name of the IRIS table to insert into
         """
         # Load documents
         documents = self.load_documents(input_file)
+        self.stats["total_documents"] = len(documents)
 
         # Validate and preprocess
         valid_documents = []
         validation_errors = []
-
-        logger.info("Validating and preprocessing documents...")
 
         for doc in documents:
             # Validate
@@ -233,7 +228,8 @@ class ClinicalNoteVectorizer:
         with BatchProcessor(
             embedding_client=self.embedding_client,
             vector_db_client=self.vector_db_client,
-            checkpoint_db=self.checkpoint_db
+            checkpoint_db=self.checkpoint_db,
+            table_name=table_name
         ) as processor:
 
             self.stats["start_time"] = datetime.utcnow()
@@ -423,10 +419,17 @@ Examples:
     )
 
     parser.add_argument(
+        "--table-name",
+        type=str,
+        default="ClinicalNoteVectors",
+        help="IRIS table name for storing vectors (default: ClinicalNoteVectors)"
+    )
+
+    parser.add_argument(
         "--iris-host",
         type=str,
-        default=os.getenv("IRIS_HOST", "localhost"),
-        help="IRIS database host (default: $IRIS_HOST or localhost)"
+        default=os.getenv("IRIS_HOST", "44.200.206.67"),
+        help="IRIS database host (default: $IRIS_HOST or 44.200.206.67)"
     )
 
     parser.add_argument(
@@ -439,8 +442,8 @@ Examples:
     parser.add_argument(
         "--iris-namespace",
         type=str,
-        default=os.getenv("IRIS_NAMESPACE", "DEMO"),
-        help="IRIS namespace (default: $IRIS_NAMESPACE or DEMO)"
+        default=os.getenv("IRIS_NAMESPACE", "USER"),
+        help="IRIS namespace (default: $IRIS_NAMESPACE or USER)"
     )
 
     parser.add_argument(
@@ -506,7 +509,8 @@ def main() -> int:
             input_file=args.input,
             batch_size=args.batch_size,
             resume=args.resume,
-            show_progress=True
+            show_progress=True,
+            table_name=args.table_name
         )
 
         # Print summary

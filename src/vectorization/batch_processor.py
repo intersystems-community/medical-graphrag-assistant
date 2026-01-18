@@ -48,7 +48,8 @@ class BatchProcessor:
         embedding_client,
         vector_db_client,
         checkpoint_db: str = "vectorization_state.db",
-        auto_commit_interval: int = 10
+        auto_commit_interval: int = 10,
+        table_name: str = "ClinicalNoteVectors"
     ):
         """
         Initialize batch processor with checkpointing.
@@ -58,11 +59,13 @@ class BatchProcessor:
             vector_db_client: Client for storing vectors in IRIS
             checkpoint_db: Path to SQLite checkpoint database
             auto_commit_interval: Commit checkpoint every N successful documents
+            table_name: Name of the IRIS table to insert into
         """
         self.embedding_client = embedding_client
         self.vector_db_client = vector_db_client
         self.checkpoint_db = checkpoint_db
         self.auto_commit_interval = auto_commit_interval
+        self.table_name = table_name
 
         self.connection = None
         self.cursor = None
@@ -359,7 +362,8 @@ class BatchProcessor:
                         text_content=doc["text_content"],
                         embedding=embedding,
                         embedding_model=self.embedding_client.model,
-                        source_bundle=doc.get("source_bundle")
+                        source_bundle=doc.get("source_bundle"),
+                        table_name=self.table_name
                     )
 
                     self.mark_completed(doc_id)
