@@ -8,6 +8,20 @@
 ✅ **Deployment validation & health monitoring complete (Phase 4)!**
 ✅ **IRISVectorDBClient validated with AWS IRIS (December 12, 2025)!**
 
+## Special Task 2: Infrastructure Stabilization & SQL Fallback (COMPLETED ✅)
+
+**Goal**: Resolve test failures and implement robust fallback mechanisms for various deployment environments.
+
+### Achievements
+- ✅ **Stabilized RAG & Vectorization Pipelines**: Resolved all import path issues and provided environment fallbacks for EC2.
+- ✅ **Implemented SQL Fallback Mode**: Refactored `FHIRRadiologyAdapter` to query IRIS SQL directly when FHIR REST is unavailable, ensuring FHIR R4 schema compliance in output.
+- ✅ **Resolved LSP & Type Safety Issues**: Cleaned up the codebase of NoneType errors and legacy IRIS driver calls.
+- ✅ **Verified System Health**: Achieved **234 passed tests** against live EC2 infrastructure.
+- ✅ **Operationalized Runbook**: Created `OPS.md` and updated `FIXME.md` for seamless future development.
+- ✅ **Unified Environment**: Standardized on `DEMO` namespace for all medical data and vector search.
+
+---
+
 ## Completed Steps
 
 ### Tutorial 0: FHIR Server Setup

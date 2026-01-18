@@ -1,0 +1,28 @@
+Creating security group...
+Requesting spot instance...
+  Type: g5.xlarge
+  AMI: ami-0f670b5aa9dde5d62
+  Max price: $0.50/hour
+Spot request: sir-2qg7adxn
+Waiting for fulfillment...
+Waiting for instance to run...
+
+========================================
+Spot Instance Ready
+========================================
+Instance ID: i-0fee5f32e867e65c1
+Public IP:   44.200.206.67
+Spot Price:  $0.410200
+None/hour (vs $1.006 on-demand)
+
+Connect:
+  ssh -i ~/.ssh/fhir-ai-key-recovery.pem ubuntu@44.200.206.67
+
+Set environment:
+  export EC2_HOST=44.200.206.67
+
+Health check:
+  EC2_HOST=44.200.206.67 python -m src.cli --env aws check-health
+
+Terminate when done:
+  ./scripts/aws/terminate-spot.sh i-0fee5f32e867e65c1

@@ -1357,11 +1357,37 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             adapter = FHIRRadiologyAdapter()
 
             # Use adapter method which handles SQL fallback
-            studies = adapter.get_patient_imaging_studies(
+            raw_studies = adapter.get_patient_imaging_studies(
                 patient_id=patient_id,
                 limit=limit,
                 modality=modality
             )
+
+            studies = []
+            for resource in raw_studies:
+                study_entry = {
+                    "id": resource.get("id"),
+                    "status": resource.get("status"),
+                    "started": resource.get("started"),
+                    "modality": None,
+                    "description": resource.get("description"),
+                    "number_of_series": resource.get("numberOfSeries", 0),
+                    "number_of_instances": resource.get("numberOfInstances", 0)
+                }
+
+                # Extract modality code for test compatibility
+                modalities = resource.get("modality", [])
+                if isinstance(modalities, list) and modalities:
+                    study_entry["modality"] = modalities[0].get("code")
+                elif isinstance(modalities, str):
+                    study_entry["modality"] = modalities
+
+                # Extract study ID from identifiers
+                for identifier in resource.get("identifier", []):
+                    if identifier.get("system") == "urn:mimic-cxr:study":
+                        study_entry["mimic_study_id"] = identifier.get("value")
+
+                studies.append(study_entry)
 
             return [TextContent(
                 type="text",
@@ -1377,26 +1403,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
             # Import the FHIR radiology adapter
             from src.adapters.fhir_radiology_adapter import FHIRRadiologyAdapter
-
             adapter = FHIRRadiologyAdapter()
 
-            # Try to get by FHIR ID first
-            study_url = f"{adapter.fhir_base_url}/ImagingStudy/{study_id}"
-            response = adapter.session.get(study_url)
-
-            study_data = None
-            if response.status_code == 200:
-                study_data = response.json()
-            else:
-                # Try searching by MIMIC study ID
-                search_url = f"{adapter.fhir_base_url}/ImagingStudy"
-                params = {"identifier": f"urn:mimic-cxr:study|{study_id}"}
-                response = adapter.session.get(search_url, params=params)
-                if response.status_code == 200:
-                    bundle = response.json()
-                    entries = bundle.get("entry", [])
-                    if entries:
-                        study_data = entries[0].get("resource")
+            # Use adapter method with fallback support
+            study_data = adapter.get_imaging_study_details(study_id)
 
             if not study_data:
                 return [TextContent(
@@ -1421,8 +1431,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
             # Extract modality
             modalities = study_data.get("modality", [])
-            if modalities:
+            if isinstance(modalities, list) and modalities:
                 result["modality"] = modalities[0].get("code")
+            elif isinstance(modalities, str):
+                result["modality"] = modalities
 
             # Extract MIMIC study ID
             mimic_study_id = None
@@ -1436,7 +1448,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 series_entry = {
                     "uid": series.get("uid"),
                     "number": series.get("number"),
-                    "modality": series.get("modality", {}).get("code"),
+                    "modality": series.get("modality", {}).get("code") if isinstance(series.get("modality"), dict) else series.get("modality"),
                     "description": series.get("description"),
                     "number_of_instances": series.get("numberOfInstances", 0),
                     "instances": []
@@ -1445,7 +1457,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 for instance in series.get("instance", []):
                     series_entry["instances"].append({
                         "uid": instance.get("uid"),
-                        "sop_class": instance.get("sopClass", {}).get("code"),
+                        "sop_class": instance.get("sopClass", {}).get("code") if isinstance(instance.get("sopClass"), dict) else None,
                         "number": instance.get("number")
                     })
 
@@ -1454,6 +1466,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             # Get linked MIMIC-CXR images from database
             if mimic_study_id:
                 try:
+                    from src.db.connection import get_connection
+                    conn = get_connection()
+                    cursor = conn.cursor()
                     sql = """
                         SELECT ImageID, SubjectID, ViewPosition, ImagePath
                         FROM VectorSearch.MIMICCXRImages
@@ -1467,11 +1482,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                             "view_position": row[2],
                             "image_path": row[3]
                         })
+                    cursor.close()
+                    conn.close()
                 except Exception as e:
                     result["linked_images_error"] = str(e)
-
-            cursor.close()
-            conn.close()
 
             return [TextContent(
                 type="text",

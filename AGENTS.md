@@ -40,13 +40,14 @@ medical-graphrag-assistant/
 - **Public IP**: `44.200.206.67` (Verified 2026-01-17)
 - **Streamlit URL**: `http://44.200.206.67:8501`
 - **IRIS Port**: `1972` (SQL), `52773` (Portal)
+- **Namespace**: `DEMO` (Used for FHIR and Vector data)
 - **Status**: ✅ Up, Tables Created, Hosted NIM Active.
 
 ### 🛠️ Development & Execution
 - **Run Streamlit UI**: `cd mcp-server && streamlit run streamlit_app.py`
 - **Run MCP Server**: `python mcp-server/fhir_graphrag_mcp_server.py`
 - **System Health Check**: `EC2_HOST=44.200.206.67 python -m src.cli --env aws check-health`
-- **Fix Environment**: `python -m src.cli fix-environment`
+- **Fix Environment**: `EC2_HOST=44.200.206.67 python -m src.cli --env aws fix-environment`
 - **Spot Instances**: Use `scripts/aws/launch-spot.sh` to save 60% on EC2 costs.
 - **Docker Storage**: Uses ephemeral drive `/opt/dlami/nvme/docker` for large NIM images.
 - **Linting**: `ruff check .` or `ruff check . --fix`
@@ -59,8 +60,8 @@ medical-graphrag-assistant/
 
 ### 🧪 Testing
 - **Run all tests (against EC2)**: `pytest tests/ --ignore=tests/ux -v`
-- **Current status**: 204 passed, 16 failed, 44 skipped (see FIXME.md)
-- **Environment auto-configured** via `tests/conftest.py` (defaults to EC2 44.200.206.67)
+- **Current status**: 234 passed, 6 failed, 25 skipped (see FIXME.md)
+- **Environment auto-configured** via `tests/conftest.py` (defaults to EC2 44.200.206.67 in DEMO namespace)
 - **Search Services**: `pytest tests/unit/search/`
 - **MCP Wrappers**: `pytest tests/unit/mcp/`
 - **Integration**: `pytest tests/integration/`

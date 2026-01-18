@@ -167,6 +167,80 @@ class FHIRRadiologyAdapter:
             'Authorization': f'Basic {auth_string}'
         })
 
+    def get_imaging_study_details(self, study_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed information for a specific ImagingStudy.
+        """
+        # 1. Try FHIR REST
+        if self._is_fhir_available():
+            try:
+                # Try by ID
+                url = f"{self.fhir_base_url}/ImagingStudy/{study_id}"
+                response = self.session.get(url)
+                if response.status_code == 200:
+                    return response.json()
+                
+                # Try by identifier
+                url = f"{self.fhir_base_url}/ImagingStudy"
+                params = {"identifier": f"{self.MIMIC_STUDY_SYSTEM}|{study_id}"}
+                response = self.session.get(url, params=params)
+                if response.status_code == 200:
+                    bundle = response.json()
+                    entries = bundle.get("entry", [])
+                    if entries:
+                        return entries[0].get("resource")
+            except Exception as e:
+                print(f"[WARN] FHIR study details failed: {e}")
+
+        # 2. SQL Fallback
+        try:
+            from src.db.connection import get_connection
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            # Clean study_id (might have 'study-' prefix)
+            clean_id = study_id.replace("study-", "")
+            
+            sql = """
+                SELECT ImageID, PatientID, StudyType, ImagePath, RelatedReportID
+                FROM SQLUser.MedicalImageVectors
+                WHERE ImageID = ? OR RelatedReportID = ?
+            """
+            cursor.execute(sql, [clean_id, clean_id])
+            row = cursor.fetchone()
+            conn.close()
+            
+            if row:
+                image_id, pat_id, study_type, path, report_id = row
+                return {
+                    "resourceType": "ImagingStudy",
+                    "id": f"study-{image_id}",
+                    "status": "available",
+                    "subject": {"reference": f"Patient/{pat_id}"},
+                    "modality": [{"code": study_type}],
+                    "identifier": [{"system": self.MIMIC_STUDY_SYSTEM, "value": image_id}],
+                    "description": f"Radiology study from {path}",
+                    "numberOfSeries": 1,
+                    "numberOfInstances": 1,
+                    "series": [
+                        {
+                            "uid": f"series-{image_id}",
+                            "number": 1,
+                            "modality": {"code": study_type},
+                            "instance": [{"uid": f"sop-{image_id}", "number": 1}]
+                        }
+                    ]
+                }
+        except Exception as e:
+            print(f"[WARN] SQL study details fallback failed: {e}")
+
+        # 3. Sample data fallback
+        for study in self.SAMPLE_IMAGING_STUDIES:
+            if study.get("id") == study_id or any(i.get("value") == study_id for i in study.get("identifier", [])):
+                return study
+                
+        return None
+
     def _is_fhir_available(self) -> bool:
         """Check if FHIR server is available (cached)."""
         if self._demo_mode is True:
@@ -439,7 +513,7 @@ class FHIRRadiologyAdapter:
                     "id": f"study-{image_id}",
                     "status": "available",
                     "subject": {"reference": f"Patient/{pat_id}"},
-                    "modality": study_type,
+                    "modality": [{"code": study_type}],
                     "identifier": [{"system": self.MIMIC_STUDY_SYSTEM, "value": image_id}],
                     "description": f"Radiology study from {path}",
                     "number_of_series": 1,

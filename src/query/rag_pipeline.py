@@ -94,14 +94,14 @@ class RAGPipeline:
         # IRIS database configuration
         self.iris_host = iris_host or os.getenv("IRIS_HOST", "44.200.206.67")
         self.iris_port = iris_port or int(os.getenv("IRIS_PORT", "1972"))
-        self.iris_namespace = iris_namespace or os.getenv("IRIS_NAMESPACE", "USER")
+        self.iris_namespace = iris_namespace or os.getenv("IRIS_NAMESPACE", "DEMO")
         self.iris_username = iris_username or os.getenv("IRIS_USERNAME", "_SYSTEM")
         self.iris_password = iris_password or os.getenv("IRIS_PASSWORD", "SYS")
         self.vector_dimension = vector_dimension
 
         # LLM configuration
-        self.llm_endpoint = llm_endpoint or os.getenv("LLM_ENDPOINT", "http://44.200.206.67:8001")
-        self.llm_completions_url = f"{self.llm_endpoint}/v1/chat/completions"
+        self.llm_endpoint = llm_endpoint or os.getenv("LLM_ENDPOINT", "https://integrate.api.nvidia.com/v1")
+        self.llm_completions_url = f"{self.llm_endpoint}/chat/completions"
         self.llm_model = "meta/llama-3.1-8b-instruct"
 
         # Initialize clients

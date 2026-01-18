@@ -50,11 +50,7 @@ def test_image_search_demo_mode(page: Page, streamlit_app):
     page.goto("http://localhost:8501")
     
     # Wait for chat input
-    chat_input = page.get_by_placeholder("Type your message here...") # Streamlit default placeholder?
-    # Actually Streamlit chat input usually has "Your message" or similar.
-    # Let's target by role or generic selector if placeholder is unknown.
-    # Streamlit chat input is usually a textarea.
-    chat_input = page.locator("textarea")
+    chat_input = page.get_by_test_id("stChatInputTextArea")
     expect(chat_input).to_be_visible()
     
     # Type query

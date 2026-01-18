@@ -19,13 +19,17 @@ EC2_IP = "44.200.206.67"
 IRIS_CONFIG = {
     "host": os.getenv("IRIS_HOST", EC2_IP),
     "port": int(os.getenv("IRIS_PORT", "1972")),
-    "namespace": os.getenv("IRIS_NAMESPACE", "USER"),
+    "namespace": os.getenv("IRIS_NAMESPACE", "DEMO"),
     "username": os.getenv("IRIS_USERNAME", "_SYSTEM"),
     "password": os.getenv("IRIS_PASSWORD", "SYS"),
 }
 
 NVCLIP_CONFIG = {
     "base_url": os.getenv("NVCLIP_BASE_URL", f"http://{EC2_IP}:8002/v1"),
+}
+
+FHIR_CONFIG = {
+    "base_url": os.getenv("FHIR_BASE_URL", f"http://{EC2_IP}:52773/csp/healthshare/demo/fhir/r4"),
 }
 
 
@@ -36,6 +40,7 @@ def pytest_configure(config):
     os.environ.setdefault("IRIS_USERNAME", IRIS_CONFIG["username"])
     os.environ.setdefault("IRIS_PASSWORD", IRIS_CONFIG["password"])
     os.environ.setdefault("NVCLIP_BASE_URL", NVCLIP_CONFIG["base_url"])
+    os.environ.setdefault("FHIR_BASE_URL", FHIR_CONFIG["base_url"])
     
     config.addinivalue_line("markers", "e2e: End-to-end tests")
     config.addinivalue_line("markers", "integration: Integration tests")
